@@ -314,11 +314,12 @@ var Azioni = {
 					}
 				}
 				// Se arriva qui o non c'erano condizioni o sono state soddisfatte
-				Azioni[gruppo][ia].passo++;
-				if (Azioni[gruppo][ia].passo == azione.passi + 1) {
+				if (Azioni[gruppo][ia].passo == azione.passi) {
 					Azioni[gruppo][ia].passo = 0;
 					if (azione.ripeti == 1) Azioni[gruppo].splice(ia, 1); ia--;
 					Azioni.esegui(azione);
+				} else {
+					Azioni[gruppo][ia].passo++;
 				}
 			}
 		}
