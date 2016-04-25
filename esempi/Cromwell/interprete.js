@@ -477,7 +477,7 @@ function ramificaInput(str, alt) {
 	inpLivelli = noDiacritici(str.toLowerCase()).split('|');
 	// Livello 2 (parole)
 	for (i1 = 0; i1 < inpLivelli.length; i1++) {
-		inpLivelli[i1] = inpLivelli[i1].split(/(?: |')+/);
+		inpLivelli[i1] = inpLivelli[i1].split(/(?: |'|’)+/);
 	}
 	if (alt == 2) {
 		// Livello 3 (alternative di parole)
