@@ -1,0 +1,60 @@
+#corpo , #input { /*Colore sfondo*/ background-color: #000; /*Colore testo*/ color: #ccc; }
+.inviato { /*Colore testo inviato*/ color: #666; }
+#corpo , #input { /*Testo carattere*/ font-family: Georgia, serif; /*Testo grandezza*/ font-size: 18px; line-height: 1.2em; }
+#descrizione { /*Testo allineamento*/ text-align: left; }
+.scelta { /*Colore scelte selezionabili*/ color: #9C8159; }
+.scelta:hover { /*Colore scelta selezionata*/ color: #cc0; }
+a { /*Colore link*/ color: #7E45B0; }
+a:hover { /*Colore link selezionato*/ color: #9F57DE; }
+.errore { /*Colore messaggio errore*/ color: #c60 !important; }
+#descrizione , #scelte , #input { /*Larghezza massima storia*/ max-width: 800px; }
+
+/* Impostazioni raccomandate */
+body {
+	text-align: center;
+	margin: 8px 0 0 0;
+	padding: 0;
+}
+p , input {
+	margin: 0 0 8px 0;
+}
+p.br {
+	margin-top: -8px;
+}
+a {
+	text-decoration:none;
+}
+img {
+	max-width: 100%;
+	margin: 8px auto 8px auto;
+}
+#descrizione , #input , #scelte {
+	margin: 0 auto 0 auto;
+	padding: 0 8px 0 8px;
+}
+#input {
+	width: 100%;
+	display: none;
+	border: none;
+	outline: none;
+	text-align: left;
+}
+.inviato {
+	margin: 0;
+}
+#scelte {
+	margin-top: 8px;
+	text-align: left;
+}
+.scelta {
+	margin: 0;
+	cursor: pointer;
+}
+.ascii {
+	display: block;
+	margin: 12px 0 12px 0;
+	font-family: monospace;
+	white-space: pre;
+	text-align: center;
+	line-height: 1em;
+}
