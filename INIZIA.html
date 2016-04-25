@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Avventura testuale</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0">
+	<link rel="stylesheet" type="text/css" href="stile.css" />
+	<script type="text/javascript" src="interprete_it.js"></script>
+	<script type="text/javascript" src="scene.js"></script>
+</head>
+<body id="corpo" onload="scena(1)">
+	<div id="audio"></div>
+	<div id="descrizione"></div>
+	<input id="input" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) Azioni.controlla();" onblur="setTimeout(pronto, 2000)" />
+	<div id="scelte"></div>
+</body>
+</html>
