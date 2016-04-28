@@ -18,8 +18,6 @@ function vocabolario() {
 // Comandi validi in tutte le scene
 function baseScene() {
 	titolo("Cromwell");
-	coloreSfondo("#202020");
-	coloreTesto("#B5A594", "#666");
 	contenitore("i", "il pugnale", "mio");
 	rispondi("inventario", "Hai con te: @i@.");
 	uscita("guardo|g", -1, 0);
@@ -48,13 +46,13 @@ function baseScene() {
 	_se("la chiave@i");
 	rispondi("esamino la gamba|esamino la gamba di sedia", "È legno fragile e un po' scheggiato.");
 	_se("la gamba di sedia@i");
-	nAzioniRispondi(1, "Avverti un boato cupo e lontano.");
+	nAzioniRispondi(2, "Avverti un boato cupo e lontano.");
 	_se("drekann|!drago morto");
 	_variabili("!drekann|drekann2");
-	nAzioniRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
+	nAzioniRispondi(3, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
 	_se("drekann2|!drago morto");
 	_variabili("!drekann2|drekann3");
-	nAzioniVai(1, 23);
+	nAzioniVai(2, 23);
 	_se("drekann3|!drago morto");
 	rispondi("esamino il cuore|esamino il cuore di Cromwell|esamino il cuore dell'abate", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
 	_se("il cuore di cromwell@i");
@@ -89,7 +87,7 @@ function scena(n) {
 		nomeScena();
 		immagine("bosco.png");
 		testo("Secoli trascorsi nell'oblio e la regione di Pietranera è stata inghiottita da una folta vegetazione. Si racconta che Cromwell, un abate di origini britanniche, avesse eredidato antiche conoscenze celtiche e se ne fosse servito per sfuggire alla morte. Visse a lungo nell'abbazia eppure venne il giorno della sua sepoltura. In seguito, queste terre divennero lentamente piú silenziose, molte creature morivano o si spostavano altrove. La gente abbandonò del tutto il reggimento, un terribile potere crebbe, rafforzato dalla paura. Pochi audaci avventurieri hanno esplorato questi luoghi senza far ritorno. Un nuovo esploratore è giunto...");
-		_variabili("inizio");
+		_variabili("inizio|drekann");
 		scegliVai("Esplora", 3, "centrato");
 		break;
 	case 3:
@@ -164,7 +162,7 @@ function scena(n) {
 		nomeScena();
 		immagine("abate.png");
 		testo("D'un tratto, tra i ruderi, appare Cromwell, l'abate di Pietranera.<br />Puoi vedere: l'abate.");
-		nAzioniVai(1, 6);
+		nAzioniVai(2, 6);
 		_se("!abate morto");
 		rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea.", 4);
 		_se("ampolla bevuta");
@@ -196,7 +194,7 @@ function scena(n) {
 		nomeScena();
 		immagine("palude.png");
 		testo("Sei nella zona palustre. Uno strano gorgoglio proviene dall'acqua.<br />Puoi vedere: piante inquietanti, l'acqua che gorgoglia.");
-		nAzioniVai(1, 9);
+		nAzioniVai(2, 9);
 		_se("!abate morto");
 		uscita("nord", 7);
 		_se("abate morto");
@@ -208,7 +206,6 @@ function scena(n) {
 	case 9:
 		immagine("drago.png");
 		testo("D'un tratto dalle acque palustri emerge un gigantesco drago. Il mostro ti si avventa contro con le fauci spalancate e le sue zanne ti dilaniano orribilmente.");
-		_variabili("!gorgoglio");
 		scegliVai("Risorgi", 7);
 		break;
 	case 23:
