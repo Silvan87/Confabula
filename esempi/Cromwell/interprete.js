@@ -314,7 +314,7 @@ var Azioni = {
 					}
 				}
 				// Se arriva qui o non c'erano condizioni o sono state soddisfatte
-				if (Azioni[gruppo][ia].passo == azione.passi) {
+				if (Azioni[gruppo][ia].passo == azione.passi - 1) {
 					Azioni[gruppo][ia].passo = 0;
 					if (azione.ripeti == 1) Azioni[gruppo].splice(ia, 1); ia--;
 					Azioni.esegui(azione);
