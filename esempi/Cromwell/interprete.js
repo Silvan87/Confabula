@@ -1,196 +1,159 @@
-var stileBase = {};
-var oggetti = []; var variabili = []; var direzioni = {};
-var uVisibili = ''; /*uscite visibili*/ var direzioniBloccate = 0; /*blocca le direzioni se non ci sono uscite visibili*/
-var intermezzoAzione = []; // Uno o piú testi che compaiono prima di aprire una scena
+var Lingua = {
+	predicati: [],
+	equivalenze: [],
+	mappaDiacritici: [ /* Mappa per sostituire le vocali accentate in vocali non accentate */
+		{'base':'a', 'letters':/[\u00E0\u00E1]/g},
+		{'base':'e', 'letters':/[\u00E8\u00E9]/g},
+		{'base':'i', 'letters':/[\u00EC\u00ED]/g},
+		{'base':'o', 'letters':/[\u00F2\u00F3]/g},
+		{'base':'u','letters':/[\u00F9\u00FA]/g}
+	],
+	noDiacritici: function(str) {
+		// La stringa DEVE essere già in caratteri minuscoli, altrimenti non avverranno le sostituzioni
+		for (var i = 0; i < Lingua.mappaDiacritici.length; i++) {
+			str = str.replace(Lingua.mappaDiacritici[i].letters, Lingua.mappaDiacritici[i].base);
+		}
+		return str;
+	}
+}
+
+var Storia = {
+	// Lo stile predefinito viene impostato nel CSS
+	oggetti: {}, // Dizionario di contenitori che contengono oggetti
+	variabili: {}, // Dizionario di variabili che possono assumere un valore
+	luoghiRaggiungibili: {},
+	istruzioniGenerali: [],
+	nuovaPartita: function() {
+		if (Lingua.equivalenze.length === 0) vocabolario();
+		Storia.oggetti = {}; // Cancella tutti i contenitori con gli oggetti
+		Storia.variabili = {}; // Cancella tutte le variabili
+		Storia.luoghiRaggiungibili = {}; // Cancella tutti i nomi dei luoghi raggiungibili
+		Storia.istruzioniGenerali = []; // Svuota le istruzioni per le azioni generali
+	}
+}
 
 var Scena = {
-	N: 1, /*numero scena corrente*/
-	P: 1, /*numero precedente scena*/
-	stile: {} // Qui si salveranno gli aspetti della scena che sovrascrivono lo stile base
-};
-
-var Azioni = {
-	generali: [],
-	scena: [],
-	invioInp: '',
-	bastaInvInp: 0,
-	crea: function() {
-		if (Scena.N === 0) { this.generali.push({}); } else { this.scena.push({}); }
+	N: 1, /*n. scena attuale*/
+	P: 1, /*n. scena precedente*/ P2: 1, /*n. scena ancora precedente*/
+	stile: {}, // Aspetti della scena che sovrascrivono lo stile predefinito
+	usciteVisibili: '',
+	direzioniBloccate: 0,
+	svuota: function () {
+		document.getElementById('audio').innerHTML = '';
+		document.getElementById('scelte').style.visibility = 'hidden';
+		document.getElementById('scelte').innerHTML = '';
+		document.getElementById('input').style.display = 'none';
+		document.getElementById('input').value = '? ';
+		document.getElementById('testo').style.visibility = 'hidden';
+		document.getElementById('testo').innerHTML = '';
+		Scena.stile = {};
+		Scena.usciteVisibili = '';
+		Azioni.scena = [];
 	},
-	valore: function(p/*proprietà*/, v/*valore*/) {
-		if (Scena.N === 0) {
-			Azioni.generali[Azioni.generali.length - 1][p] = v;
-		} else {
-			Azioni.scena[Azioni.scena.length - 1][p] = v;
-		}
+	avvia: function(n) {
+		document.removeEventListener('keypress', press_noAttesa);
+		document.removeEventListener('click', press_noAttesa);
+		if (n == 1) { // Comportamento speciale per l'avvio della scena 1
+			Storia.nuovaPartita();
+			Scena.N = undefined; // L'assenza del numero di scena segnala che le istruzioni sono generali
+			istruzioniGenerali();
+			Scena.N = 1; // Reimposto il numero di scena attuale che è quello di inizio
+		};
+		Scena.P2 = Scena.P; Scena.P = Scena.N; Scena.N = n;
+		Scena.svuota();
 	},
-	arrayValore: function(a/*nome array*/, v/*valore*/) {
-		var ultima;
-		if (Scena.N === 0) {
-			ultima = Azioni.generali.length - 1;
-			if (Azioni.generali[ultima][a] === undefined) Azioni.generali[ultima][a] = [];
-			Azioni.generali[ultima][a].push(v);
-		} else {
-			ultima = Azioni.scena.length - 1;
-			if (Azioni.scena[ultima][a] === undefined) Azioni.scena[ultima][a] = [];
-			Azioni.scena[ultima][a].push(v);
-		}
-	},
-	leggiUltima: function(p/*proprietà*/) {
-		if (Scena.N === 0) {
-			return Azioni.generali[Azioni.generali.length - 1][p];
-		} else {
-			return Azioni.scena[Azioni.scena.length - 1][p];
-		}
-	},
-	esegui: function(azione, idS/*id scelta*/) {
-		if (azione == 'S') {
-			// Individua l'azione chiamata dalla scelta
-			for (var ia = 0; ia < Azioni.scena.length; ia++) {
-				if (Azioni.scena[ia].scelta == idS) {
-					azione = Azioni.scena[ia];
-					Azioni.invioInp = azione.input;
-					break;
-				}
-			}
-		}
-		var e_des = document.getElementById('descrizione');
-
-		// Controlla se ci sono funzioni _agganciate a quella principale
-		if (azione.immagine) {
-			e_des.innerHTML += '<img src="" />';
-			nImm = e_des.getElementsByTagName('img').length;
-			var e_imm = e_des.getElementsByTagName('img')[nImm - 1];
-			e_imm.style.display = 'block';
-			if (azione.imgW !== undefined) e_imm.width = azione.imgW;
-			if (azione.imgH !== undefined) e_imm.height = azione.imgH;
-			e_imm.src = azione.immagine;
-		}
-		if (azione.piuOggetti) {
-			imposta(azione.piuOggetti);
-		}
-		if (azione.menoOggetti) {
-			var mo = [];
-			mo = azione.menoOggetti.split('|');
-			var po = azione.piuOggetti.split('|');
-			for (var io = 0; io < mo.length; io++) {
-				mo[io] = mo[io].split('@');
-				if (mo[io][0] === '') { // Se non sono specificati oggetti è sottointeso che tutti quelli creati, vengono distrutti in questo contenitore
-					for (var ios = 0; ios < po.length; ios++) {
-						po[ios] = po[ios].split('@');
-						var i_canc = oggetti[mo[io][1]][0].indexOf(po[ios][0]);
-						if (i_canc != -1) {
-							oggetti[mo[io][1]][0].splice(i_canc, 1);
-							if (oggetti[mo[io][1]][1] != 'mio') {
-								oggetti[mo[io][1]][1].splice(i_canc, 1);
-							}
-						}
-					}
-				} else {
-					var i_canc = oggetti[mo[io][1]][0].indexOf(mo[io][0]);
-					if (i_canc != -1) {
-						oggetti[mo[io][1]][0].splice(i_canc, 1);
-						if (oggetti[mo[io][1]][1] != 'mio') {
-							oggetti[mo[io][1]][1].splice(i_canc, 1);
-						}
-					}
-				}
-			}
-		}
-		if (azione.variabili) imposta(azione.variabili);
-		if (azione.audio) eseguiAudio(azione.audio);
-
-		// Esegue le funzioni principali
-		var ali = ''; if (azione.allineamento !== undefined) ali = stileAli(azione.allineamento);
-		switch (azione.tipo) {
-			case 'testo':
-				if (uVisibili === '') {
-					e_des.innerHTML += '<p'+ali+'>' + azione.testo + '</p>';
-				} else {
-					e_des.innerHTML += '<p'+ali+'>' + azione.testo + '<br />Uscite visibili: ' + uVisibili.substr(1) + '.</p>';
-					uVisibili = ''; direzioniBloccate = 0;
-				}
-				break;
-			case 'audio':
-				eseguiAudio(azione.audio);
-				break;
-			case 'rispondi':
-				var classi = '';
-				if (!azione.passi) {
-					if (Azioni.bastaInvInp === 0) {
-						e_des.innerHTML += '<p'+ali+' class="inviato">? ' + Azioni.invioInp + '</p>';
-					} else {
-						classi = ' class="br"';
-					}
-				}
-				e_des.innerHTML += '<p'+classi+ali+'>' + espandiContenitori(azione.output) + '</p>';
-				break;
-			case 'vai':
-				if (azione.intermezzo !== undefined) intermezzoAzione = azione.intermezzo;
-				if (azione.scena == -1) { scena(Scena.N); } else if (azione.scena == -2) { scena(Scena.P); } else { scena(azione.scena); }
+	concludi: function() {
+		var e_txt = document.getElementById('intermezzo');
+		// Finché c'è un intermezzo, mostra prima quello, finché non si preme un tasto
+		if (Scena.stile.intermezzo !== undefined) {
+			if (Scena.stile.intermezzo.length > 0) {
+				e_txt.innerHTML = '<p>'+Scena.stile.intermezzo[0]+'</p>';
+				e_txt.style.visibility = 'visible';
+				Scena.stile.intermezzo.splice(0, 1);
+				setTimeout(function(){ document.addEventListener('keypress', press_concludi); document.addEventListener('click', press_concludi); }, 200);
 				return;
-			case 'rispondiVai':
-				if (azione.intermezzo !== undefined) intermezzoAzione = azione.intermezzo;
-				document.getElementById('input').style.display = 'none';
-				if (Azioni.bastaInvInp === 0) e_des.innerHTML += '<p class="inviato">? ' + Azioni.invioInp + '</p>';
-				e_des.innerHTML += '<p>' + azione.output + '</p>';
-				aspettaVai(azione.ritardo, azione.scena);
-				break;
+			} else {
+				e_txt.innerHTML = '';
+				e_txt.style.visibility = 'hidden';
+				delete Scena.stile.intermezzo;
+			}
+		}
+		// Inserisci le eventuali uscite visibili
+		var e_txt = document.getElementById('testo');
+		if (Scena.usciteVisibili !== '') {
+			e_txt.innerHTML += '<p>Uscite visibili:' + Scena.usciteVisibili.substr(1) + '.</p>';
+					Scena.usciteVisibili = ''; Scena.direzioniBloccate = 0;
+		}
+		// Se c'è qualche immagine da caricare, attendi che siano tutte caricate
+		if (Scena.stile.immagini !== undefined) {
+			Scena.stile.timerImg = setInterval(Scena.controllaImg, 150);
+		} else { // Se non ci sono immagini da caricare mostra subito tutto
+			Scena.mostra();
 		}
 	},
-	controlla: function(opzioni) { // Se non ci sono condizioni o sono soddisfate, eseguirà subito l'azione
-		if (opzioni === undefined) opzioni = {}; /* Questo semplifica i controlli delle proprietà assenti */
+	controllaImg: function() {
+		var e_img;
+		for (var i = 0; i < Scena.stile.immagini.length; i++) {
+			e_img = document.getElementById(Scena.stile.immagini[i]);
+			if (e_img.naturalWidth === 0 || e_img.complete === false) {
+				return; // Esce dalla funzione e dovrà essere richiamata per un nuovo controllo e proseguire in caso di buon fine
+			}
+		}
+		clearInterval(Scena.stile.timerImg);
+		Scena.mostra();
+	},
+	mostra: function() {
+		document.getElementById('testo').style.visibility = 'visible';
+		if (Scena.stile.scrittura == 1) document.getElementById('input').style.display = 'block';
+		document.getElementById('scelte').style.visibility = 'visible';
+		var e_fileAudio = document.getElementById('fileAudio');
+		if (e_fileAudio !== null) e_fileAudio.play(); // Esegui file audio se caricato
+		pronto(); // Passa il focus alla casella di input
+	},
+	controllaInput: function(opzioni) {
+		if (opzioni === undefined) opzioni = {}; // Semplifica i controlli delle proprietà assenti nell'array opzioni
 		var e_inp = document.getElementById('input');
 		var inp = e_inp.value.trim(); if (inp.charAt(0) == '?') inp = inp.substr(1).trim();
 		Azioni.invioInp = inp;
-		// Controlla prima le azioni di scena e poi quelle generali
-		var gruppo = 'scena';
-		var azione;
-		for (var a = 0; a < 2; a++) {
-			if (a == 1) gruppo = 'generali';
-			for (var ia = 0; ia < Azioni[gruppo].length; ia++) {
-				azione = Azioni[gruppo][ia];
-				// Se è una scelta, non è soggetta a condizioni e va sempre saltata, si esegue con un click
-				// Se è un'azione ritardata (n. passi) viene gestita in modo speciale piú avanti
-				if (azione.scelta || azione.passi) continue;
-				// Controlla se l'input soddisfa questa azione
-				if (azione.input !== undefined) {
-					if (inp === '') { e_inp.value = '? '; continue; } else { inp = noDiacritici(inp.toLowerCase()); }
+		var livelli = ['scena', 'generale']; // Controllare prima le azioni di scena e poi quelle generali
+		var azione = {};
+		for (var L = 0; L <= 1; L++) {
+			for (var ia = 0; ia < Azioni[livelli[L]].length; ia++) {
+				azione = Azioni[livelli[L]][ia];
+				if (azione.mosse) continue; // Se è un'azione ritardata (n. mosse) viene gestita in modo speciale piú avanti
+				if (azione.input !== undefined) { // Controlla se l'input soddisfa questa azione
+					if (inp === '') { e_inp.value = '? '; return; } else { inp = Lingua.noDiacritici(inp.toLowerCase()); }
 					// Ci sono alcuni input speciali che fanno parte dell'interprete
-					if (inp == 'vocabolario' || inp == 'v') {
-						azione = {};
-						azione.tipo = 'rispondi';
-						azione.output = Parole.inizio.join(', ');
-					} else if (((inp == 'direzioni' || inp == 'd' || inp == 'direzione') || (inp.split(' ')[0] == 'direzione' || inp.split(' ')[0] == 'd')) && direzioniBloccate === 1) {
+					if ((inp.split(' ')[0] == 'direzione' || inp.split(' ')[0] == 'd') && Scena.direzioniBloccate === 1) {
 						azione = {};
 						azione.tipo = 'rispondi';
 						azione.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
-					} else if ((inp == 'direzioni' || inp == 'd' || inp == 'direzione') && direzioniBloccate === 0) {
+					} else if ((inp == 'direzioni' || inp == 'd' || inp == 'direzione') && Scena.direzioniBloccate === 0) {
 						azione = {};
 						azione.tipo = 'rispondi';
 						var luoghi = '';
-						if (direzioni !== undefined && direzioni[Scena.N].d !== 0) {
-							for (var key in direzioni) {
-								if (direzioni[key].d !== 0 && key != Scena.N && direzioni[key].nome !== undefined) {
+						if (Storia.luoghiRaggiungibili !== undefined && Storia.luoghiRaggiungibili[Scena.N].visitato !== 0) {
+							for (var key in Storia.luoghiRaggiungibili) {
+								if (Storia.luoghiRaggiungibili[key].visitato !== 0 && key != Scena.N && Storia.luoghiRaggiungibili[key].nome !== undefined) {
 									if (luoghi !== '') luoghi += ', ';
-									luoghi += direzioni[key].nome.split('|')[0];
+									luoghi += Storia.luoghiRaggiungibili[key].nome.split('|')[0];
 								}
 							}
 						}
 						if (luoghi === '') {
-							azione.output = 'Devi prima esplorare qualche luogo per poterlo raggiungere velocemente.';
+							azione.output = 'Devi esplorare altri luoghi, poi potrai raggiungerli velocemente.';
 						} else {
 							azione.output = 'Luoghi raggiungibili: '+luoghi+'.';
 						}
 					} else if ((inp.split(' ')[0] == 'direzione' || inp.split(' ')[0] == 'd') && direzioniBloccate === 0) {
-						if (direzioni === undefined || direzioni[Scena.N].d === 0) {
+						if (Storia.luoghiRaggiungibili === undefined || Storia.luoghiRaggiungibili[Scena.N].visitato === 0) {
 							azione = {};
 							azione.tipo = 'rispondi';
 							azione.output = 'Non puoi dirigerti velocemente in nessun luogo per ora.';
 						} else {
 							var inizio = inp.split(' ')[0].length + 1;
-							for (var key in direzioni) {
-								if (direzioni[key].d !== 0 && key != Scena.N && direzioni[key].nome !== undefined && direzioni[key].nome.split('|').indexOf(inp.substr(inizio)) != -1) {
+							for (var key in Storia.luoghiRaggiungibili) {
+								if (Storia.luoghiRaggiungibili[key].visitato !== 0 && key != Scena.N && Storia.luoghiRaggiungibili[key].nome !== undefined && Storia.luoghiRaggiungibili[key].nome.split('|').indexOf(inp.substr(inizio)) != -1) {
 									e_inp.value = '? ';
 									scena(parseInt(key, 10));
 									return;
@@ -203,63 +166,22 @@ var Azioni = {
 						if (!soddisfa(inpAlbero, azione.input)) continue;
 					}
 				}
-				var soddisfatto = 1;
-				// Controlla le condizioni sugli oggetti
-				if (azione.seOggetti !== undefined) {
-					for (var i = 0; i < azione.seOggetti.length; i++) {
-						if (oggetti[azione.seOggetti[i].contenitore] === undefined ||
-							oggetti[azione.seOggetti[i].contenitore][0].indexOf(azione.seOggetti[i].nome) == -1) { // Oggetto assente
-							if (azione.seOggetti[i].presenza == 1) { // L'oggetto dovrebbe essere presente
-								soddisfatto = 0; break;
-							}
-						} else { // Oggetto presente
-							if (azione.seOggetti[i].presenza === 0) { // L'oggetto dovrebbe essere assente
-								soddisfatto = 0; break;
-							}
-						}
-					}
-					if (soddisfatto === 0) {
-						// Se alla prima occasione testo e audio non sono eseguibili rimuovili
-						if (azione.tipo == 'testo' || azione.tipo == 'audio') { Azioni.scena.splice(ia, 1); ia--; }
-						continue;
-					}
-				}
-				// Controlla le condizioni sulle variabili
-				if (azione.seVariabili !== undefined) {
-					for (var i = 0; i < azione.seVariabili.length; i++) {
-						if (variabili[azione.seVariabili[i].nome] === undefined) { // Variabile non esiste
-							if (azione.seVariabili[i].presenza == 1) { // La variabile dovrebbe esistere
-								soddisfatto = 0; break;
-							}
-						} else { // Variabile esiste
-							if (azione.seVariabili[i].presenza === 0) { // La variabile non dovrebbe esistere
-								soddisfatto = 0; break;
-							}
-						}
-					}
-					if (soddisfatto === 0) {
-						// Se alla prima occasione testo e audio non sono eseguibili rimuovili
-						if (azione.tipo == 'testo' || azione.tipo == 'audio') { Azioni.scena.splice(ia, 1); ia--; }
-						continue;
-					}
-				}
+				if (Condizioni.verifica({'seOggetti': azione.seOggetti, 'seVariabili': azione.seVariabili}) === false) continue;
 				// Se arriva qui o non c'erano condizioni o sono state soddisfatte
 				if (opzioni.outAli !== undefined) azione.allineamento = opzioni.outAli;
-				// Le azioni di preparazione della scena vanno distrutte appena eseguite
-				if (gruppo == 'scena') { if (azione.tipo == 'testo' || azione.tipo == 'audio') { Azioni.scena.splice(ia, 1); ia--; } }
 				e_inp.value = '? '; // È segno che almeno un'azione è stata eseguita (piú sicuro metterlo prima dell'azione)
 				Azioni.esegui(azione);
-				if (!azione.prosegui) break;
-				Azioni.bastaInvInp = 1;
+				break;
+				Azioni.bastaInvioInp = 1; // Ha davvero senso questo parametro?
 			}
-			if (e_inp.value == '? ' && !azione.prosegui) break;
+			if (e_inp.value == '? ') break;
 		}
-		Azioni.bastaInvInp = 0; // Finito un ciclo di controllo per tutte le azioni, va ripristinato
+		Azioni.bastaInvioInp = 0; // Finito un ciclo di controllo per tutte le azioni, va ripristinato
 		// Se arriva qui nessuna condizione è stata soddisfatta oppure una o piú azioni sono state eseguite
 		if (e_inp.value != '? ') { // Nessuna azione è stata eseguita
 			e_inp.readOnly = true;
 			var cE = '';
-			if (stileBase.colErrore !== undefined) cE = stileBase.colErrore;
+			//if (stileBase.colErrore !== undefined) cE = stileBase.colErrore;
 			if (Scena.stile.colErrore !== undefined && Scena.stile.colErrore !== '') cE = Scena.stile.colErrore;
 			if (cE === '') { e_inp.className = 'errore'; } else { e_inp.style.color = cE; }
 			e_inp.value = 'Prova qualcos\'altro...';
@@ -267,186 +189,205 @@ var Azioni = {
 			// Dovrei aggiungere la caratteristica che se si inizia a scrivere è subito pronto e non perde le battute (document keydown)
 		}
 		// Gestione speciale delle azioni ritardate
-		gruppo = 'scena';
+		livelli = ['scena', 'generale'];
 		azione = {};
-		for (a = 0; a < 2; a++) {
-			if (a == 1) gruppo = 'generali';
-			for (ia = 0; ia < Azioni[gruppo].length; ia++) {
-				azione = Azioni[gruppo][ia];
-				if (!azione.passi) continue; // Le azioni non ritardate le ignoro, dato che sono state gestite prima
-				if (opzioni.inizioScena) continue; // Ad inizio scena non conto il passo, dato che per arrivarci segna già un passo
-				var soddisfatto = 1;
-				// Controlla le condizioni sugli oggetti
-				if (azione.seOggetti !== undefined) {
-					for (var i = 0; i < azione.seOggetti.length; i++) {
-						if (oggetti[azione.seOggetti[i].contenitore] === undefined ||
-							oggetti[azione.seOggetti[i].contenitore][0].indexOf(azione.seOggetti[i].nome) == -1) { // Oggetto assente
-							if (azione.seOggetti[i].presenza == 1) { // L'oggetto dovrebbe essere presente
-								soddisfatto = 0; break;
-							}
-						} else { // Oggetto presente
-							if (azione.seOggetti[i].presenza === 0) { // L'oggetto dovrebbe essere assente
-								soddisfatto = 0; break;
-							}
-						}
-					}
-					if (soddisfatto === 0) {
-						Azioni[gruppo][ia].passo = 0;
-						continue;
-					}
-				}
-				// Controlla le condizioni sulle variabili
-				if (azione.seVariabili !== undefined) {
-					for (var i = 0; i < azione.seVariabili.length; i++) {
-						if (variabili[azione.seVariabili[i].nome] === undefined) { // Variabile non esiste
-							if (azione.seVariabili[i].presenza == 1) { // La variabile dovrebbe esistere
-								soddisfatto = 0; break;
-							}
-						} else { // Variabile esiste
-							if (azione.seVariabili[i].presenza === 0) { // La variabile non dovrebbe esistere
-								soddisfatto = 0; break;
-							}
-						}
-					}
-					if (soddisfatto === 0) {
-						Azioni[gruppo][ia].passo = 0;
-						continue;
-					}
-				}
+		for (L = 0; L <= 1; L++) {
+			for (ia = 0; ia < Azioni[livelli[L]].length; ia++) {
+				azione = Azioni[livelli[L]][ia];
+				if (!azione.mosse) continue; // Le azioni non ritardate le ignoro, dato che sono state gestite prima
+				if (Condizioni.verifica({'seOggetti': azione.seOggetti, 'seVariabili': azione.seVariabili}) === false) continue;
 				// Se arriva qui o non c'erano condizioni o sono state soddisfatte
-				if (Azioni[gruppo][ia].passo == azione.passi - 1) {
-					Azioni[gruppo][ia].passo = 0;
-					if (azione.ripeti == 1) Azioni[gruppo].splice(ia, 1); ia--;
+				if (Azioni[livelli[L]][ia].mossa == azione.mosse - 1) {
+					Azioni[livelli[L]][ia].mossa = 0;
+					if (azione.ripeti == 0) Azioni[livelli[L]].splice(ia, 1); ia--;
 					Azioni.esegui(azione);
 				} else {
-					Azioni[gruppo][ia].passo++;
+					Azioni[livelli[L]][ia].mossa++;
 				}
 			}
 		}
-		// Scorri il contenuto fino ad arrivare in fondo
+		// Scorri il contenuto fino ad arrivare a fondo pagina
 		window.scroll(0, window.innerHeight + window.pageYOffset);
-	}
-};
-
-/** Gestione delle parole **/
- 
-var Parole = {
-	inizio: [], /*predicati ad inizio frase per interagire con gli oggetti*/
-	eq: [] /*liste di parole equivalenti*/
-};
-
-// Mappa per sostituire le vocali accentate in vocali non accentate (lingua italiana)
-var mappaDiacritici_it = [
-	{'base':'a', 'letters':/[\u00E0\u00E1]/g},
-	{'base':'e', 'letters':/[\u00E8\u00E9]/g},
-	{'base':'i', 'letters':/[\u00EC\u00ED]/g},
-	{'base':'o', 'letters':/[\u00F2\u00F3]/g},
-	{'base':'u','letters':/[\u00F9\u00FA]/g}
-];
-var sostituzioni;
-
-function noDiacritici(str) {
-	// La stringa 'str' DEVE essere già in caratteri minuscoli, altrimenti non avverranno le sostituzioni
-	if (!sostituzioni) sostituzioni = mappaDiacritici_it;
-	for (var i = 0; i < sostituzioni.length; i++) {
-		str = str.replace(sostituzioni[i].letters, sostituzioni[i].base);
-	}
-	return str;
-}
-function predicati(str) {
-	Parole.inizio = str.toLowerCase().split('|').sort();
-}
-
-/** Funzioni principali **/
-
-function azzeraMemoria() {
-	if (Parole.inizio.length === 0) vocabolario();
-	oggetti = []; variabili = [];
-	uVisibili = ''; direzioni = {};
-	Azioni.generali = [];
-}
-function svuota() {
-	document.getElementById('audio').innerHTML = '';
-	document.getElementById('scelte').style.display = 'none';
-	document.getElementById('scelte').innerHTML = '';
-	document.getElementById('input').style.display = 'none';
-	document.getElementById('input').value = '? ';
-	document.getElementById('descrizione').innerHTML = '';
-	uVisibili = ''; direzioniBloccate = 1;
-	Azioni.scena = [];
-	Scena.stile = {};
-	if (intermezzoAzione.length > 0) { Scena.stile.intermezzo = intermezzoAzione; intermezzoAzione = []; }
-	coloreSfondo(stileBase.colSfondo);
-	coloreTesto(stileBase.colTesto, stileBase.colTestoInviato);
-	carattereTesto(stileBase.testoCarattere, stileBase.testoGrandezza, stileBase.testoAllineamento);
-	coloreScelte(stileBase.colScelta, stileBase.colSelezione);
-	coloreErrore(stileBase.colErrore);
-}
-function avvia(n) {
-	document.removeEventListener('keypress', press_noAttesa);
-	document.removeEventListener('click', press_noAttesa);
-	if (n == 1) { azzeraMemoria(); Scena.N = 0; baseScene(); Scena.N = 1; }
-	Scena.P = Scena.N; Scena.N = n; svuota();
-}
-function concludi() {
-	var e_des = document.getElementById('descrizione');
-	// Se c'è un intermezzo, mostra prima quello finché non si preme un tasto
-	if (Scena.stile.intermezzo !== undefined) {
-		if (Scena.stile.intermezzo.length > 0) {
-			e_des.innerHTML = '<p>'+Scena.stile.intermezzo[0]+'</p>';
-			Scena.stile.intermezzo.splice(0, 1);
-			setTimeout(function(){ document.addEventListener('keypress', press_concludi); document.addEventListener('click', press_concludi); }, 200);
-			return;
-		} else if (Scena.stile.intermezzo.length === 0) {
-			e_des.innerHTML = '';
-			delete Scena.stile.intermezzo;
-			setTimeout(concludi, 50);
-			return;
+	},
+	eseguiAudio: function(aud) {
+		var e_aud = document.getElementById('audio');
+		e_aud.innerHTML = '<audio src="' + aud + '" autoplay="autoplay"></audio>';
+	},
+	vai: function(nS) {
+		switch (nS) {
+			case 0: scena(Scena.N); break;
+			case -1: scena(Scena.P); break;
+			case -2: scena(Scena.P2); break;
+			default: scena(nS); break;
 		}
 	}
-	// Se c'è un'immagine da caricare, prepara il posto in cui apparirà
-	if (Scena.stile.imgAttendi == 1) {
-		e_des.innerHTML = '<img src="" />';
-		nImm = e_des.getElementsByTagName('img').length;
-		var e_imm = e_des.getElementsByTagName('img')[nImm - 1];
-		e_imm.style.visibility = 'hidden';
-		e_imm.style.display = 'block';
-		if (Scena.stile.imgW !== undefined) e_imm.width = Scena.stile.imgW;
-		if (Scena.stile.imgH !== undefined) e_imm.height = Scena.stile.imgH;
-		e_imm.src = Scena.stile.img;
-		Scena.stile.imgAttendi = 2;
-	}
-	// Se l'immagine è stata caricata, allora mostrala, altrimenti aspetta
-	if (Scena.stile.imgAttendi == 2) {
-		nImm = e_des.getElementsByTagName('img').length;
-		var e_imm = e_des.getElementsByTagName('img')[nImm - 1];
-		if (e_imm.naturalWidth !== 0 && e_imm.complete !== false) {
-			delete Scena.stile.imgAttendi;
-			e_imm.style.visibility = 'visible';
-		} else {
-			if (Scena.stile.tentativi === undefined) Scena.stile.tentativi = 0;
-			Scena.stile.tentativi++;
-			if (Scena.stile.tentativi > 400) {
-				alert('L\'immagine impiega troppo tempo per essere caricata, forse il nome di richiamo o del file sono errati. Controllare la scena '+Scena.N+'.');
-				delete Scena.stile.tentativi;
-				delete Scena.stile.imgAttendi;
-			} else {
-				setTimeout(concludi, 100);
-				return;
+}
+
+var Condizioni = {
+	correntiBlocchi: [], // Contiene blocchi di condizioni "seOggetti e seVariabili" che si applicano alle istruzioni condizionate
+	correnti: {}, // Somma dei blocchi di condizioni correnti
+	righeCoinvolte: [], // 0: nessuna condizione; 1: solo la singola riga successiva; 2: una serie di righe di istruzioni (blocco)
+	sommaCondizioni: function() {
+		Condizioni.correnti = {'seOggetti': [], 'seVariabili': []};
+		for (var b = 0; b < Condizioni.correntiBlocchi.length; b++) {
+			Condizioni.correnti.seOggetti = Condizioni.correnti.seOggetti.concat(Condizioni.correntiBlocchi[b].seOggetti);
+			Condizioni.correnti.seVariabili = Condizioni.correnti.seVariabili.concat(Condizioni.correntiBlocchi[b].seVariabili);
+		}
+	},
+	popUltimoBlocco: function() {
+		Condizioni.righeCoinvolte.pop(); // Sono state gestite le righe di istruzioni per questo blocco e va rimosso il tracciamento
+		Condizioni.correntiBlocchi.pop(); // Le istruzioni per il blocco sono state eseguite, quindi si svuotano le ultime condizioni
+		Condizioni.sommaCondizioni(); // Se un blocco di condizioni viene rimosso, va aggiornata la somma delle condizioni restanti
+	},
+	verifica: function(cond) {
+		var soddisfatto = true;
+		// Controlla le condizioni sugli oggetti
+		if (cond.seOggetti !== undefined) {
+			for (var i = 0; i < cond.seOggetti.length; i++) {
+				if (Storia.oggetti[cond.seOggetti[i].contenitore] === undefined ||
+					Storia.oggetti[cond.seOggetti[i].contenitore][2].indexOf(cond.seOggetti[i].nome) == -1) { // Oggetto assente
+					if (cond.seOggetti[i].presenza == 1) { // L'oggetto dovrebbe essere presente
+						soddisfatto = false; break;
+					}
+				} else { // Oggetto presente
+					if (cond.seOggetti[i].presenza === 0) { // L'oggetto dovrebbe essere assente
+						soddisfatto = false; break;
+					}
+				}
 			}
 		}
-	}
-	// Se l'immagine è pronta o non c'era, mostra tutto il resto della scena
-	if (Scena.stile.imgAttendi === undefined) {
-		if (Scena.stile.scrittura == 1) document.getElementById('input').style.display = 'block';
-		document.getElementById('scelte').style.display = 'block';
-		Azioni.controlla({'inizioScena': 1});
-		pronto();
+		// Controlla le condizioni sulle variabili
+		if (cond.seVariabili !== undefined) {
+			for (var i = 0; i < cond.seVariabili.length; i++) {
+				if (Storia.variabili[cond.seVariabili[i].nome] === undefined) { // Variabile non esiste
+					if (cond.seVariabili[i].presenza == 1) { // La variabile dovrebbe esistere
+						soddisfatto = false; break;
+					}
+				} else { // Variabile esiste
+					if (cond.seVariabili[i].presenza === 0) { // La variabile non dovrebbe esistere
+						soddisfatto = false; break;
+					}
+				}
+			}
+		}
+		return soddisfatto;
 	}
 }
-function eseguiAudio(aud) {
-	var e_aud = document.getElementById('audio');
-	e_aud.innerHTML = '<audio src="' + aud + '" autoplay="autoplay"></audio>';
+
+var Azioni = {
+	generale: [],
+	scena: [],
+	invioInp: '',
+	bastaInvioInp: 0,
+	crea: function() {
+		if (Scena.N === undefined) { Azioni.generale.push({}); } else { Azioni.scena.push({}); };
+	},
+	valore: function(p/*proprietà*/, v/*valore*/) {
+		if (Scena.N === undefined) {
+			Azioni.generale[Azioni.generale.length - 1][p] = v;
+		} else {
+			Azioni.scena[Azioni.scena.length - 1][p] = v;
+		}
+	},
+	valoreArray: function(a/*nome array*/, v/*valore*/) {
+		var ultima;
+		if (Scena.N === undefined) {
+			ultima = Azioni.generale.length - 1;
+			if (Azioni.generale[ultima][a] === undefined) Azioni.generale[ultima][a] = [];
+			Azioni.generale[ultima][a].push(v);
+		} else {
+			ultima = Azioni.scena.length - 1;
+			if (Azioni.scena[ultima][a] === undefined) Azioni.scena[ultima][a] = [];
+			Azioni.scena[ultima][a].push(v);
+		}
+	},
+	ultimaLeggi: function(p/*proprietà*/) {
+		if (Scena.N === undefined) {
+			return Azioni.generale[Azioni.generale.length - 1][p];
+		} else {
+			return Azioni.scena[Azioni.scena.length - 1][p];
+		}
+	},
+	esegui: function(azione) {
+		var e_txt = document.getElementById('testo');
+
+		// Controlla se ci sono funzioni _agganciate a quella principale
+		if (azione.immagine) {
+			e_txt.innerHTML += '<img src="" />';
+			nImm = e_txt.getElementsByTagName('img').length;
+			var e_imm = e_txt.getElementsByTagName('img')[nImm - 1];
+			e_imm.style.display = 'block';
+			if (azione.imgW !== undefined) e_imm.width = azione.imgW;
+			if (azione.imgH !== undefined) e_imm.height = azione.imgH;
+			e_imm.src = azione.immagine;
+		}
+		if (azione.piuOggetti) {
+			imposta(azione.piuOggetti);
+		}
+		if (azione.menoOggetti) {
+			var mo = [];
+			mo = azione.menoOggetti.split('+');
+			var po = azione.piuOggetti.split('+');
+			for (var io = 0; io < mo.length; io++) {
+				mo[io] = mo[io].split('@');
+				if (mo[io][0] === '') { // Se non sono specificati oggetti è sottointeso che tutti quelli creati, vengono distrutti in questo contenitore
+					for (var ios = 0; ios < po.length; ios++) {
+						po[ios] = po[ios].split('@');
+						var i_canc = oggetti[mo[io][1]][1].indexOf(po[ios][0]);
+						if (i_canc != -1) {
+							oggetti[mo[io][1]][1].splice(i_canc, 1);
+							oggetti[mo[io][1]][2].splice(i_canc, 1);
+						}
+					}
+				} else {
+					var i_canc = oggetti[mo[io][1]][1].indexOf(mo[io][0]);
+					if (i_canc != -1) {
+						oggetti[mo[io][1]][1].splice(i_canc, 1);
+						oggetti[mo[io][1]][2].splice(i_canc, 1);
+					}
+				}
+			}
+		}
+		if (azione.variabili) imposta(azione.variabili);
+		if (azione.audio) eseguiAudio(azione.audio);
+
+		// Esegue le funzioni principali
+		var ali = ''; if (azione.allineamento !== undefined) ali = stileAli(azione.allineamento);
+		switch (azione.tipo) {
+			case 'audio':
+				eseguiAudio(azione.audio);
+				break;
+			case 'rispondi':
+				var classi = '';
+				if (!azione.mosse) {
+					if (Azioni.bastaInvioInp === 0) {
+						if (Azioni.invioInp == '') { // Serve alle scelte selezionabili che non derivano da un input genuino
+							e_txt.innerHTML += '<p'+ali+' class="inviato">? ' + azione.input + '</p>';
+						} else {
+							e_txt.innerHTML += '<p'+ali+' class="inviato">? ' + Azioni.invioInp + '</p>';
+						}
+					} else {
+						classi = ' class="br"';
+					}
+				}
+				e_txt.innerHTML += '<p'+classi+ali+'>' + espandiContenitori(azione.output) + '</p>';
+				break;
+			case 'vai':
+				switch (azione.scena) {
+					case 0: scena(Scena.N); break;
+					case -1: scena(Scena.P); break;
+					case -2: scena(Scena.P2); break;
+					default: scena(azione.scena); break;
+				}
+				break;
+			case 'rispondiVai':
+				document.getElementById('input').style.display = 'none';
+				if (Azioni.bastaInvioInp === 0) e_txt.innerHTML += '<p class="inviato">? ' + Azioni.invioInp + '</p>';
+				e_txt.innerHTML += '<p>' + azione.output + '</p>';
+				aspettaVai(azione.ritardo, azione.scena);
+				break;
+		}
+	}
 }
 
 /** Funzioni secondarie **/
@@ -459,8 +400,8 @@ function pronto() {
 var press_concludi = function() {
 	document.removeEventListener('keypress', press_concludi);
 	document.removeEventListener('click', press_concludi);
-	concludi();
-};
+	Scena.concludi();
+}
 var attesaVai = [];
 var press_noAttesa = function() {
 	document.removeEventListener('keypress', press_noAttesa);
@@ -468,13 +409,13 @@ var press_noAttesa = function() {
 	clearTimeout(attesaVai[0]);
 	scena(attesaVai[1]);
 	attesaVai = [];
-};
+}
 function ramificaInput(str, alt) {
 	if (alt === undefined) alt = 1;
 	var inpLivelli = []; var i1; var i2; var i3;
 	// Se 'str' contiene [|] o (|) dovrà essere arricchito con altre frasi per soddisfare tutte le articolazioni
 	// Livello 1 (frasi)
-	inpLivelli = noDiacritici(str.toLowerCase()).split('|');
+	inpLivelli = Lingua.noDiacritici(str.toLowerCase()).split('|');
 	// Livello 2 (parole)
 	for (i1 = 0; i1 < inpLivelli.length; i1++) {
 		inpLivelli[i1] = inpLivelli[i1].split(/(?: |'|’)+/);
@@ -485,12 +426,12 @@ function ramificaInput(str, alt) {
 			for (i2 = 0; i2 < inpLivelli[i1].length; i2++) {
 				// Devo cercare la parola in tutte le parole equivalenti e aggiungere le alternative
 				var parola = inpLivelli[i1][i2];
-				for (i3 = 0; i3 < Parole.eq.length; i3++) {
-					if (Parole.eq[i3].indexOf(parola) != -1) {
+				for (i3 = 0; i3 < Lingua.equivalenze.length; i3++) {
+					if (Lingua.equivalenze[i3].indexOf(parola) != -1) {
 						if (typeof inpLivelli[i1][i2] === 'string') { // è ancora una singola parola
-							inpLivelli[i1][i2] = Parole.eq[i3];
+							inpLivelli[i1][i2] = Lingua.equivalenze[i3];
 						} else { // è un array da concatenare
-							inpLivelli[i1][i2].concat(Parole.eq[i3]);
+							inpLivelli[i1][i2].concat(Lingua.equivalenze[i3]);
 						}
 					}
 				}
@@ -530,26 +471,70 @@ function stileAli(ali) {
 	}
 	return ali;
 }
-function contenitore(nome, obj_il, obj_un) {
-	if (oggetti[nome] !== undefined) return; // Il contenitore va creato solo la prima volta
-	oggetti[nome] = [];
-	if (obj_il === undefined || obj_il === '') { oggetti[nome][0] = []; } else { oggetti[nome][0] = obj_il.split('|'); }
-	if (obj_un == 'mio') {
-		oggetti[nome][1] = 'mio';
-	} else if (obj_un === undefined || obj_un === '') {
-		oggetti[nome][1] = [];
-	} else {
-		oggetti[nome][1] = obj_un.split('|');
+function imposta(elementi_str) {
+	// elementi_str: può essere una serie di oggetti e/o variabili in formato stringa
+	elementi = elementi_str.split('+');
+	var presenza; var nome; var contenitore;
+	for (var i = 0; i < elementi.length; i++) {
+		// Se presente il cancelletto l'oggetto o la variabile vanno cancellati
+		if (elementi[i].substr(0, 1) == '#') {
+			presenza = 0;
+			elementi[i] = elementi[i].substr(1); // Viene rimosso il cancelletto
+		} else {
+			presenza = 1;
+		}
+		if (elementi[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto
+			elementi[i] = elementi[i].split('@'); // Scomposizione oggetto@contenitore
+			nome = elementi[i][0];
+			contenitore = elementi[i][1];
+			if (presenza == 1) {
+				if (Storia.oggetti[contenitore] === undefined) {
+					Storia.oggetti[contenitore] = [];
+					Storia.oggetti[contenitore].push(0); // Contenitore dell'ambiente (predefinito) o del giocatore
+					Storia.oggetti[contenitore].push([]); // Elenco oggetti con articolo determinativo (id)
+					Storia.oggetti[contenitore].push([]); // Elenco oggetti con articolo indeterminativo
+				}
+				if (Storia.oggetti[contenitore][1].indexOf(nome) == -1) {
+					Storia.oggetti[contenitore][1].push(nome);
+					Storia.oggetti[contenitore][2].push(nome);
+				}
+			} else if (Storia.oggetti[contenitore] !== undefined) { // Se non esiste il contenitore, inutile cercarci un oggetto dentro per distruggerlo
+				var i_canc = Storia.oggetti[contenitore][1].indexOf(nome);
+				if (i_canc != -1) {
+					Storia.oggetti[contenitore][1].splice(i_canc, 1);
+					Storia.oggetti[contenitore][2].splice(i_canc, 1);
+				}
+			}
+		} else { // Se non contiene una chiocciola è una variabile
+			if (presenza == 1) {
+				if (Storia.variabili[elementi[i]] === undefined) Storia.variabili[elementi[i]] = 1;
+			} else {
+				if (Storia.variabili[elementi[i]] !== undefined) delete Storia.variabili[elementi[i]];
+			}
+		}
 	}
 }
+function contenitore(personale, nome, ogg_un, ogg_il) {
+	// personale: indica il tipo di contenitore: 0 è dell'ambiente, 1 è del giocatore
+	// nome: nome del contenitore che fa da chiave nell'array
+	// ogg_il: elenco delle etichette degli oggetti contenuti con articolo determinativo, faranno da id dell'oggetto
+	// ogg_un: elenco delle etichette degli oggetti contenuti con articolo indeterminativo
+	if (Storia.oggetti[nome] !== undefined) return; // Il contenitore va creato solo la prima volta
+	Storia.oggetti[nome] = [];
+	Storia.oggetti[nome].push(personale);
+	if (ogg_il === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_il.split('+')); }
+	if (ogg_un === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_un.split('+')); }
+}
 function contenuto(nome) {
-	if (oggetti[nome][0].length === 0 || oggetti[nome][0] === '') {
+	// nome: nome del contenitore di cui visualizzare il contenuto
+	
+	if (Storia.oggetti[nome] === undefined) {
 		return 'niente';
 	} else {
-		if (typeof oggetti[nome][1] === 'string' && oggetti[nome][1] == 'mio') {
-			return oggetti[nome][0].join(', ');
-		} else {
-			return oggetti[nome][1].join(', ');
+		if (Storia.oggetti[nome][0] === 1) { // Contenitore del giocatore
+			return Storia.oggetti[nome][2].join(', ');
+		} else { // Contenitore dell'ambiente
+			return Storia.oggetti[nome][1].join(', ');
 		}
 	}
 }
@@ -558,7 +543,7 @@ function espandiContenitori(str) {
 	out = str.split('@');
 	if (out.length < 3) return str;
 	for (var i = 1; i < out.length; i++) {
-		if (oggetti[out[i]] !== undefined) {
+		if (Storia.oggetti[out[i]] !== undefined) {
 			out[i] = contenuto(out[i]); i++;
 		} else {
 			out[i] = '@' + out[i];
@@ -572,49 +557,39 @@ function x(str) {
 	return ee[n];
 }
 
-/** Aspetti scena **/
+/** Impostazioni scena (eseguite subito all'inizio) **/
 
-function titolo(t) {
-	document.title = t;
+function titolo(str) {
+	if (Scena.N !== undefined) alert('Il titolo della storia va impostato nelle istruzioni generali. Dunque, rimuoverlo dalla scena '+Scena.N+'.');
+	document.title = str;
 }
 function coloreSfondo(col) {
 	if (col !== undefined) {
-		if (Scena.N === 0) stileBase.colSfondo = col;
 		document.getElementById('corpo').style.backgroundColor = col;
 		document.getElementById('input').style.backgroundColor = col;
 	}
 }
 function coloreTesto(col1, col2) {
 	if (col1 !== undefined) {
-		if (Scena.N === 0) stileBase.colTesto = col1;
 		document.getElementById('corpo').style.color = col1;
 		document.getElementById('input').style.color = col1;
 	}
 	if (col2 !== undefined) {
-		if (Scena.N === 0) stileBase.colTestoInviato = col2;
 		Scena.stile.colTestoInviato = col2;
 	}
 }
 function coloreScelte(col1, col2) {
 	if (col1 !== undefined) {
-		if (Scena.N === 0) stileBase.colScelta = col1;
 		Scena.stile.colScelta = col2;
 	}
 	if (col2 !== undefined) {
-		if (Scena.N === 0) stileBase.colSelezione = col2;
 		Scena.stile.colSelezione = col2;
 	}
 }
 function coloreErrore(col) {
-	if (Scena.N === 0) stileBase.colErrore = col;
 	Scena.stile.colErrore = col;
 }
 function carattereTesto(fnt, siz, ali) {
-	if (Scena.N === 0) {
-		if (fnt !== undefined) stileBase.testoCarattere = fnt;
-		if (siz !== undefined) stileBase.testoGrandezza = siz;
-		if (ali !== undefined) stileBase.testoAllineamento = ali;
-	}
 	var e_cor = document.getElementById('corpo');
 	var e_inp = document.getElementById('input');
 	if (fnt !== undefined) {
@@ -625,340 +600,354 @@ function carattereTesto(fnt, siz, ali) {
 		e_cor.style.fontSize = siz + 'px';
 		e_inp.style.fontSize = siz + 'px';
 	}
-	if (ali !== undefined) allineamentoPredefinito(ali);
-}
-function allineamentoPredefinito(ali) {
-	stileBase.testoAllineamento = ali;
-	switch(ali) {
-		case 'giustificato': ali = 'justify'; break;
-		case 'centrato': ali = 'center'; break;
-		case 'destra': ali = 'right'; break;
-		case 'sinistra': ali = 'left'; break;
+	if (ali !== undefined) {
+		switch(ali) {
+			case 'giustificato': ali = 'justify'; break;
+			case 'centrato': ali = 'center'; break;
+			case 'destra': ali = 'right'; break;
+			case 'sinistra': ali = 'left'; break;
+		}
+		document.getElementById('corpo').style.textAlign = ali;
+		document.getElementById('testo').style.textAlign = ali;
 	}
-	document.getElementById('corpo').style.textAlign = ali;
-	document.getElementById('descrizione').style.textAlign = ali;
 }
 function audio(aud) {
-	if (scena.N === 0) { alert('Il comando "audio()" non può essere usato nella base delle scene. Eliminarlo!'); return; }
-	Azioni.crea();
-	Azioni.valore('tipo', 'audio');
-	Azioni.valore('audio', aud);
-	Azioni.valore('prosegui', 1);
+	if (Scena.N === undefined) { alert('Il comando "audio()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+	
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+	
+	if (esegui == 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
 }
 function immagine(img, w, h) {
-	Scena.stile.img = img;
-	if (img !== '') {
-		Scena.stile.imgAttendi = 1;
-		if (w !== undefined) Scena.stile.imgW = w;
-		if (h !== undefined) Scena.stile.imgH = h;
+	// img: nome dell'immagine da posizionare nella stessa cartella di 'INIZIA.html'
+	// w, h: larghezza e altezza da impostare forzatamente
+	if (img === undefined || img === '') return;
+
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+
+	if (esegui == 1) {
+		if (Scena.stile.immagini === undefined) Scena.stile.immagini = [];
+		var id_img = 'img' + (Scena.stile.immagini.length + 1);
+		Scena.stile.immagini.push(id_img);
+		var e_txt = document.getElementById('testo');
+		if (w === undefined) { w = ''; } else { w = ' width="'+w+'"'; }
+		if (h === undefined) { h = ''; } else { h = ' height="'+h+'"'; }
+		e_txt.innerHTML += '<img id="'+ id_img +'" style="display:block;" '+ w + h +' src="'+ img +'" />';
+	}
+}
+function testo(txt, ali) {
+	// txt: testo da visualizzare
+	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	if (Scena.N === undefined) { alert('Il comando "testo()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+	
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+	
+	if (esegui == 1) {
+		var e_txt = document.getElementById('testo');
+		if (ali === undefined) { ali = ''; } else { ali = stileAli(ali); }
+		e_txt.innerHTML += '<p'+ali+'>' + txt + '</p>';
+	}
+}
+function oggetti(oggs) {
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+	
+	if (esegui == 1) imposta(oggs);
+}
+function variabili(vars) {
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+	
+	if (esegui == 1) imposta(vars);
+}
+
+/** Istruzioni scena (eseguite eventualmente dopo) **/
+
+function condizioni(cond, istruzioni) {
+	// str: stringa per specificare quali oggetti devono essere in certi contenitori e quali variabili si richiedono
+	// formato stringa condizioni: [#]l'oggetto@contenitore+[#]nome variabile
+	// istruzioni(): è la funzione per eseguire tutte le istruzioni condizionate
+	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
+
+	var lastID = Condizioni.correntiBlocchi.length;
+	Condizioni.correntiBlocchi.push({'seOggetti': [], 'seVariabili': []});
+
+	var presenza;
+	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
+	for (var i = 0; i < cond.length; i++) {
+		// Stabilire se si tratta di un oggetto o una variabile
+		if (cond[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto
+			if (cond[i].substr(0, 1) == '#') {
+				presenza = 0;
+				cond[i] = cond[i].substr(1);
+			} else {
+				presenza = 1;
+			}
+			cond[i] = cond[i].split('@'); // Scomposizione oggetto@contenitore
+			Condizioni.correntiBlocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
+		} else { // Se non contiene una chiocciola è una variabile
+			if (cond[i].substr(0, 1) == '#') {
+				presenza = 0;
+				cond[i] = cond[i].substr(1);
+			} else {
+				presenza = 1;
+			}
+			Condizioni.correntiBlocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
+		}
+	}
+	// Ogni volta che vengono aggiunte le condizioni per blocchi, aggiornare la somma delle condizioni
+	Condizioni.sommaCondizioni();
+	// Se è stato definito un blocco di istruzioni condizionate, vanno eseguite, altrimenti è coinvolta solo la singola riga successiva
+	if (istruzioni !== undefined) {
+		Condizioni.righeCoinvolte.push(2);
+		istruzioni();
+		Condizioni.popUltimoBlocco();
+	} else {
+		// L'esecuzione dell'istruzione successiva dovrà svuotare le condizioni ed eliminare il tracciamento delle righe coinvolte
+		Condizioni.righeCoinvolte.push(1);
 	}
 }
 function intermezzo(txt) {
 	if (Scena.stile.intermezzo === undefined) Scena.stile.intermezzo = [];
-	Scena.stile.intermezzo.push(txt);
-}
-function testo(txt, ali) {
-	if (Scena.N === 0) { alert('Il comando "testo()" non può essere usato nella base delle scene. Eliminarlo!'); return; }
-	Azioni.crea();
-	Azioni.valore('tipo', 'testo');
-	Azioni.valore('testo', txt);
-	Azioni.valore('allineamento', ali);
-	Azioni.valore('prosegui', 1);
-}
-function scrittura(v) {
-	if (v === 0) { Scena.stile.scrittura = 0; } else { Scena.stile.scrittura = 1; }
-}
+	
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
 
-/** Azioni scena **/
-
-function nomeScena(nome, gruppo, disponibile) {
-	if (Scena.N === 0) { alert('È vietato usare il comando "nomeScena()" nella base delle scene. Si prega di eliminarlo.'); return; }
-	if (direzioni[Scena.N] === undefined) {
-		direzioni[Scena.N] = {};
-		direzioni[Scena.N].nome = nome;
-		direzioni[Scena.N].visitato = 1;
+	if (esegui == 1) Scena.stile.intermezzo.push(txt);
+}
+function luogoVisitato(nome, gruppo) {
+	// nome: nome del luogo da visualizzare dopo i punti cardinali
+	// gruppo: utile per raccogliere più luoghi in un unico gruppo (funzione non ancora supportata)
+	if (Scena.N === undefined) { alert('È vietato usare il comando "luogoVisitato()" nelle istruzioni generali. Eliminarlo!'); return; }
+	if (Storia.luoghiRaggiungibili[Scena.N] === undefined) {
+		Storia.luoghiRaggiungibili[Scena.N] = {};
+		Storia.luoghiRaggiungibili[Scena.N].nome = nome; // Se non impostato sarà 'undefined'
+		Storia.luoghiRaggiungibili[Scena.N].visitato = 1;
 	}
-	if (gruppo !== undefined) {
-		if (isNaN(gruppo)) {
-			direzioni[Scena.N].gruppo = gruppo;
-		} else { // Attraverso 'gruppo' può essere passato zero che significa che la direzione non è raggiungibile
-			direzioni[Scena.N].d = 0;
-		}
-	}
-	if (disponibile !== undefined) {
-		direzioni[Scena.N].d = 0;
-	}
+	if (gruppo !== undefined) Storia.luoghiRaggiungibili[Scena.N].gruppo = gruppo;
 }
 function cancellaDirezione(nome) {
-	for (var key in direzioni) {
-		if (direzioni[key].nome == nome) delete direzioni[key];
+	// nome: luogo da cancellare dai luoghi raggiungibili
+	for (var key in Storia.luoghiRaggiungibili) {
+		if (Storia.luoghiRaggiungibili[key].nome == nome) delete Storia.luoghiRaggiungibili[key];
 	}
 }
 function cancellaDirezioni(gruppo) {
-	if (gruppo === undefined) { direzioni = {}; return; }
-	for (var key in direzioni) {
-		if (direzioni[key].gruppo == gruppo) delete direzioni[key];
+	// gruppo: gruppo di luoghi da cancellare dai luoghi raggiungibili
+	if (gruppo === undefined) { Storia.luoghiRaggiungibili = {}; return; } // Se non si specifica un gruppo cancella tutte le direzioni
+	for (var key in Storia.luoghiRaggiungibili) {
+		if (Storia.luoghiRaggiungibili[key].gruppo == gruppo) delete Storia.luoghiRaggiungibili[key];
+	}
+}
+function uscita(txt_in, nS, mostra, destinazione) {
+	// txt_in: input dell'utente
+	// nS: numero della scena verso cui andare
+	// mostra: opzioni di visibilità dell'uscita
+	// destinazione: il nome della destinazione, serve se deve esser visibile il nome prima dell'esplorazione
+	if (mostra === undefined) mostra = 2;
+	Azioni.crea();
+	Azioni.valore('tipo', 'vai');
+	Azioni.valore('scena', nS);
+	/*switch (mostra) {
+		case 0: // 0: invisibile sempre
+			break;
+		case 1: // 1: visibile se esplorata (nome ignorato)
+			break;
+		case 2: // 2: visibile sempre (nome se esplorata)
+			break;
+		case 3: // 3: visibile sempre (nome ignorato)
+			break;
+		case 4: // 4: visibile sempre e con nome
+			break;
+	}*/
+	var parte2 = '';
+	if (mostra > 0 && Scena.N !== undefined) {
+		if (mostra > 1 || (Storia.luoghiRaggiungibili[nS] !== undefined && Storia.luoghiRaggiungibili[nS].visitato !== undefined)) {
+			if (mostra == 3 || (Storia.luoghiRaggiungibili[nS] !== undefined && Storia.luoghiRaggiungibili[nS].visitato !== undefined)) {
+				if (Storia.luoghiRaggiungibili[nS].nome !== undefined) {
+					parte2 = ' ' + Storia.luoghiRaggiungibili[nS].nome.split('|')[0];
+					Azioni.valore('input', txt_in+'|'+Storia.luoghiRaggiungibili[nS].nome);
+				}
+				if ((parte2 == '' || parte2 == ' ') && Storia.luoghiRaggiungibili[nS] !== undefined && Storia.luoghiRaggiungibili[nS].visitato == 1) parte2 = ' (esplorato)';
+			}
+			Scena.usciteVisibili += ', <a class="scelta" onclick="simulaInput(\''+txt_in.split('|')[0]+'\')">' + txt_in.split('|')[0] + '</a>' + parte2;
+		}
+	}
+	if (Azioni.ultimaLeggi('input') === undefined) Azioni.valore('input', txt_in);
+	Azioni.valore('input', ramificaInput(Azioni.ultimaLeggi('input'), 2));
+
+	var L; // livello delle azioni (generale o scena)
+	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
+
+	// Aggiungi condizioni correnti
+	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
+		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
+		Azioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
 	}
 }
 function rispondi(txt_in, txt_out) {
-	txt_in = noDiacritici(txt_in.toLowerCase());
+	// txt_in: input dell'utente
+	// txt_out: risposta ricevuta
+	txt_in = Lingua.noDiacritici(txt_in.toLowerCase());
 	Azioni.crea();
 	Azioni.valore('tipo', 'rispondi');
 	Azioni.valore('input', ramificaInput(txt_in, 2));
 	Azioni.valore('output', txt_out);
-	if (Scena.N > 0) scrittura(1);
+
+	var L; // livello delle azioni (generale o scena)
+	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
+
+	// Aggiungi condizioni correnti
+	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
+		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
+		Azioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	}
 }
-function aspettaVai(rit, num) {
+function aspettaVai(rit, nS) {
+	// rit: ritardo in millisecondi prima di andare ad una scena
+	// nS: numero della scena verso cui andare
 	Scena.stile.scrittura = 0;
 	setTimeout(function(){ document.addEventListener('keypress', press_noAttesa); document.addEventListener('click', press_noAttesa); }, 200);
-	attesaVai[0] = setTimeout(function() { scena(num); }, rit);
-	attesaVai[1] = num;
+	attesaVai[0] = setTimeout(function() { scena(nS); }, rit);
+	attesaVai[1] = nS;
 }
-function rispondiVai(txt_in, txt_out, num, rit) {
-	txt_in = noDiacritici(txt_in.toLowerCase());
+function rispondiVai(txt_in, txt_out, nS, rit) {
+	// txt_in: input dell'utente
+	// txt_out: risposta momentanea da lasciare
+	// nS: numero della scena verso cui andare
+	// rit: ritardo in millisecondi prima di andare ad una scena
+	txt_in = Lingua.noDiacritici(txt_in.toLowerCase());
 	if (rit === undefined) rit = txt_out.length * 100;
 	Azioni.crea();
 	Azioni.valore('tipo', 'rispondiVai');
 	Azioni.valore('input', ramificaInput(txt_in, 2));
 	Azioni.valore('output', txt_out);
-	Azioni.valore('scena', num);
+	Azioni.valore('scena', nS);
 	Azioni.valore('ritardo', rit);
-	if (Scena.N > 0)  scrittura(1);
+
+	var L; // livello delle azioni (generale o scena)
+	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
+
+	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
+		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
+		Azioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	}
 }
-function nAzioniVai(passi, num, rip) {
+function nMosseVai(mosse, nS, rip) {
+	// mosse: numero mosse del giocatore per far scattare l'evento
+	// nS: numero della scena verso cui andare
+	// rip: se non specificato sarà 1, ovvero dopo n mosse riparte il ciclo, 0 per non ripeterlo
 	Azioni.crea();
-	Azioni.valore('passi', passi);
-	Azioni.valore('passo', 0);
+	Azioni.valore('mosse', mosse);
+	Azioni.valore('mossa', 0);
 	Azioni.valore('tipo', 'vai');
-	Azioni.valore('scena', num);
-	if (rip !== undefined) Azioni.valore('ripeti', rip);
+	Azioni.valore('scena', nS);
+	if (rip === undefined) rip = 1; // nMosse appena termina viene ripetuto come impostazione predefinita
+	Azioni.valore('ripeti', rip);
+
+	var L; // livello delle azioni (generale o scena)
+	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
+
+	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
+		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
+		Azioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	}
 }
-function nAzioniRispondi(passi, txt_out, rip) {
+function nMosseRispondi(mosse, txt_out, rip) {
+	// mosse: numero mosse del giocatore per far scattare l'evento
+	// txt_out: testo che deve comparire dopo n mosse
+	// rip: se non specificato sarà 1, ovvero dopo n mosse riparte il ciclo, 0 per non ripeterlo
 	Azioni.crea();
-	Azioni.valore('passi', passi);
-	Azioni.valore('passo', 0);
+	Azioni.valore('mosse', mosse);
+	Azioni.valore('mossa', 0);
 	Azioni.valore('tipo', 'rispondi');
 	Azioni.valore('output', txt_out);
-	if (rip !== undefined) Azioni.valore('ripeti', rip);
+	if (rip === undefined) rip = 1; // nMosse appena termina viene ripetuto come impostazione predefinita
+	Azioni.valore('ripeti', rip);
+
+	var L; // livello delle azioni (generale o scena)
+	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
+
+	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
+		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
+		Azioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	}
 }
 function simulaInput(inp, opz) {
 	document.getElementById('input').value = '? ' + inp;
-	if (opz === undefined) { Azioni.controlla(); } else { Azioni.controlla(opz); }
+	Scena.controllaInput(opz); // Se opz è undefined va bene lo stesso
 }
-function scegliVai(txt, num, ali) {
+function scegliVai(txt, nS, ali) {
+	// txt: testo della scelta selezionabile
+	// nS: numero della scena verso cui andare
+	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 	if (ali !== undefined) { ali = stileAli(ali); } else { ali = ''; }
-	Azioni.crea();
-	Azioni.valore('tipo', 'vai');
-	var idS = document.getElementsByClassName("scelta").length + 1; /*id scelta*/
-	Azioni.valore('scelta', idS);
-	Azioni.valore('scena', num);
-	document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali + ' onclick="Azioni.esegui(\'S\', '+idS+')">' + txt + '</p>';
+	document.getElementById('scelte').innerHTML += '<p class="scelta" '+ ali +' onclick="Scena.vai('+nS+')">' + txt + '</p>';
 }
 function scegliRispondi(txt, txt_out, ali1, ali2) {
+	// txt: testo della scelta selezionabile (se txt_out = "" allora txt verrà trattato come un input dell'utente)
+	// txt_out: testo stampato dopo aver cliccato sulla scelta
+	// ali1: allineamento del testo della scelta selezionabile
+	// ali2: allineamento del testo stampato in risposta
 	if (ali1 !== undefined) { ali1 = stileAli(ali1); } else { ali1 = ''; }
-	if (txt_out !== undefined && txt_out !== '') {
-		Azioni.crea();
-		Azioni.valore('tipo', 'rispondi');
-		var idS = document.getElementsByClassName("scelta").length + 1; /*id scelta*/
-		Azioni.valore('scelta', idS);
-		Azioni.valore('input', txt); // L'input può rimanere con maiuscole e diacritici perché la scelta forza l'esecuzione dell'azione
-		Azioni.valore('output', txt_out);
-		if (ali2 !== undefined) Azioni.valore('allineamento', ali2);
-		document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali1 + ' onclick="Azioni.esegui(\'S\', '+idS+'); this.style.display = \'none\';">' + txt + '</p>';
+	if (txt_out !== undefined && txt_out !== '') { // txt va trattato come un input dell'utente
+		var azione = {};
+		azione['tipo'] = 'rispondi';
+		azione['input'] = txt.replace(/'/g, '"');
+		azione['output'] = txt_out.replace(/'/g, '"');
+		if (ali2 !== undefined) azione['allineamento'] = ali2;
+		document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali1 + ' onclick="Azioni.esegui('+JSON.stringify(azione).replace(/"/g, '\'')+'); this.style.display = \'none\';">' + txt + '</p>';
 	} else {
 		if (ali2 !== undefined) { ali2 = ', {\'outAli\':\''+ali2+'\'}'; } else { ali2 = ''; }
+		txt =  txt.replace(/'/g, '"').replace(/"/g, '\'');
 		document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali1 + ' onclick="simulaInput(\''+txt+'\''+ali2+'); this.style.display = \'none\';">' + txt + '</p>';
 	}
 }
-function uscita(txt_in, num, mostra) {
-	if (mostra === undefined) {
-		// 0: invisibile sempre // 1: visibile se esplorata (nome se esplorata) // 2: visibile sempre (nome se esplorata) // 3: visibile sempre con nome
-		mostra = 2;
-	}
-	// Anche se invisibili input e relativa azione devono funzionare
-	Azioni.crea();
-	Azioni.valore('tipo', 'vai');
-	Azioni.valore('scena', num);
-	var parte2 = '';
-	if (mostra > 0 && Scena.N > 0) {
-		if (mostra > 1 || (direzioni[num] !== undefined && direzioni[num].visitato !== undefined)) {
-			if (mostra == 3 || (direzioni[num] !== undefined && direzioni[num].visitato !== undefined)) {
-				if (direzioni[num].nome !== undefined) {
-					parte2 = ' ' + direzioni[num].nome.split('|')[0];
-					Azioni.valore('input', txt_in+'|'+direzioni[num].nome);
-				}
-				if ((parte2 == '' || parte2 == ' ') && direzioni[num] !== undefined && direzioni[num].visitato == 1) parte2 = ' (esplorato)';
-			}
-			uVisibili += ', <a class="scelta" onclick="simulaInput(\''+txt_in.split('|')[0]+'\')">' + txt_in.split('|')[0] + '</a>' + parte2;
-		}
-	}
-	if (Azioni.leggiUltima('input') === undefined) Azioni.valore('input', txt_in);
-	Azioni.valore('input', ramificaInput(Azioni.leggiUltima('input'), 2));
-}
-function imposta(set_obj, set_var) {
-	// Se le set_var sono state messe nei set_obj, inverte gli argomenti
-	if (set_obj !== undefined && set_obj !== '' && set_obj.indexOf('@') == -1) {
-		if (set_var === undefined) {
-			set_var = set_obj;
-			set_obj = undefined;
-		} else {
-			var tmp = set_obj;
-			set_obj = set_var;
-			set_var = tmp;
-			tmp = undefined;
-		}
-	}
-	// Controlla i set_obj da creare o distruggere
-	var azione = {};
-	if (set_obj !== undefined && set_obj !== '') {
-		var presenza; var nome; var contenitore;
-		azione.set_obj = set_obj.split('|'); // Elenco degli set_obj formato: (!)oggetto@contenitore
-		for (var i = 0; i < azione.set_obj.length; i++) {
-			if (azione.set_obj[i].substr(0, 1) == '!') {
-				presenza = 0;
-				azione.set_obj[i] = azione.set_obj[i].substr(1); // Viene rimosso il punto esclamativo
-			} else {
-				presenza = 1;
-			}
-			azione.set_obj[i] = azione.set_obj[i].split('@'); // Scomposizione oggetto@contenitore
-			nome = azione.set_obj[i][0];
-			contenitore = azione.set_obj[i][1];
-			if (presenza == 1) {
-				if (oggetti[contenitore] === undefined) {
-					oggetti[contenitore] = [];
-					oggetti[contenitore][0] = [];
-					oggetti[contenitore][1] = [];
-				}
-				if (oggetti[contenitore][0].indexOf(nome) == -1) {
-					oggetti[contenitore][0].push(nome); // Aggiunge anche un oggetto vuoto all'inizio!!! ******
-					if (oggetti[contenitore][1] !== 'mio') oggetti[contenitore][1].push(nome);
-				}
-			} else if (oggetti[contenitore] !== undefined) { // Se non esiste il contenitore, inutile cercarci un oggetto dentro per distruggerlo
-				var i_canc = oggetti[contenitore][0].indexOf(nome);
-				if (i_canc != -1) {
-					oggetti[contenitore][0].splice(i_canc, 1);
-					if (oggetti[contenitore][1] !== 'mio') oggetti[contenitore][1].splice(i_canc, 1);
-				}
-			}
-		}
-	}
-	// Controlla le set_var da impostare o cancellare
-	if (set_var !== undefined && set_var !== '') {
-		var presenza;
-		azione.set_var = set_var.split('|'); // Elenco delle set_var fomato: (!)nome_variabile
-		for (var i = 0; i < azione.set_var.length; i++) {
-			if (azione.set_var[i].substr(0, 1) == '!') {
-				presenza = 0;
-				azione.set_var[i] = azione.set_var[i].substr(1);
-			} else {
-				presenza = 1;
-			}
-			if (presenza == 1) {
-				if (variabili[azione.set_var[i]] === undefined) variabili[azione.set_var[i]] = 1;
-			} else {
-				if (variabili[azione.set_var[i]] !== undefined) delete variabili[azione.set_var[i]];
-			}
-		}
-	}
-}
-function _se(seOggetti, seVariabili) {
-	// Se le variabili sono state messe negli oggetti, inverte gli argomenti
-	if (seOggetti !== undefined && seOggetti !== '' && seOggetti.indexOf('@') == -1) {
-		if (seVariabili === undefined) {
-			seVariabili = seOggetti;
-			seOggetti = undefined;
-		} else {
-			var se_tmp = seOggetti;
-			seOggetti = seVariabili;
-			seVariabili = se_tmp;
-			se_tmp = undefined;
-		}
-	}
-	// Le scelte per il fatto che sono cliccabili non sono soggette a condizioni, ma sempre disponibili
-	if (Azioni.leggiUltima('scelta')) {
-		alert('È vietato aggiungere condizioni "_se()" alle scelte cliccabili. Controllare la scena '+Scena.N+' ed eliminare tali condizioni.');
-		return;
-	}
-	var azione = {};
-	var presenza;
-	if (seOggetti !== undefined && seOggetti !== '') {
-		seOggetti = seOggetti.split('|'); // Elenco degli oggetti
-		for (var i = 0; i < seOggetti.length; i++) {
-			if (seOggetti[i].substr(0, 1) == '!') {
-				presenza = 0;
-				seOggetti[i] = seOggetti[i].substr(1);
-			} else {
-				presenza = 1;
-			}
-			seOggetti[i] = seOggetti[i].split('@'); // Scomposizione oggetto@contenitore
-			Azioni.arrayValore('seOggetti', {'presenza': presenza, 'nome': seOggetti[i][0], 'contenitore': seOggetti[i][1]});
-		}
-	}
-	if (seVariabili !== undefined && seVariabili !== '') {
-		seVariabili = seVariabili.split('|'); // Elenco delle variabili
-		for (var i = 0; i < seVariabili.length; i++) {
-			if (seVariabili[i].substr(0, 1) == '!') {
-				presenza = 0;
-				seVariabili[i] = seVariabili[i].substr(1);
-			} else {
-				presenza = 1;
-			}
-			Azioni.arrayValore('seVariabili', {'presenza': presenza, 'nome': seVariabili[i]});
-		}
-	}
-}
-function _annullaSe(seOggetti, seVariabili) {
-	// Se le variabili sono state messe negli oggetti, inverte gli argomenti
-	if (seOggetti !== undefined && seOggetti !== '' && seOggetti.indexOf('@') == -1) {
-		if (seVariabili === undefined) {
-			seVariabili = seOggetti;
-			seOggetti = undefined;
-		} else {
-			var se_tmp = seOggetti;
-			seOggetti = seVariabili;
-			seVariabili = se_tmp;
-			se_tmp = undefined;
-		}
-	}
-	// Annullare un'azione ritardata è possibile solo per nAzioniQualcosa
-	if (Azioni.leggiUltima('tipo') != 'nAzioniVai' && Azioni.leggiUltima('tipo') != 'nAzioniRispondi') {
-		alert('La funzione "_annullaSe()" è applicabile solo alle funzioni "nAzioniQualcosa". Controllare la scena '+Scena.N+' e i suoi "_annullaSe()".');
-		return;
-	}
-	var azione = {};
-	var presenza;
-	if (seOggetti !== undefined && seOggetti !== '') {
-		seOggetti = seOggetti.split('|'); // Elenco degli oggetti
-		for (var i = 0; i < seOggetti.length; i++) {
-			if (seOggetti[i].substr(0, 1) == '!') {
-				presenza = 0;
-				seOggetti[i] = seOggetti[i].substr(1);
-			} else {
-				presenza = 1;
-			}
-			seOggetti[i] = seOggetti[i].split('@'); // Scomposizione oggetto@contenitore
-			Azioni.arrayValore('annullaSeOgg', {'presenza': presenza, 'nome': seOggetti[i][0], 'contenitore': seOggetti[i][1]});
-		}
-	}
-	if (seVariabili !== undefined && seVariabili !== '') {
-		seVariabili = seVariabili.split('|'); // Elenco delle variabili
-		for (var i = 0; i < seVariabili.length; i++) {
-			if (seVariabili[i].substr(0, 1) == '!') {
-				presenza = 0;
-				seVariabili[i] = seVariabili[i].substr(1);
-			} else {
-				presenza = 1;
-			}
-			Azioni.arrayValore('annullaSeVar', {'presenza': presenza, 'nome': seVariabili[i]});
-		}
-	}
-}
-function _intermezzo(txt) {
-	Azioni.arrayValore('intermezzi', 'testo', txt);
-}
-function _oggetti(obj_in, obj_out) {
-	if (obj_in !== undefined) Azioni.valore('piuOggetti', noDiacritici(obj_in.toLowerCase()));
-	if (obj_out !== undefined) Azioni.valore('menoOggetti', noDiacritici(obj_out.toLowerCase()));
+function _oggetti(ogg_in, ogg_out) {
+	if (ogg_in !== undefined) Azioni.valore('piuOggetti', Lingua.noDiacritici(ogg_in.toLowerCase()));
+	if (ogg_out !== undefined) Azioni.valore('menoOggetti', Lingua.noDiacritici(ogg_out.toLowerCase()));
 }
 function _variabili(vars) {
 	Azioni.valore('variabili', vars.toLowerCase());
@@ -970,7 +959,4 @@ function _immagine(img, w, h) {
 	Azioni.valore('immagine', img);
 	if (w !== undefined) Azioni.valore('imgW', w);
 	if (h !== undefined) Azioni.valore('imgH', h);
-}
-function _prosegui() {
-	Azioni.valore('prosegui', 1);
 }
