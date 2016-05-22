@@ -10,8 +10,9 @@
 </head>
 <body id="corpo" onload="scena(1)">
 	<div id="audio"></div>
-	<div id="descrizione"></div>
-	<input id="input" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) Azioni.controlla();" onblur="setTimeout(pronto, 2000)" />
+	<div id="intermezzo"></div>
+	<div id="testo"></div>
+	<input id="input" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) Scena.controllaInput();" onblur="setTimeout(pronto, 2000)" />
 	<div id="scelte"></div>
 </body>
 </html>
