@@ -30,7 +30,7 @@ function istruzioniGenerali() {
 	});
 	condizioni("l'ampolla@i", per => {
 		condizioni("#ampolla bevuta", per => {
-			rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.")
+			rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.");
 			rispondi("apro l'ampolla|apro il tappo|apro il tappo di sughero", "Togli il tappo dell'ampolla. Da questa fuoriescono dei vapori azzurrognoli e un tanfo pestilenziale pervade l'aria.");
 			rispondi("bevo|bevo l'ampolla|bevo dall'ampolla|bevo il liquido|bevo il liquido azzurrognolo|bevo il liquido azzurro|bevo lo strano liquido", "Porti alle labbra la piccola bottiglia e ne bevi il contenuto. Dopo pochi istanti ti senti strano... provi un senso di nausea, ma passa presto. Senti rinsaldarsi in te un legame con un potere sovrannaturale. Le parole che pensi e pronunci è come se avessero una carica prima sconosciuta...");
 			_variabili("ampolla bevuta");
