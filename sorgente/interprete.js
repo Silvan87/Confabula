@@ -1,34 +1,100 @@
 var Lingua = {
-	predicati: [],
 	equivalenze: [],
-	mappaDiacritici: [ /* Mappa per sostituire le vocali accentate in vocali non accentate */
+	mappaDiacriticiVm: [ // Mappa diacritici solo per le vocali italiane minuscole
 		{'base':'a', 'letters':/[\u00E0\u00E1]/g},
 		{'base':'e', 'letters':/[\u00E8\u00E9]/g},
-		{'base':'i', 'letters':/[\u00EC\u00ED]/g},
+		{'base':'i', 'letters':/[\u00EC\u00ED\u00EE]/g},
 		{'base':'o', 'letters':/[\u00F2\u00F3]/g},
 		{'base':'u','letters':/[\u00F9\u00FA]/g}
 	],
-	noDiacritici: function(str) {
-		// La stringa DEVE essere già in caratteri minuscoli, altrimenti non avverranno le sostituzioni
-		for (var i = 0; i < Lingua.mappaDiacritici.length; i++) {
-			str = str.replace(Lingua.mappaDiacritici[i].letters, Lingua.mappaDiacritici[i].base);
+	mappaDiacriticiV: [ // Mappa diacritici per le vocali italiane
+		{'base':'a', 'letters':/[\u00E0\u00E1]/g},
+		{'base':'e', 'letters':/[\u00E8\u00E9]/g},
+		{'base':'i', 'letters':/[\u00EC\u00ED\u00EE]/g},
+		{'base':'o', 'letters':/[\u00F2\u00F3]/g},
+		{'base':'u','letters':/[\u00F9\u00FA]/g},
+		{'base':'A', 'letters':/[\u00C0\u00C1]/g},
+		{'base':'E', 'letters':/[\u00C8\u00C9]/g},
+		{'base':'I', 'letters':/[\u00CC\u00CD\u00CE]/g},
+		{'base':'O', 'letters':/[\u00D2\u00D3]/g},
+		{'base':'U','letters':/[\u00D9\u00DA]/g}
+	],
+	rimuoviDiacritici: function(str, tipoMappa) {
+		if (tipoMappa === undefined) tipoMappa = 0;
+		switch (tipoMappa) {
+			case 0: tipoMappa = 'mappaDiacriticiVm'; break; // Mappa diacritici solo per le vocali italiane minuscole
+			case 1: tipoMappa = 'mappaDiacriticiV'; break;  // Mappa diacritici per le vocali italiane
+		}
+		for (var i = 0; i < Lingua[tipoMappa].length; i++) {
+			str = str.replace(Lingua[tipoMappa][i].letters, Lingua[tipoMappa][i].base);
 		}
 		return str;
+	},
+	ramificaInput: function(str, alt) {
+		if (alt === undefined) alt = 1;
+		var inpLivelli = []; var i1; var i2; var i3;
+		// Se 'str' contiene [|] o (|) dovrà essere arricchito con altre frasi per soddisfare tutte le articolazioni
+		// Livello 1 (frasi)
+		inpLivelli = Lingua.rimuoviDiacritici(str.toLowerCase()).split('|');
+		// Livello 2 (parole)
+		for (i1 = 0; i1 < inpLivelli.length; i1++) {
+			inpLivelli[i1] = inpLivelli[i1].split(/(?: |'|’)+/);
+		}
+		if (alt == 2) {
+			// Livello 3 (alternative di parole)
+			for (i1 = 0; i1 < inpLivelli.length; i1++) {
+				for (i2 = 0; i2 < inpLivelli[i1].length; i2++) {
+					// Devo cercare la parola in tutte le parole equivalenti e aggiungere le alternative
+					var parola = inpLivelli[i1][i2];
+					for (i3 = 0; i3 < Lingua.equivalenze.length; i3++) {
+						if (Lingua.equivalenze[i3].indexOf(parola) != -1) {
+							if (typeof inpLivelli[i1][i2] === 'string') { // è ancora una singola parola
+								inpLivelli[i1][i2] = Lingua.equivalenze[i3];
+							} else { // è un array da concatenare
+								inpLivelli[i1][i2].concat(Lingua.equivalenze[i3]);
+							}
+						}
+					}
+					if (typeof inpLivelli[i1][i2] === 'string') { // è ancora una singola parola
+						inpLivelli[i1][i2] = [inpLivelli[i1][i2]]; // è un array con un elemento
+					}
+				}
+			}
+		}
+		return inpLivelli;
+	},
+	valutaEquivalenza: function(inp1, inp2) {
+		// Verifica se l'input1 lineare soddisfa le condizioni dell'input2 con alternative
+		// Livello 1 (frasi)
+		for (var i1 = 0; i1 < inp2.length; i1++) {
+			var p = 0;
+			// Livello 2 (parole)
+			for (var i2 = 0; i2 < inp2[i1].length; i2++) {
+				var p_ok = 0;
+				// Livello 3 (alternative di parole)
+				if (inp2[i1][i2].indexOf(inp1[0][p]) != -1) p_ok = 1;
+				if (p_ok === 0) {
+					if (inp2[i1][i2].indexOf('') != -1) { continue; } else { break; }
+				}
+				p++;
+				if (p == inp1[0].length && i2 == (inp2[i1].length - 1)) return true;
+			}
+		}
+		return false;
 	}
 }
 
 var Storia = {
-	// Lo stile predefinito viene impostato nel CSS
+	// Lo stile predefinito viene impostato nel CSS tramite classi da applicare o cancellare //
+	predicati: [],
 	oggetti: {}, // Dizionario di contenitori che contengono oggetti
 	variabili: {}, // Dizionario di variabili che possono assumere un valore
 	luoghiRaggiungibili: {},
-	istruzioniGenerali: [],
 	nuovaPartita: function() {
 		if (Lingua.equivalenze.length === 0) vocabolario();
 		Storia.oggetti = {}; // Cancella tutti i contenitori con gli oggetti
 		Storia.variabili = {}; // Cancella tutte le variabili
 		Storia.luoghiRaggiungibili = {}; // Cancella tutti i nomi dei luoghi raggiungibili
-		Storia.istruzioniGenerali = []; // Svuota le istruzioni per le azioni generali
 	}
 }
 
@@ -49,6 +115,20 @@ var Scena = {
 		Scena.stile = {};
 		Scena.usciteVisibili = '';
 		Azioni.scena = [];
+		// Elimina gli stili personalizzati della scena passata
+		var e_cor = document.getElementById('corpo');
+		var e_inp = document.getElementById('input');
+		e_cor.style.backgroundColor = null;
+		e_inp.style.backgroundColor = null;
+		e_cor.style.color = null;
+		e_inp.style.color = null;
+		document.getElementById('scelte').style.color = null;
+		e_cor.style.fontFamily = null;
+		e_inp.style.fontFamily = null;
+		e_cor.style.fontSize = null;
+		e_inp.style.fontSize = null;
+		e_cor.style.textAlign = null;
+		e_inp.style.textAlign = null;
 	},
 	avvia: function(n) {
 		document.removeEventListener('keypress', press_noAttesa);
@@ -81,8 +161,9 @@ var Scena = {
 		// Inserisci le eventuali uscite visibili
 		var e_txt = document.getElementById('testo');
 		if (Scena.usciteVisibili !== '') {
-			e_txt.innerHTML += '<p>Uscite visibili:' + Scena.usciteVisibili.substr(1) + '.</p>';
-					Scena.usciteVisibili = ''; Scena.direzioniBloccate = 0;
+			var ali = ''; if (Scena.stile.testoAllineamento) ali = stileAli(Scena.stile.testoAllineamento);
+			e_txt.innerHTML += '<p'+ ali +'>Uscite visibili:' + Scena.usciteVisibili.substr(1) + '.</p>';
+			Scena.usciteVisibili = ''; Scena.direzioniBloccate = 0;
 		}
 		// Se c'è qualche immagine da caricare, attendi che siano tutte caricate
 		if (Scena.stile.immagini !== undefined) {
@@ -103,6 +184,55 @@ var Scena = {
 		Scena.mostra();
 	},
 	mostra: function() {
+		var e_cor = document.getElementById('corpo');
+		var e_inp = document.getElementById('input');
+		// Imposta lo stile personalizzato per la scena corrente
+		if (Scena.stile.coloreSfondo) {
+			e_cor.style.backgroundColor = Scena.stile.coloreSfondo;
+			e_inp.style.backgroundColor = Scena.stile.coloreSfondo;
+		}
+		if (Scena.stile.coloreTesto) {
+			e_cor.style.color = Scena.stile.coloreTesto;
+			e_inp.style.color = Scena.stile.coloreTesto;
+		}
+		if (Scena.stile.testoCarattere) {
+			e_cor.style.fontFamily = Scena.stile.testoCarattere;
+			e_inp.style.fontFamily = Scena.stile.testoCarattere;
+		}
+		if (Scena.stile.testoGrandezza) {
+			e_cor.style.fontSize = Scena.stile.testoGrandezza + 'px';
+			e_inp.style.fontSize = Scena.stile.testoGrandezza + 'px';
+		}
+		if (Scena.stile.testoAllineamento) {
+			var ali;
+			switch(Scena.stile.testoAllineamento) {
+				case 'giustificato': ali = 'justify'; break;
+				case 'centrato': ali = 'center'; break;
+				case 'destra': ali = 'right'; break;
+				case 'sinistra': ali = 'left'; break;
+			}
+			e_cor.style.textAlign = ali;
+			e_inp.style.textAlign = ali;
+		}
+		if (Scena.stile.coloreScelta || Scena.stile.coloreSceltaSelez) {
+			var ee_scelte = document.getElementsByClassName("scelta");
+			if (Scena.stile.coloreScelta) {
+				for (var i = 0; i < ee_scelte.length; i++) {
+					ee_scelte[i].style.color = Scena.stile.coloreScelta;
+				}
+			}
+			if (Scena.stile.coloreSceltaSelez) {
+				for (var i = 0; i < ee_scelte.length; i++) {
+					ee_scelte[i].addEventListener('mouseenter', function() { this.style.color = Scena.stile.coloreSceltaSelez });
+					if (Scena.stile.coloreScelta) {
+						ee_scelte[i].addEventListener('mouseout', function() { this.style.color = Scena.stile.coloreScelta });
+					} else  {
+						ee_scelte[i].addEventListener('mouseout', function() { this.style.color = null });
+					}
+				}
+			}
+		}
+		// Gestione visibilità della scena
 		document.getElementById('testo').style.visibility = 'visible';
 		if (Scena.stile.scrittura == 1) document.getElementById('input').style.display = 'block';
 		document.getElementById('scelte').style.visibility = 'visible';
@@ -122,7 +252,7 @@ var Scena = {
 				azione = Azioni[livelli[L]][ia];
 				if (azione.mosse) continue; // Se è un'azione ritardata (n. mosse) viene gestita in modo speciale piú avanti
 				if (azione.input !== undefined) { // Controlla se l'input soddisfa questa azione
-					if (inp === '') { e_inp.value = '? '; return; } else { inp = Lingua.noDiacritici(inp.toLowerCase()); }
+					if (inp === '') { e_inp.value = '? '; return; } else { inp = Lingua.rimuoviDiacritici(inp.toLowerCase()); }
 					// Ci sono alcuni input speciali che fanno parte dell'interprete
 					if ((inp.split(' ')[0] == 'direzione' || inp.split(' ')[0] == 'd') && Scena.direzioniBloccate === 1) {
 						azione = {};
@@ -162,8 +292,8 @@ var Scena = {
 							continue; // Se la direzione non era valida, controlla comunque eventuali altre azioni
 						}
 					} else {
-						var inpAlbero = ramificaInput(inp, 1);
-						if (!soddisfa(inpAlbero, azione.input)) continue;
+						var inpAlbero = Lingua.ramificaInput(inp, 1);
+						if (!Lingua.valutaEquivalenza(inpAlbero, azione.input)) continue;
 					}
 				}
 				if (Condizioni.verifica({'seOggetti': azione.seOggetti, 'seVariabili': azione.seVariabili}) === false) continue;
@@ -180,12 +310,12 @@ var Scena = {
 		// Se arriva qui nessuna condizione è stata soddisfatta oppure una o piú azioni sono state eseguite
 		if (e_inp.value != '? ') { // Nessuna azione è stata eseguita
 			e_inp.readOnly = true;
-			var cE = '';
-			//if (stileBase.colErrore !== undefined) cE = stileBase.colErrore;
-			if (Scena.stile.colErrore !== undefined && Scena.stile.colErrore !== '') cE = Scena.stile.colErrore;
-			if (cE === '') { e_inp.className = 'errore'; } else { e_inp.style.color = cE; }
+			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
+			var preColTxt = null;
+			if (e_inp.style.color) preColTxt = e_inp.style.color;
+			if (Scena.stile.coloreErrore) { e_inp.style.color = Scena.stile.coloreErrore; } else { e_inp.className += ' coloreErrore'; }
 			e_inp.value = 'Prova qualcos\'altro...';
-			setTimeout(function() { e_inp.value = '? '; e_inp.className = ''; e_inp.style.color = ''; e_inp.readOnly = false; }, 1000);
+			setTimeout(function() { e_inp.value = '? '; e_inp.style.color = preColTxt; e_inp.className = 'coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria'; e_inp.readOnly = false; }, 1000);
 			// Dovrei aggiungere la caratteristica che se si inizia a scrivere è subito pronto e non perde le battute (document keydown)
 		}
 		// Gestione speciale delle azioni ritardate
@@ -224,19 +354,19 @@ var Scena = {
 }
 
 var Condizioni = {
-	correntiBlocchi: [], // Contiene blocchi di condizioni "seOggetti e seVariabili" che si applicano alle istruzioni condizionate
+	correntiABlocchi: [], // Contiene blocchi di condizioni "seOggetti e seVariabili" che si applicano alle istruzioni condizionate
 	correnti: {}, // Somma dei blocchi di condizioni correnti
 	righeCoinvolte: [], // 0: nessuna condizione; 1: solo la singola riga successiva; 2: una serie di righe di istruzioni (blocco)
 	sommaCondizioni: function() {
 		Condizioni.correnti = {'seOggetti': [], 'seVariabili': []};
-		for (var b = 0; b < Condizioni.correntiBlocchi.length; b++) {
-			Condizioni.correnti.seOggetti = Condizioni.correnti.seOggetti.concat(Condizioni.correntiBlocchi[b].seOggetti);
-			Condizioni.correnti.seVariabili = Condizioni.correnti.seVariabili.concat(Condizioni.correntiBlocchi[b].seVariabili);
+		for (var b = 0; b < Condizioni.correntiABlocchi.length; b++) {
+			Condizioni.correnti.seOggetti = Condizioni.correnti.seOggetti.concat(Condizioni.correntiABlocchi[b].seOggetti);
+			Condizioni.correnti.seVariabili = Condizioni.correnti.seVariabili.concat(Condizioni.correntiABlocchi[b].seVariabili);
 		}
 	},
 	popUltimoBlocco: function() {
 		Condizioni.righeCoinvolte.pop(); // Sono state gestite le righe di istruzioni per questo blocco e va rimosso il tracciamento
-		Condizioni.correntiBlocchi.pop(); // Le istruzioni per il blocco sono state eseguite, quindi si svuotano le ultime condizioni
+		Condizioni.correntiABlocchi.pop(); // Le istruzioni per il blocco sono state eseguite, quindi si svuotano le ultime condizioni
 		Condizioni.sommaCondizioni(); // Se un blocco di condizioni viene rimosso, va aggiornata la somma delle condizioni restanti
 	},
 	verifica: function(cond) {
@@ -351,26 +481,36 @@ var Azioni = {
 		if (azione.variabili) imposta(azione.variabili);
 		if (azione.audio) eseguiAudio(azione.audio);
 
-		// Esegue le funzioni principali
-		var ali = ''; if (azione.allineamento !== undefined) ali = stileAli(azione.allineamento);
+		// Prepara alcuni aspetti dello stile
+		var ali = ''; if (azione.allineamento) ali = stileAli(azione.allineamento);
+		if (!ali && Scena.stile.testoAllineamento) ali = stileAli(Scena.stile.testoAllineamento);
+		var classi = ''; var coloreInline = '';
+
+		// Esegue l'azione principale
 		switch (azione.tipo) {
 			case 'audio':
 				eseguiAudio(azione.audio);
 				break;
 			case 'rispondi':
-				var classi = '';
 				if (!azione.mosse) {
 					if (Azioni.bastaInvioInp === 0) {
-						if (Azioni.invioInp == '') { // Serve alle scelte selezionabili che non derivano da un input genuino
-							e_txt.innerHTML += '<p'+ali+' class="inviato">? ' + azione.input + '</p>';
+						classi = ' class="inviato';
+						if (Scena.stile.coloreTestoInviato) {
+							coloreInline = ' style="color:'+Scena.stile.coloreTestoInviato+';"';
 						} else {
-							e_txt.innerHTML += '<p'+ali+' class="inviato">? ' + Azioni.invioInp + '</p>';
+							classi += ' coloreTestoInviato';
+						}
+						classi += '"';
+						if (Azioni.invioInp == '') { // Serve alle scelte selezionabili che non derivano da un input genuino
+							e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? '+ azione.input +'</p>';
+						} else {
+							e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? '+ Azioni.invioInp +'</p>';
 						}
 					} else {
 						classi = ' class="br"';
 					}
 				}
-				e_txt.innerHTML += '<p'+classi+ali+'>' + espandiContenitori(azione.output) + '</p>';
+				e_txt.innerHTML += '<p'+ali+'>' + espandiContenitori(azione.output) + '</p>';
 				break;
 			case 'vai':
 				switch (azione.scena) {
@@ -381,17 +521,25 @@ var Azioni = {
 				}
 				break;
 			case 'rispondiVai':
-				document.getElementById('input').style.display = 'none';
-				if (Azioni.bastaInvioInp === 0) e_txt.innerHTML += '<p class="inviato">? ' + Azioni.invioInp + '</p>';
-				e_txt.innerHTML += '<p>' + azione.output + '</p>';
+				if (!azione.altri_input) document.getElementById('input').style.display = 'none';
+				if (Azioni.bastaInvioInp === 0) {
+					classi = ' class="inviato';
+					if (Scena.stile.coloreTestoInviato) {
+						coloreInline = ' style="color:'+Scena.stile.coloreTestoInviato+';"';
+					} else {
+						classi += ' coloreTestoInviato';
+					}
+					classi += '"';
+					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? ' + Azioni.invioInp + '</p>';
+				}
+				e_txt.innerHTML += '<p'+ali+'>' + azione.output + '</p>';
 				aspettaVai(azione.ritardo, azione.scena);
 				break;
 		}
 	}
 }
 
-Azioni.scena = [];
-/** Funzioni secondarie **/
+// Funzioni secondarie //
 
 function pronto() {
 	var e_inp = document.getElementById('input');
@@ -411,57 +559,9 @@ var press_noAttesa = function() {
 	scena(attesaVai[1]);
 	attesaVai = [];
 }
-function ramificaInput(str, alt) {
-	if (alt === undefined) alt = 1;
-	var inpLivelli = []; var i1; var i2; var i3;
-	// Se 'str' contiene [|] o (|) dovrà essere arricchito con altre frasi per soddisfare tutte le articolazioni
-	// Livello 1 (frasi)
-	inpLivelli = Lingua.noDiacritici(str.toLowerCase()).split('|');
-	// Livello 2 (parole)
-	for (i1 = 0; i1 < inpLivelli.length; i1++) {
-		inpLivelli[i1] = inpLivelli[i1].split(/(?: |'|’)+/);
-	}
-	if (alt == 2) {
-		// Livello 3 (alternative di parole)
-		for (i1 = 0; i1 < inpLivelli.length; i1++) {
-			for (i2 = 0; i2 < inpLivelli[i1].length; i2++) {
-				// Devo cercare la parola in tutte le parole equivalenti e aggiungere le alternative
-				var parola = inpLivelli[i1][i2];
-				for (i3 = 0; i3 < Lingua.equivalenze.length; i3++) {
-					if (Lingua.equivalenze[i3].indexOf(parola) != -1) {
-						if (typeof inpLivelli[i1][i2] === 'string') { // è ancora una singola parola
-							inpLivelli[i1][i2] = Lingua.equivalenze[i3];
-						} else { // è un array da concatenare
-							inpLivelli[i1][i2].concat(Lingua.equivalenze[i3]);
-						}
-					}
-				}
-				if (typeof inpLivelli[i1][i2] === 'string') { // è ancora una singola parola
-					inpLivelli[i1][i2] = [inpLivelli[i1][i2]]; // è un array con un elemento
-				}
-			}
-		}
-	}
-	return inpLivelli;
-}
-function soddisfa(inp1, inp2) {
-	// Verifica se l'input1 lineare soddisfa le condizioni dell'input2 con alternative
-	// Livello 1 (frasi)
-	for (var i1 = 0; i1 < inp2.length; i1++) {
-		var p = 0;
-		// Livello 2 (parole)
-		for (var i2 = 0; i2 < inp2[i1].length; i2++) {
-			var p_ok = 0;
-			// Livello 3 (alternative di parole)
-			if (inp2[i1][i2].indexOf(inp1[0][p]) != -1) p_ok = 1;
-			if (p_ok === 0) {
-				if (inp2[i1][i2].indexOf('') != -1) { continue; } else { break; }
-			}
-			p++;
-			if (p == inp1[0].length && i2 == (inp2[i1].length - 1)) return true;
-		}
-	}
-	return false;
+function simulaInput(inp, opz) {
+	document.getElementById('input').value = '? ' + inp;
+	Scena.controllaInput(opz); // Se opz è undefined va bene lo stesso
 }
 function stileAli(ali) {
 	switch(ali) {
@@ -469,6 +569,7 @@ function stileAli(ali) {
 		case 'centrato': ali = ' style="text-align:center;"'; break;
 		case 'destra': ali = ' style="text-align:right;"'; break;
 		case 'sinistra': ali = ' style="text-align:left;"'; break;
+		default: return '';
 	}
 	return ali;
 }
@@ -515,17 +616,6 @@ function imposta(elementi_str) {
 		}
 	}
 }
-function contenitore(personale, nome, ogg_un, ogg_il) {
-	// personale: indica il tipo di contenitore: 0 è dell'ambiente, 1 è del giocatore
-	// nome: nome del contenitore che fa da chiave nell'array
-	// ogg_il: elenco delle etichette degli oggetti contenuti con articolo determinativo, faranno da id dell'oggetto
-	// ogg_un: elenco delle etichette degli oggetti contenuti con articolo indeterminativo
-	if (Storia.oggetti[nome] !== undefined) return; // Il contenitore va creato solo la prima volta
-	Storia.oggetti[nome] = [];
-	Storia.oggetti[nome].push(personale);
-	if (ogg_il === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_il.split('+')); }
-	if (ogg_un === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_un.split('+')); }
-}
 function contenuto(nome) {
 	// nome: nome del contenitore di cui visualizzare il contenuto
 	
@@ -552,77 +642,63 @@ function espandiContenitori(str) {
 	}
 	return out.join('');
 }
-function x(str) {
-	var ee = str.split('|');
-	var n = Math.floor((Math.random() * ee.length) + 1);
-	return ee[n];
-}
 
-/** Impostazioni scena (eseguite subito all'inizio) **/
+// Istruzioni per definire le impostazioni iniziali delle scene //
 
 function titolo(str) {
 	if (Scena.N !== undefined) alert('Il titolo della storia va impostato nelle istruzioni generali. Dunque, rimuoverlo dalla scena '+Scena.N+'.');
 	document.title = str;
 }
 function coloreSfondo(col) {
-	if (col !== undefined) {
-		document.getElementById('corpo').style.backgroundColor = col;
-		document.getElementById('input').style.backgroundColor = col;
-	}
+	if (col) Scena.stile.coloreSfondo = col;
 }
 function coloreTesto(col1, col2) {
-	if (col1 !== undefined) {
-		document.getElementById('corpo').style.color = col1;
-		document.getElementById('input').style.color = col1;
-	}
-	if (col2 !== undefined) {
-		Scena.stile.colTestoInviato = col2;
-	}
+	if (col1) Scena.stile.coloreTesto = col1;
+	if (col2) Scena.stile.coloreTestoInviato = col2;
 }
 function coloreScelte(col1, col2) {
-	if (col1 !== undefined) {
-		Scena.stile.colScelta = col2;
-	}
-	if (col2 !== undefined) {
-		Scena.stile.colSelezione = col2;
-	}
+	if (col1) Scena.stile.coloreScelta = col1;
+	if (col2) Scena.stile.coloreSceltaSelez = col2;
 }
 function coloreErrore(col) {
-	Scena.stile.colErrore = col;
+	if (col) Scena.stile.coloreErrore = col;
 }
 function carattereTesto(fnt, siz, ali) {
-	var e_cor = document.getElementById('corpo');
-	var e_inp = document.getElementById('input');
-	if (fnt !== undefined) {
-		e_cor.style.fontFamily = fnt;
-		e_inp.style.fontFamily = fnt;
-	}
-	if (siz !== undefined) {
-		e_cor.style.fontSize = siz + 'px';
-		e_inp.style.fontSize = siz + 'px';
-	}
-	if (ali !== undefined) {
-		switch(ali) {
-			case 'giustificato': ali = 'justify'; break;
-			case 'centrato': ali = 'center'; break;
-			case 'destra': ali = 'right'; break;
-			case 'sinistra': ali = 'left'; break;
-		}
-		document.getElementById('corpo').style.textAlign = ali;
-		document.getElementById('testo').style.textAlign = ali;
-	}
+	if (fnt) Scena.stile.testoCarattere = fnt;
+	if (siz) Scena.stile.testoGrandezza = siz;
+	if (ali) Scena.stile.testoAllineamento = ali;
 }
-function audio(aud) {
-	if (Scena.N === undefined) { alert('Il comando "audio()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+function intermezzo(txt) {
+	if (Scena.N === undefined) { alert('Il comando "intermezzo()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+	if (Scena.stile.intermezzo === undefined) Scena.stile.intermezzo = [];
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+
+	if (esegui == 1) Scena.stile.intermezzo.push(txt);
+}
+function testo(txt, ali) {
+	// txt: testo da visualizzare
+	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	if (Scena.N === undefined) { alert('Il comando "testo()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+	
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
+	if (esegui == 1) {
+		var e_txt = document.getElementById('testo');
+		if (ali) { ali = stileAli(ali); } else { ali = ''; }
+		if (Scena.stile.testoAllineamento) ali = stileAli(Scena.stile.testoAllineamento);
+		e_txt.innerHTML += '<p'+ali+'>' + txt + '</p>';
+	}
 }
 function immagine(img, w, h) {
 	// img: nome dell'immagine da posizionare nella stessa cartella di 'INIZIA.html'
@@ -630,7 +706,7 @@ function immagine(img, w, h) {
 	if (img === undefined || img === '') return;
 
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
@@ -646,27 +722,32 @@ function immagine(img, w, h) {
 		e_txt.innerHTML += '<img id="'+ id_img +'" style="display:block;" '+ w + h +' src="'+ img +'" />';
 	}
 }
-function testo(txt, ali) {
-	// txt: testo da visualizzare
-	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
-	if (Scena.N === undefined) { alert('Il comando "testo()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
+function audio(aud) {
+	if (Scena.N === undefined) { alert('Il comando "audio()" non può essere usato nelle istruzioni generali. Eliminarlo!'); return; }
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) {
-		var e_txt = document.getElementById('testo');
-		if (ali === undefined) { ali = ''; } else { ali = stileAli(ali); }
-		e_txt.innerHTML += '<p'+ali+'>' + txt + '</p>';
-	}
+	if (esegui == 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
+}
+function contenitore(personale, nome, ogg_un, ogg_il) {
+	// personale: indica il tipo di contenitore: 0 è dell'ambiente, 1 è del giocatore
+	// nome: nome del contenitore che fa da chiave nell'array
+	// ogg_il: elenco delle etichette degli oggetti contenuti con articolo determinativo, faranno da id dell'oggetto
+	// ogg_un: elenco delle etichette degli oggetti contenuti con articolo indeterminativo
+	if (Storia.oggetti[nome] !== undefined) return; // Il contenitore va creato solo la prima volta
+	Storia.oggetti[nome] = [];
+	Storia.oggetti[nome].push(personale);
+	if (ogg_il === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_il.split('+')); }
+	if (ogg_un === '') { Storia.oggetti[nome].push([]); } else { Storia.oggetti[nome].push(ogg_un.split('+')); }
 }
 function oggetti(oggs) {
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
@@ -676,7 +757,7 @@ function oggetti(oggs) {
 }
 function variabili(vars) {
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
@@ -685,7 +766,7 @@ function variabili(vars) {
 	if (esegui == 1) imposta(vars);
 }
 
-/** Istruzioni scena (eseguite eventualmente dopo) **/
+// Istruzioni per definire il comportamento delle scene //
 
 function condizioni(cond, istruzioni) {
 	// str: stringa per specificare quali oggetti devono essere in certi contenitori e quali variabili si richiedono
@@ -693,8 +774,8 @@ function condizioni(cond, istruzioni) {
 	// istruzioni(): è la funzione per eseguire tutte le istruzioni condizionate
 	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
 
-	var lastID = Condizioni.correntiBlocchi.length;
-	Condizioni.correntiBlocchi.push({'seOggetti': [], 'seVariabili': []});
+	var lastID = Condizioni.correntiABlocchi.length;
+	Condizioni.correntiABlocchi.push({'seOggetti': [], 'seVariabili': []});
 
 	var presenza;
 	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
@@ -708,7 +789,7 @@ function condizioni(cond, istruzioni) {
 				presenza = 1;
 			}
 			cond[i] = cond[i].split('@'); // Scomposizione oggetto@contenitore
-			Condizioni.correntiBlocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
+			Condizioni.correntiABlocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
 		} else { // Se non contiene una chiocciola è una variabile
 			if (cond[i].substr(0, 1) == '#') {
 				presenza = 0;
@@ -716,7 +797,7 @@ function condizioni(cond, istruzioni) {
 			} else {
 				presenza = 1;
 			}
-			Condizioni.correntiBlocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
+			Condizioni.correntiABlocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
 		}
 	}
 	// Ogni volta che vengono aggiunte le condizioni per blocchi, aggiornare la somma delle condizioni
@@ -730,18 +811,6 @@ function condizioni(cond, istruzioni) {
 		// L'esecuzione dell'istruzione successiva dovrà svuotare le condizioni ed eliminare il tracciamento delle righe coinvolte
 		Condizioni.righeCoinvolte.push(1);
 	}
-}
-function intermezzo(txt) {
-	if (Scena.stile.intermezzo === undefined) Scena.stile.intermezzo = [];
-	
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiBlocchi.length - 1;
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (Condizioni.verifica(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
-	} else { esegui = 1; }
-
-	if (esegui == 1) Scena.stile.intermezzo.push(txt);
 }
 function luogoVisitato(nome, gruppo) {
 	// nome: nome del luogo da visualizzare dopo i punti cardinali
@@ -798,17 +867,17 @@ function uscita(txt_in, nS, mostra, destinazione) {
 				}
 				if ((parte2 == '' || parte2 == ' ') && Storia.luoghiRaggiungibili[nS] !== undefined && Storia.luoghiRaggiungibili[nS].visitato == 1) parte2 = ' (esplorato)';
 			}
-			Scena.usciteVisibili += ', <a class="scelta" onclick="simulaInput(\''+txt_in.split('|')[0]+'\')">' + txt_in.split('|')[0] + '</a>' + parte2;
+			Scena.usciteVisibili += ', <a class="scelta coloreScelta" onclick="simulaInput(\''+txt_in.split('|')[0]+'\')">' + txt_in.split('|')[0] + '</a>' + parte2;
 		}
 	}
 	if (Azioni.ultimaLeggi('input') === undefined) Azioni.valore('input', txt_in);
-	Azioni.valore('input', ramificaInput(Azioni.ultimaLeggi('input'), 2));
+	Azioni.valore('input', Lingua.ramificaInput(Azioni.ultimaLeggi('input'), 2));
 
 	var L; // livello delle azioni (generale o scena)
 	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
 
 	// Aggiungi condizioni correnti
-	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
 		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
@@ -819,17 +888,17 @@ function uscita(txt_in, nS, mostra, destinazione) {
 function rispondi(txt_in, txt_out) {
 	// txt_in: input dell'utente
 	// txt_out: risposta ricevuta
-	txt_in = Lingua.noDiacritici(txt_in.toLowerCase());
+	txt_in = Lingua.rimuoviDiacritici(txt_in.toLowerCase());
 	Azioni.crea();
 	Azioni.valore('tipo', 'rispondi');
-	Azioni.valore('input', ramificaInput(txt_in, 2));
+	Azioni.valore('input', Lingua.ramificaInput(txt_in, 2));
 	Azioni.valore('output', txt_out);
 
 	var L; // livello delle azioni (generale o scena)
 	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
 
 	// Aggiungi condizioni correnti
-	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
 		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
@@ -840,29 +909,29 @@ function rispondi(txt_in, txt_out) {
 function aspettaVai(rit, nS) {
 	// rit: ritardo in millisecondi prima di andare ad una scena
 	// nS: numero della scena verso cui andare
-	Scena.stile.scrittura = 0;
 	setTimeout(function(){ document.addEventListener('keypress', press_noAttesa); document.addEventListener('click', press_noAttesa); }, 200);
 	attesaVai[0] = setTimeout(function() { scena(nS); }, rit);
 	attesaVai[1] = nS;
 }
-function rispondiVai(txt_in, txt_out, nS, rit) {
+function rispondiVai(txt_in, txt_out, nS, rit, altri_in) {
 	// txt_in: input dell'utente
 	// txt_out: risposta momentanea da lasciare
 	// nS: numero della scena verso cui andare
 	// rit: ritardo in millisecondi prima di andare ad una scena
-	txt_in = Lingua.noDiacritici(txt_in.toLowerCase());
+	txt_in = Lingua.rimuoviDiacritici(txt_in.toLowerCase());
 	if (rit === undefined) rit = txt_out.length * 100;
 	Azioni.crea();
 	Azioni.valore('tipo', 'rispondiVai');
-	Azioni.valore('input', ramificaInput(txt_in, 2));
+	Azioni.valore('input', Lingua.ramificaInput(txt_in, 2));
 	Azioni.valore('output', txt_out);
 	Azioni.valore('scena', nS);
 	Azioni.valore('ritardo', rit);
+	if (altri_in == 1) Azioni.valore('altri_input', 1);
 
 	var L; // livello delle azioni (generale o scena)
 	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
 
-	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
 		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
@@ -885,7 +954,7 @@ function nMosseVai(mosse, nS, rip) {
 	var L; // livello delle azioni (generale o scena)
 	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
 
-	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
 		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
@@ -908,7 +977,7 @@ function nMosseRispondi(mosse, txt_out, rip) {
 	var L; // livello delle azioni (generale o scena)
 	if (Scena.N === undefined) { L = 'generale'; } else { L = 'scena'; Scena.stile.scrittura = 1; }
 
-	var iUB = Condizioni.correntiBlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = Azioni[L].length - 1; // iUA: indice ultima azione
 		Azioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
@@ -916,16 +985,12 @@ function nMosseRispondi(mosse, txt_out, rip) {
 		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
 	}
 }
-function simulaInput(inp, opz) {
-	document.getElementById('input').value = '? ' + inp;
-	Scena.controllaInput(opz); // Se opz è undefined va bene lo stesso
-}
 function scegliVai(txt, nS, ali) {
 	// txt: testo della scelta selezionabile
 	// nS: numero della scena verso cui andare
 	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 	if (ali !== undefined) { ali = stileAli(ali); } else { ali = ''; }
-	document.getElementById('scelte').innerHTML += '<p class="scelta" '+ ali +' onclick="Scena.vai('+nS+')">' + txt + '</p>';
+	document.getElementById('scelte').innerHTML += '<p class="scelta coloreScelta" '+ ali +' onclick="Scena.vai('+nS+')">' + txt + '</p>';
 }
 function scegliRispondi(txt, txt_out, ali1, ali2) {
 	// txt: testo della scelta selezionabile (se txt_out = "" allora txt verrà trattato come un input dell'utente)
@@ -939,16 +1004,19 @@ function scegliRispondi(txt, txt_out, ali1, ali2) {
 		azione['input'] = txt.replace(/'/g, '"');
 		azione['output'] = txt_out.replace(/'/g, '"');
 		if (ali2 !== undefined) azione['allineamento'] = ali2;
-		document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali1 + ' onclick="Azioni.esegui('+JSON.stringify(azione).replace(/"/g, '\'')+'); this.style.display = \'none\';">' + txt + '</p>';
+		document.getElementById('scelte').innerHTML += '<p class="scelta coloreScelta" ' + ali1 + ' onclick="Azioni.esegui('+JSON.stringify(azione).replace(/"/g, '\'')+'); this.style.display = \'none\';">' + txt + '</p>';
 	} else {
 		if (ali2 !== undefined) { ali2 = ', {\'outAli\':\''+ali2+'\'}'; } else { ali2 = ''; }
 		txt =  txt.replace(/'/g, '"').replace(/"/g, '\'');
-		document.getElementById('scelte').innerHTML += '<p class="scelta" ' + ali1 + ' onclick="simulaInput(\''+txt+'\''+ali2+'); this.style.display = \'none\';">' + txt + '</p>';
+		document.getElementById('scelte').innerHTML += '<p class="scelta coloreScelta" ' + ali1 + ' onclick="simulaInput(\''+txt+'\''+ali2+'); this.style.display = \'none\';">' + txt + '</p>';
 	}
 }
+
+// Funzioni per ampliare le possibilità delle istruzioni precedenti //
+
 function _oggetti(ogg_in, ogg_out) {
-	if (ogg_in !== undefined) Azioni.valore('piuOggetti', Lingua.noDiacritici(ogg_in.toLowerCase()));
-	if (ogg_out !== undefined) Azioni.valore('menoOggetti', Lingua.noDiacritici(ogg_out.toLowerCase()));
+	if (ogg_in !== undefined) Azioni.valore('piuOggetti', Lingua.rimuoviDiacritici(ogg_in.toLowerCase()));
+	if (ogg_out !== undefined) Azioni.valore('menoOggetti', Lingua.rimuoviDiacritici(ogg_out.toLowerCase()));
 }
 function _variabili(vars) {
 	Azioni.valore('variabili', vars.toLowerCase());
@@ -961,3 +1029,9 @@ function _immagine(img, w, h) {
 	if (w !== undefined) Azioni.valore('imgW', w);
 	if (h !== undefined) Azioni.valore('imgH', h);
 }
+function x(str) {
+	var ee = str.split('|');
+	var n = Math.floor((Math.random() * ee.length) + 1);
+	return ee[n];
+}
+
