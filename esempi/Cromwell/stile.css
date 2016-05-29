@@ -1,24 +1,30 @@
+
+/** Stile personalizzabile **/
+
 @font-face { font-family: "commodore"; src: url(commodore.ttf); }
 /* Commodore64 Pixelized Free Font - http://all-free-download.com/font/download/commodore_64_pixelized_13026.html */
 
-#corpo, #input { /*Colore sfondo*/ background-color: #000; /*Colore testo*/ color: #B5A594; }
-.inviato { /*Colore testo inviato*/ color: #82776A; }
-#corpo, #input { /*Testo carattere*/ font-family: "commodore"; /*Testo grandezza*/ font-size: 20px; letter-spacing: -1.5px; line-height: 1.2em; }
-#intermezzo, #testo { /*Testo allineamento*/ text-align: left; }
-.scelta { /*Colore scelte selezionabili*/ color: #9C8159; }
-.scelta:hover { /*Colore scelta selezionata*/ color: #cc0; }
-a { /*Colore link*/ color: #7E45B0; }
-a:hover { /*Colore link selezionato*/ color: #9F57DE; }
-.errore { /*Colore messaggio errore*/ color: #c60 !important; }
-#intermezzo, #testo, #scelte, #input { /*Larghezza massima storia*/ max-width: 800px; }
+.coloreSfondo { background-color: #000; }
+.coloreTesto { color: #B5A594; }
+.coloreTestoInviato { color: #82776A; }
+.testoCarattere { font-family: "commodore"; }
+.testoGrandezza { font-size: 20px; letter-spacing: -1.5px; line-height: 1.2em; }
+.testoAllineamento { text-align: left; }
+.coloreScelta { color: #9C8159; }
+.coloreScelta:hover /*colore scelta selezionata*/ { color: #cc0; }
+.coloreErrore { color: #c60 !important; }
+a { /*colore link*/ color: #7E45B0; }
+a:hover { /*colore link selezionato*/ color: #9F57DE; }
+.larghezzaMaxStoria { max-width: 800px; }
 
-/* Impostazioni raccomandate */
+/** Impostazioni raccomandate **/
+
 body {
 	text-align: center;
 	margin: 8px 0 0 0;
 	padding: 0;
 }
-p , input {
+p, input {
 	margin: 0 0 8px 0;
 }
 p.br {
