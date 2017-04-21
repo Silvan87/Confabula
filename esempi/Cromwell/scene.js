@@ -1,7 +1,7 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("Cromwell");
-	uscita("guardo", -1, "invisibile");
+	uscita("guardo", 0, "invisibile");
 	rispondi("vocabolario|v", Lingua.predicatiOrdinati.join(', '));
 	contenitore("i", "un|il pugnale");
 	rispondi("inventario", "Hai con te: @i@.");
@@ -32,19 +32,19 @@ function istruzioniGenerali() {
 		rispondi("esamino la gamba|esamino la gamba di sedia", "È legno fragile e un po' scheggiato.");
 	condizioni("no!drago morto", per => {
 		condizioni("drekann3");
-			nMosseVai(2, 23);
+			nMosseVai(2, 23, "ripeti");
 		condizioni("drekann2");
-			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
+			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...", "ripeti");
 			_variabili("no!drekann2+drekann3");
 		condizioni("drekann");
-			nMosseRispondi(2, "Avverti un boato cupo e lontano.");
+			nMosseRispondi(2, "Avverti un boato cupo e lontano.", "ripeti");
 			_variabili("no!drekann+drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
 		rispondi("esamino il cuore|esamino il cuore di Cromwell|esamino il cuore dell'abate", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
+		rispondi("strappo il cuore|strappo il cuore dell'abate|strappo il cuore di Cromwell", "Inizi a strappare il cuore da un lato, ma ti fermi prima di raggiungere la metà. Nulla accade e preferisci conservarlo in un unico pezzo.");
 		condizioni("il pugnale@i");
 			rispondi("infilo il pugnale nel cuore|infilo il pugnale nel cuore dell'abate|infilo il pugnale nel cuore di Cromwell", "Trafiggi il cuore con il pugnale e lo ritrai lasciandoci un buco, ma non accade nulla.");
-		rispondi("strappo il cuore|strappo il cuore dell'abate|strappo il cuore di Cromwell", "Inizi a strappare il cuore da un lato, ma ti fermi prima di raggiungere la metà. Nulla accade e preferisci conservarlo in un unico pezzo.");
 	});
 	rispondi("osservo", "Cosa vorresti osservare? Puoi farlo anche da lontano.");
 	rispondi("esamino", "Cosa vorresti esaminare? Devono essere oggetti raggiungibili.");
@@ -148,14 +148,14 @@ function istruzioniScena(n) {
 		immagine("abate.png");
 		testo("D'un tratto, tra i ruderi, appare Cromwell, l'abate di Pietranera.<br />Puoi vedere: l'abate.");
 		bloccaDirezioni();
-		condizioni("no!abate morto");
-			nMosseVai(2, 6);
 		condizioni("ampolla bevuta");
 			rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea.", 4);
 			_variabili("parole magiche+abate morto+drekann");
 		condizioni("no!ampolla bevuta");
 			rispondi("yggwyrd", "YGGWYRD");
 			_variabili("parole magiche");
+		condizioni("no!abate morto");
+			nMosseVai(1, 6);
 		break;
 	case 6:
 		immagine("abate.png");
@@ -179,14 +179,15 @@ function istruzioniScena(n) {
 	case 8:
 		immagine("palude.png");
 		testo("Sei nella zona palustre. Uno strano gorgoglio proviene dall'acqua.<br />Puoi vedere: piante inquietanti, l'acqua che gorgoglia.");
-		condizioni("no!abate morto");
-			nMosseVai(2, 9);
+		rispondi("esamino le piante", "Alcuni grandi rami sono stati spezzati, come se qualcosa di gigante li avesse travolti e strappati.");
+		rispondi("esamino l'acqua", "L'acqua emana un odore nauseabondo.");
 		condizioni("abate morto", per => {
 			uscita("nord", 7);
 			uscita("sud", 21);
 		});
-		rispondi("esamino le piante", "Alcuni grandi rami sono stati spezzati, come se qualcosa di gigante li avesse travolti e strappati.");
-		rispondi("esamino l'acqua", "L'acqua emana un odore nauseabondo.");
+		bloccaDirezioni();
+		condizioni("no!abate morto");
+			nMosseVai(2, 9);
 		break;
 	case 9:
 		immagine("drago.png");
@@ -198,11 +199,11 @@ function istruzioniScena(n) {
 		testo("Improvvisamente ti raggiunge un enorme drago, furioso per la morte dell'abate, che ti si avventa contro digrignando le formidabili zanne. Hai pochi istanti per reagire.");
 		bloccaDirezioni();
 		variabili("no!drekann3");
-		condizioni("no!drago morto");
-			nMosseVai(1, 24);
 		condizioni("il cuore di cromwell@i");
 			rispondiVai("introduco il cuore nelle fauci|introduco il cuore nella bocca del drago|introduco il cuore dell'abate nella bocca del drago|introduco il cuore di Cromwell nella bocca del drago|introduco il cuore dell'abate nelle fauci|introduco il cuore di Cromwell nelle fauci", "Lanci il cuore di Cromwell verso la faccia del drago...", 25);
 			_variabili("drago morto");
+		condizioni("no!drago morto");
+			nMosseVai(1, 24);
 		break;
 	case 24:
 		immagine("drago.png");
