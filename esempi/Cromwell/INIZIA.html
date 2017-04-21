@@ -3,16 +3,16 @@
 <head>
 	<title>Avventura testuale</title>
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0">
+	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0, maximum-scale=3.0">
 	<link rel="stylesheet" type="text/css" href="stile.css" />
 	<script type="text/javascript" src="interprete.js"></script>
+	<script type="text/javascript" src="vocabolario.js"></script>
 	<script type="text/javascript" src="scene.js"></script>
 </head>
-<body id="corpo" class="coloreSfondo coloreTesto testoCarattere testoGrandezza testoAllineamento" onload="scena(1)">
+<body id="corpo" class="coloreSfondo coloreTesto testoCarattere testoGrandezza testoAllineamento" onload="istruzioniScena(1)">
 	<div id="audio"></div>
-	<div id="intermezzo" class="testoAllineamento larghezzaMaxStoria"></div>
 	<div id="testo" class="testoAllineamento larghezzaMaxStoria"></div>
-	<input id="input" class="coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) Scena.controllaInput();" onblur="setTimeout(pronto, 2000)" />
+	<input id="input" class="coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) I.leggiInput();" onblur="setTimeout(G.pronto, 2000)" />
 	<div id="scelte" class="larghezzaMaxStoria coloreScelta"></div>
 </body>
 </html>
