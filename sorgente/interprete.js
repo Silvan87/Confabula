@@ -212,6 +212,8 @@ var Lingua = {
 
 var Vista = {
 
+	caricamento: 0, // Indica se la vista è in preparazione ed il caricamento è concluso o meno
+	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
 	testo: '', // Testo, anche html, che descrive la scena
 	uscite: '', // Elenco di uscite (link), separate da una virgola e spazio
@@ -223,6 +225,9 @@ var Vista = {
 	timerPassaErrore: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Prova altro"
 
 	preparaScena: function(n) {
+
+		// Segna che è in fase di caricamento della scena
+		if (Vista.caricamento === 0) Vista.caricamento = 1;
 
 		// L'avvio della scena 1 deve resettare la storia
 		if (n == 1) {
@@ -245,6 +250,7 @@ var Vista = {
 		}
 
 		Vista.svuotaScena();
+		Vista.attesaImmagini = 1;
 	},
 
 	svuotaScena: function() {
@@ -312,27 +318,28 @@ var Vista = {
 			e_txt.style.visibility = 'hidden';
 		}
 
-		// Solo se il timer per il caricamento immagini non è impostato, allora si caricano testo e scelte
-		if (Vista.timerImmagini === 0) {
-			
-			// Aggiunge il testo con le immagini e le scelte alla scena (tag html inizio e fine già sistemati)
+		// Attende il caricamento delle immagini
+		if (Vista.attesaImmagini === 1) {
+			// Aggiunge il testo con le immagini. Deve farlo ora, non solo dopo, perché il caricamento immagini va affrontato ora
 			e_txt.innerHTML = Vista.testo;
-			document.getElementById('scelte').innerHTML = Vista.scelte;
-
-			// Aggiunge le attuali uscite visibili in fondo al testo
-			if (Vista.uscite !== '') {
-				var ali = ''; if (Vista.stile.testoAllineamento) ali = alignStyle(Vista.stile.testoAllineamento);
-				e_txt.innerHTML += '<p'+ ali +'>Uscite visibili:' + Vista.uscite.substr(1) + '.</p>';
-			}
-
-			// Se c'è qualche immagine da caricare, attende che siano tutte caricate
-			Vista.timerImmagini = setInterval(Vista.caricaImmagini, 150);
-			// Interrompe Vista.mostra() che sarà richiamata appena le immagini sono pronte
+			// Considera che dopo tot. ms le immagini siano pronte
+			Vista.timerImmagini = setTimeout(Vista.mostra, 200);
+			// Interrompe Vista.mostra() che sarà richiamata appena passato il tempo necessario
+			Vista.attesaImmagini = 0;
 			return;
 		} else {
-			// Reimposta il valore dell'ID del timer a 0 per la prossima occasione
-			Vista.timerImmagini = 0;
+			clearTimeout(Vista.timerImmagini);
 		}
+
+		// Aggiunge le attuali uscite visibili in fondo al testo
+		if (Vista.uscite !== '') {
+			var ali = ''; if (Vista.stile.testoAllineamento) ali = alignStyle(Vista.stile.testoAllineamento);
+			Vista.testo += '<p'+ ali +'>Uscite visibili:' + Vista.uscite.substr(1) + '.</p>';
+		}
+
+		// Per sicurezza, una volta che si prosegue con il caricamento finale, è bene reimpostare il testo
+		e_txt.innerHTML = Vista.testo;
+		document.getElementById('scelte').innerHTML = Vista.scelte;
 
 		// Proseguendo mostrerà effettivamente la scena corrente //
 
@@ -393,6 +400,8 @@ var Vista = {
 		// Esegue il file audio se caricato
 		var e_fileAudio = document.getElementById('fileAudio');
 		if (e_fileAudio !== null) e_fileAudio.play();
+		// Segna che conclusa la fase di caricamento della scena
+		Vista.caricamento = 0;
 		// Passa il focus alla casella di input
 		G.pronto();
 	},
@@ -442,22 +451,6 @@ var Vista = {
 		return out.join('');
 	},
 
-	caricaImmagini: function() {
-		// Pulisce il timer per evitare di chiamare la funzione mentre è in esecuzione
-		clearInterval(Vista.timerImmagini);
-		// Controlla che tutte le immagini nel testo siano caricate e completate
-		var e_img = document.getElementsByTagName("img");
-		for (var i = 0; i < e_img.length; i++) {
-			if (e_img[i].naturalWidth === 0 || e_img[i].complete === false) {
-				// Riprova fra 150 ms
-				Vista.timerImmagini = setInterval(Vista.caricaImmagini, 150);
-				return;
-			}
-		}
-		delete Vista.timerImmagini;
-		Vista.mostra();
-	},
-
 	premiUnTasto: function() {
 		var e_txt = document.getElementById('testo');
 		e_txt.innerHTML += '<p>[Premi un tasto per continuare]</p>';
@@ -505,7 +498,7 @@ var I = {
 	inputNorm: [],
 	istroLivello: '', // livello istruzioni attualmente processato (di scena, generali)
 
-	leggiInput: function(opz) {
+	leggiInput: function() {
 
 		// Salva l'input grezzo, così come inserito dall'utente, ma senza spazi in testa o in coda
 		var e_inp = document.getElementById('input');
@@ -519,6 +512,7 @@ var I = {
 		var istro = {}; // istro: istruzione
 		var condSoddisfatte; // condizioni soddisfatte
 		var azioneEseguita = 0;
+		var cambioScena = 0;
 
 		// Deve controllare se l'input soddisfa qualche istruzione corrente ed eseguirla //
 		// Leggere (e comprendere) è inteso come stabilire quale azione eseguire dopo la lettura
@@ -528,7 +522,7 @@ var I = {
 		// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
 		istro['input'] = Lingua.normalizzaInput('direzioni|d', 2);
 		if (I.inputNorm.length === 1 && Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) {
-			if (Vista.uscite === '') {
+			if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
 				I.inputGrezzo = 'direzioni';
 				istro.azione = 'rispondi';
 				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
@@ -554,14 +548,18 @@ var I = {
 
 		// Prima controlla le istruzioni di scena, poi quelle generali
 		var livello = ['scena', 'generali']; // L: Livello delle istruzioni
+		var azioni = []; // Deve raccogliere tutte le istruzioni da eseguire, prima di eseguirle
 
 		livello.forEach(function(L) {
 			I.istroLivello = L;
 
 			for (var ii = 0; ii < S.Istruzioni[L].length; ii++) { // i: indice istruzione
 
-				// Deve processare comunque tutte le istruzioni in cerca di quelle contemporanee, se una è stata eseguita, può valutare in seguito solo quelle da eseguire contemporaneamente ad altre
-				if (azioneEseguita === 1 && !S.Istruzioni[L][ii]['contemporanea']) continue;
+				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro "nMosse" per farle avanzare
+				if (azioneEseguita === 1 && S.Istruzioni[L][ii].mosse === undefined) continue;
+
+				// Se è in fase di caricamento della scena non deve partire subito il contatore delle istro "nMosse", perché il giocatore deve avere il tempo di fare delle mosse nella nuova scena. Inoltre, andare ad una nuova scena è già contata come mossa.
+				if (Vista.caricamento === 1 && S.Istruzioni[L][ii].mosse !== undefined) continue;
 
 				// Copia l'istruzione, così si è liberi di rimuoverla qualora non servisse più
 				istro = S.Istruzioni[L][ii];
@@ -596,13 +594,55 @@ var I = {
 				}
 
 				// Verifica che l'input del giocatore (se richiesto) corrisponda a quello previsto dall'istruzione
-				if (istro['input'] !== undefined && !Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) continue; // Prossima istruzione
+				if (istro['input'] && !Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) continue; // Prossima istruzione
 
-				// Arrivato qui, tutte le condizioni sono soddisfatte e l'azione va eseguita
-				I.eseguiIstruzione(istro);
-				azioneEseguita = 1;
+				// Arrivato qui, tutte le condizioni sono soddisfatte, quindi l'istruzione che richiede un'azione va raccolta
+				azioni.push(istro);
 			}
 		});
+
+		// Esegue le istruzioni raccolte, valutando l'ordine di esecuzione //
+
+		// Prima tutte quelle che non comportano un cambio di scena e non scattano dopo nMosse
+		for (var a = 0; a < azioni.length; a++) {
+			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse === undefined) {
+				I.eseguiIstruzione(azioni[a]);
+				azioni.splice(a, 1); a--;
+				azioneEseguita = 1;
+			}
+		}
+		// Poi quelle che comportano un cambio di scena legate a nMosseVai
+		// Ogni successivo cambio di scena sarà ignorato (vale il primo)
+		for (var a = 0; a < azioni.length; a++) {
+			if (azioni[a].azione === 'vaiA' && azioni[a].mosse !== undefined) {
+				I.eseguiIstruzione(azioni[a]);
+				azioni.splice(a, 1); a--;
+				cambioScena = 1;
+				break;
+			}
+		}
+		// Poi i cambi di scena ordinari, se non ne è già avvenuto uno
+		if (cambioScena === 0) {
+			for (var a = 0; a < azioni.length; a++) {
+				if (azioni[a].azione === 'vaiA' && azioni[a].mosse === undefined) {
+					I.eseguiIstruzione(azioni[a]);
+					azioni.splice(a, 1); a--;
+					cambioScena = 1;
+					break;
+				}
+			}
+		}
+		// Poi i messaggi dopo nMosse
+		// assicurarsi che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
+		for (var a = 0; a < azioni.length; a++) {
+			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse !== undefined) {
+				I.eseguiIstruzione(azioni[a]);
+				azioneEseguita = 1;
+			}
+		}
+
+		// Se è avvenuto un cambio di scena, salta la parte finale (superflua)
+		if (cambioScena === 1) return;
 
 		// Se nessuna azione è stata eseguita, invita a provare altro
 		if (azioneEseguita === 0) {
@@ -626,9 +666,9 @@ var I = {
 		window.scroll(0, window.innerHeight + window.pageYOffset);
 	},
 
-	scriviInput: function(inp, opz) {
+	scriviInput: function(inp) {
 		document.getElementById('input').value = '? ' + inp;
-		I.leggiInput(opz); // Se opz è undefined va bene lo stesso
+		I.leggiInput();
 	},
 
 	controllaOggVar: function(cond) {
@@ -725,32 +765,8 @@ var I = {
 			if (istro.imgH !== undefined) e_imm.height = istro.imgH;
 			e_imm.src = istro.immagine;
 		}
-		if (istro.piuOggetti) {
-			I.impostaOggVar(istro.piuOggetti);
-		}
-		if (istro.menoOggetti) {
-			var mo = [];
-			mo = istro.menoOggetti.split('+');
-			var po = istro.piuOggetti.split('+');
-			for (var io = 0; io < mo.length; io++) {
-				mo[io] = mo[io].split('@');
-				if (mo[io][0] === '') { // Se non sono specificati oggetti è sottointeso che tutti quelli creati, vengono distrutti in questo contenitore
-					for (var ios = 0; ios < po.length; ios++) {
-						po[ios] = po[ios].split('@');
-						var i_canc = S.oggetti[mo[io][1]][1].indexOf(po[ios][0]);
-						if (i_canc != -1) {
-							S.oggetti[mo[io][1]][1].splice(i_canc, 1);
-							S.oggetti[mo[io][1]][2].splice(i_canc, 1);
-						}
-					}
-				} else {
-					var i_canc = S.oggetti[mo[io][1]][1].indexOf(mo[io][0]);
-					if (i_canc != -1) {
-						S.oggetti[mo[io][1]][1].splice(i_canc, 1);
-						S.oggetti[mo[io][1]][2].splice(i_canc, 1);
-					}
-				}
-			}
+		if (istro.oggetti) {
+			I.impostaOggVar(istro.oggetti);
 		}
 		if (istro.variabili) I.impostaOggVar(istro.variabili);
 		if (istro.audio) eseguiAudio(istro.audio);
@@ -779,10 +795,11 @@ var I = {
 				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 			break;
 			case 'vaiA':
+				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni in corso di verifica da parte di leggiInput().
 				switch (istro.scena) {
-					case -1: istruzioniScena(G.nScena); break;
-					case -2: istruzioniScena(G.nScenaP); break;
-					case -3: istruzioniScena(G.nScenaPP); break;
+					case 0: istruzioniScena(G.nScena); break;
+					case -1: istruzioniScena(G.nScenaP); break;
+					case -2: istruzioniScena(G.nScenaPP); break;
 					default: istruzioniScena(istro.scena); break;
 				}
 			break;
@@ -799,7 +816,7 @@ var I = {
 					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? ' + Vista.invioInp + '</p>';
 				}
 				e_txt.innerHTML += '<p'+ali+'>' + istro.output + '</p>';
-
+				// Per procedere serve ora premere un tasto
 				// Siccome nScenaPP (precedente alla precedente) verrà sovrascritto da nScenaP, si può usare come valore temporaneo per il caricamento di scena che effettuerà la funzione prossimaScena()
 				G.nScenaPP = istro.scena
 				// Dopo 100 ms qualsiasi tasto che risulta premuto chiama prossimaScena()
@@ -811,6 +828,7 @@ var I = {
 				Vista.timerPremiTasto = setTimeout(Vista.premiUnTasto, 5000);
 			break;
 		}
+		Vista.testo = e_txt.innerHTML; // Devo tener aggiornato il testo nell'oggetto Vista
 	}
 }
 
@@ -862,9 +880,9 @@ var S = {
 
 	vaiA: function(nS) {
 		switch (nS) {
-			case -1: istruzioniScena(G.nScena); break;
-			case -2: istruzioniScena(G.nScenaP); break;
-			case -3: istruzioniScena(G.nScenaPP); break;
+			case 0: istruzioniScena(G.nScena); break;
+			case -1: istruzioniScena(G.nScenaP); break;
+			case -2: istruzioniScena(G.nScenaPP); break;
 			default: istruzioniScena(nS); break;
 		}
 	},
@@ -1184,7 +1202,7 @@ function cancellaDirezione(nome) {
 }
 function uscita(txt_in, nS, vis, nomeDest) {
 	// txt_in: input dell'utente
-	// nS: numero della scena verso cui andare (-1 è la scena attuale, -2 la scena precedente, -3 quella precedente la precedente)
+	// nS: numero della scena verso cui andare (0 è la scena attuale, -1 la scena precedente, -2 quella precedente la precedente)
 	// vis: opzioni di visibilità ed esplorabilità dell'uscita ('invisibile', 'visibile', 'esplorabile', 'esplorato'/'esplorata')
 	//  invisibile: uscita sempre invisibile
 	//  visibile: visibile (inoltre, se viene esplorata ed è specificato un nome destinazione, il nome comparirà)
@@ -1299,7 +1317,6 @@ function nMosseVai(mosse, nS, rip) {
 	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
 	S.Istruzioni.valore('mossa', 0);
 	S.Istruzioni.valore('azione', 'vaiA');
-	S.Istruzioni.valore('contemporanea', 1);
 	S.Istruzioni.valore('scena', nS);
 	if (rip === undefined) rip = 0; // nMosse non viene ripetuto da impostazione predefinita
 	if (rip === 'ripeti') rip = 1;
@@ -1325,7 +1342,6 @@ function nMosseRispondi(mosse, txt_out, rip) {
 	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
 	S.Istruzioni.valore('mossa', 0);
 	S.Istruzioni.valore('azione', 'rispondi');
-	S.Istruzioni.valore('contemporanea', 1);
 	S.Istruzioni.valore('output', txt_out);
 	if (rip === undefined) rip = 0; // nMosse non viene ripetuto da impostazione predefinita
 	if (rip === 'ripeti') rip = 1;
@@ -1377,7 +1393,7 @@ function _oggetti(oo) {
 	if (oo !== undefined) S.Istruzioni.valore('oggetti', Lingua.normalizzaDiacritici(oo.toLowerCase()));
 }
 function _variabili(vv) {
-	S.Istruzioni.valore('variabili', vv.toLowerCase());
+	S.Istruzioni.valore('variabili', Lingua.normalizzaDiacritici(vv.toLowerCase()));
 }
 function _audio(aud) {
 	S.Istruzioni.valore('audio', aud);

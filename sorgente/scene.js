@@ -1,7 +1,7 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("La mia storia");
-	uscita("guardo|g", -1, "invisibile");
+	uscita("guardo|g", 0, "invisibile");
 	rispondi("vocabolario|v", Lingua.predicatiOrdinati.join(', '));
 	contenitore("inventario", "");
 	rispondi("inventario|i", "Hai con te: @inventario@.");
