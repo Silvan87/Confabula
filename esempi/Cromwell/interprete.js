@@ -400,7 +400,7 @@ var Vista = {
 		// Esegue il file audio se caricato
 		var e_fileAudio = document.getElementById('fileAudio');
 		if (e_fileAudio !== null) e_fileAudio.play();
-		// Segna che conclusa la fase di caricamento della scena
+		// Segna che è conclusa la fase di caricamento della scena
 		Vista.caricamento = 0;
 		// Passa il focus alla casella di input
 		G.pronto();
@@ -607,18 +607,22 @@ var I = {
 		for (var a = 0; a < azioni.length; a++) {
 			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse === undefined) {
 				I.eseguiIstruzione(azioni[a]);
+				// Eventuali rispondiVai contano come cambi di scena ed hanno la priorità
+				if (azioni[a].azione === 'rispondiVai') cambioScena = 1;
 				azioni.splice(a, 1); a--;
 				azioneEseguita = 1;
+				break;
 			}
 		}
-		// Poi quelle che comportano un cambio di scena legate a nMosseVai
-		// Ogni successivo cambio di scena sarà ignorato (vale il primo)
-		for (var a = 0; a < azioni.length; a++) {
-			if (azioni[a].azione === 'vaiA' && azioni[a].mosse !== undefined) {
-				I.eseguiIstruzione(azioni[a]);
-				azioni.splice(a, 1); a--;
-				cambioScena = 1;
-				break;
+		// Poi quelle che comportano un cambio di scena legato a nMosseVai
+		if (cambioScena === 0) {
+			for (var a = 0; a < azioni.length; a++) {
+				if (azioni[a].azione === 'vaiA' && azioni[a].mosse !== undefined) {
+					I.eseguiIstruzione(azioni[a]);
+					azioni.splice(a, 1); a--;
+					cambioScena = 1;
+					break;
+				}
 			}
 		}
 		// Poi i cambi di scena ordinari, se non ne è già avvenuto uno
@@ -633,7 +637,7 @@ var I = {
 			}
 		}
 		// Poi i messaggi dopo nMosse
-		// assicurarsi che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
+		// Assicurarsi che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
 		for (var a = 0; a < azioni.length; a++) {
 			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse !== undefined) {
 				I.eseguiIstruzione(azioni[a]);
@@ -804,8 +808,8 @@ var I = {
 				}
 			break;
 			case 'rispondiVai':
-				document.getElementById('input').style.display = 'none';
-				if (Vista.bastaInvioInp === 0) {
+				if (!istro.mosse) {
+					document.getElementById('input').style.display = 'none';
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
 						coloreInline = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
@@ -813,9 +817,9 @@ var I = {
 						classi += ' coloreTestoInviato';
 					}
 					classi += '"';
-					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? ' + Vista.invioInp + '</p>';
+					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? ' + I.inputGrezzo + '</p>';
 				}
-				e_txt.innerHTML += '<p'+ali+'>' + istro.output + '</p>';
+				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 				// Per procedere serve ora premere un tasto
 				// Siccome nScenaPP (precedente alla precedente) verrà sovrascritto da nScenaP, si può usare come valore temporaneo per il caricamento di scena che effettuerà la funzione prossimaScena()
 				G.nScenaPP = istro.scena

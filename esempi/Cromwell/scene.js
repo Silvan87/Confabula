@@ -32,12 +32,12 @@ function istruzioniGenerali() {
 		rispondi("esamino la gamba|esamino la gamba di sedia", "È legno fragile e un po' scheggiato.");
 	condizioni("no!drago morto", per => {
 		condizioni("drekann3");
-			nMosseVai(2, 23, "ripeti");
+			nMosseVai(2, 23);
 		condizioni("drekann2");
-			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...", "ripeti");
+			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
 			_variabili("no!drekann2+drekann3");
 		condizioni("drekann");
-			nMosseRispondi(2, "Avverti un boato cupo e lontano.", "ripeti");
+			nMosseRispondi(2, "Avverti un boato cupo e lontano.");
 			_variabili("no!drekann+drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
@@ -82,7 +82,7 @@ function istruzioniScena(n) {
 		testo("Sei nel bosco di Pietranera. Una fitta vegetazione ti circonda.<br />Puoi vedere: alti fusti e fitti cespugli.");
 		condizioni("inizio", per => {
 			testo("Hai portato con te un pugnale.");
-			variabili('no!inizio');
+			variabili("no!inizio");
 		});
 		condizioni("no!dentro cespugli", per => {
 			uscita("ovest", 7);
@@ -149,7 +149,7 @@ function istruzioniScena(n) {
 		testo("D'un tratto, tra i ruderi, appare Cromwell, l'abate di Pietranera.<br />Puoi vedere: l'abate.");
 		bloccaDirezioni();
 		condizioni("ampolla bevuta");
-			rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea.", 4);
+			rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea...", 4);
 			_variabili("parole magiche+abate morto+drekann");
 		condizioni("no!ampolla bevuta");
 			rispondi("yggwyrd", "YGGWYRD");
@@ -208,8 +208,7 @@ function istruzioniScena(n) {
 	case 24:
 		immagine("drago.png");
 		testo("Le zanne del drago ti si avventano contro e ti dilaniano orribilmente.");
-		variabili("drekann");
-		scegliVai("Risorgi", -2);
+		scegliVai("Risorgi", 23);
 		break;
 	case 25:
 		intermezzo("Con un'imprevista ingordigia, il drago afferra quel cuore con le sue fauci e inizia a masticarlo. Sembra quasi che aspettasse da tempo questo pasto... dopo circa un minuto lo sguardo del drago si spegne, fissa l'orizzonte e crolla al suolo senza vita.");
@@ -260,7 +259,7 @@ function istruzioniScena(n) {
 			rispondi("apro la porta|entro|entro nella capanna|apro la capanna", "Inutilmente cerchi di aprire la robusta porta. Nonostante l'aspetto fatiscente della costruzione, la porta si rivela molto robusta ed è chiusa a chiave.");
 		condizioni("capanna aperta", per => {
 			uscita("ovest", 14, "esplorabile");
-			rispondiVai("apro la porta|entro|entro nella capanna|apro la capanna|ovest", "Entri nella capanna.", 14);
+			rispondiVai("apro la porta|entro|entro nella capanna|apro la capanna|ovest", "Entri nella capanna...", 14);
 			rispondi("chiudo la porta|chiudo la porta della capanna", "Per sicurezza eviti di richiudere la porta a chiave: dovesse non riaprirsi...");
 		});
 		rispondi("esamino la capanna", "Tra la rigogliosa vegetazione la capanna risulta quasi invisibile. La porta sembra chiusa e le erbacce, sul sentiero che concude ad essa, rivelano il suo stato di abbandono.");
