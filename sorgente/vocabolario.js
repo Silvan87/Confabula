@@ -1,0 +1,13 @@
+function vocabolario() {
+	Lingua.predicati("guardo|osservo|esamino|prendo|inventario|apro|chiudo|entro|esco|leggo");
+	Lingua.equivalenze([
+		["ovest|o"], ["nord|n"], ["est|e"], ["sud|s"],
+		["|'"], ["|il|lo|la|i|gli|le|l|gl"], ["|un|uno|una"],
+		["|di|del|dello|della|dei|degli|delle|dell|d"],
+		["|a|al|allo|alla|ai|agli|alle|all"],
+		["|da|dal|dallo|dalla|dai|dagli|dalle|dall"],
+		["|in|nel|nello|nella|nei|negli|nelle|nell"],
+		["|su|sul|sullo|sulla|sui|sugli|sulle|sull"],
+		["|esamino|esamina"], ["guardo|guarda"], ["osservo|osserva"], ["prendo|prendi"], ["apro|apri"], ["chiudo|chiudi"], ["entro|entra"], ["esco|esci"], ["leggo|leggi"]
+	]);
+}
