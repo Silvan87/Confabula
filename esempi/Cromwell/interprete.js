@@ -548,8 +548,6 @@ var I = {
 		var azioni = []; // Deve raccogliere tutte le istruzioni da eseguire, prima di eseguirle
 
 		livello.forEach(function(L) {
-			I.istroLivello = L;
-
 			for (var ii = 0; ii < S.Istruzioni[L].length; ii++) { // i: indice istruzione
 
 				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro "nMosse" per farle avanzare
@@ -594,6 +592,7 @@ var I = {
 				if (istro['input'] && !Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) continue; // Prossima istruzione
 
 				// Arrivato qui, tutte le condizioni sono soddisfatte, quindi l'istruzione che richiede un'azione va raccolta
+				if (L === 'scena') { istro.livello = 'scena'; } else { istro.livello = 'generali'; }
 				azioni.push(istro);
 			}
 		});
@@ -753,6 +752,7 @@ var I = {
 
 	eseguiIstruzione: function(istro) {
 		// istro: istruzione da eseguire
+		I.istroLivello = istro.livello; // Segnala globalmente se il livello è di scena o generale
 
 		var e_txt = document.getElementById('testo');
 
