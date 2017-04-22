@@ -55,6 +55,7 @@ function istruzioniGenerali() {
 	rispondi("introduco", "Cosa vorresti introdurre e dove?");
 	rispondi("prendo", "Cosa vorresti prendere?");
 	rispondi("apro", "Cosa vorresti aprire?");
+	rispondi("chiudo", "Cosa vorresti chiudere?");
 	rispondi("bevo", "Cosa vorresti bere?");
 	rispondi("strappo", "Cosa vorresti strappare?");
 }
@@ -264,8 +265,9 @@ function istruzioniScena(n) {
 		});
 		rispondi("esamino la capanna", "Tra la rigogliosa vegetazione la capanna risulta quasi invisibile. La porta sembra chiusa e le erbacce, sul sentiero che concude ad essa, rivelano il suo stato di abbandono.");
 		rispondi("esamino la porta", "È una porta massiccia e ben lavorata, anche volendo non avresti i mezzi per sfondarla.");
-		rispondi("apro la porta con la chiave|introduco la chiave nella serratura|apro la capanna con la chiave", "Introduci la chiave nella serratura e la giri ripetutamente. Con due scatti metallici la porta si apre facendo cigolare i cardini.");
-		_variabili("capanna aperta");
+		condizioni("la chiave@i");
+			rispondi("apro la porta con la chiave|introduco la chiave nella serratura|apro la capanna con la chiave", "Introduci la chiave nella serratura e la giri ripetutamente. Con due scatti metallici la porta si apre facendo cigolare i cardini.");
+			_variabili("capanna aperta");
 		condizioni("il pugnale@i");
 			rispondi("apro la porta con il pugnale", "Potresti giusto arrecargli qualche graffio, ma non c'è modo di aprirla cosí...");
 		break;

@@ -5,9 +5,10 @@ var Lingua = {
 	mappaDiacritici: [ // Mappa diacritici per le vocali italiane minuscole
 		{'base':'à', 'letters':/[\u00e0\u00e1]/g},
 		{'base':'è', 'letters':/[\u00e8\u00e9]/g},
-		{'base':'ì', 'letters':/[\u00eC\u00ed\u00ee]/g},
+		{'base':'i', 'letters':/[\u00eC\u00ed\u00ee]/g},
 		{'base':'ò', 'letters':/[\u00f2\u00f3]/g},
-		{'base':'ù','letters':/[\u00f9\u00fa]/g}
+		{'base':'u','letters':/[\u00f9\u00fa]/g}
+		// La i e la u non presentano in italiano parole abbastanza importanti che cambiano di significato in relazione all'accento. Quindi è preferibile avere l'equivalenza di giu e giù, mentre si deve distinguere papa e papà, o e ed è, anche toto e totò.
 	],
 
 	predicati: function(str) {
@@ -43,7 +44,7 @@ var Lingua = {
 			}
 		}
 
-		// Ora, dei gruppi di sinonimi raccolti, si conserva solo il primo sinonimo, trasformando ciascun array associato alle parole ordinate in una parola. Essendoci potenzialmente più di una parola, dato che più gruppi di sinonimi sono possibili, vanno tutte contenute in un array. Se la prima parola in un gruppo è una stringa vuota, va presa sia la stringa vuota che il secondo termine. Infatti, se una frase da verificare è formata da più parole, questa parola in questione si potrà omettere (stringa vuota), ma se la frase è composta da 1 sola parola omettibile, questa non si può omettere.
+		// Ora, dei gruppi di sinonimi raccolti, si conserva solo il primo sinonimo, trasformando ciascun array, associato alle parole ordinate, in una parola. Essendoci potenzialmente più di una parola, dato che più gruppi di sinonimi sono possibili, vanno tutte contenute in un array. Se la prima parola in un gruppo è una stringa vuota, va presa sia la stringa vuota che il secondo termine. Infatti, se una frase da verificare è formata da più parole, questa parola si potrà omettere (stringa vuota), ma se la frase è composta da 1 sola parola omettibile, questa non si può omettere.
 		for (var po in Lingua.equivalenzeOrd) { // po: parola ordinata
 
 			// Prende il primo termine di ogni gruppo per costruire un unico array di termini che sovrascriverà l'array di gruppi
@@ -163,45 +164,41 @@ var Lingua = {
 		// Cicla le frasi dello scrittore
 		for (var f = 0; f < frasi.length; f++) { // f: indice frase scrittore
 
-			// Serve un ciclo a passi variabili, in relazione alle parole omesse
+			// Seguirà un ciclo con meno parole, capace di soffermarsi se una parola, mentre, in relazione alle parole omesse, avanza il confronto se una frase potenzialmente più lunga
 			var ps_slit = 0; // slittamento parola semantica dello scrittore
 			var slit = 0; // slittamento avvenuto o meno mentre si valuta un gruppo di parole semantiche alternative
-			var ps_avan = 0; // avanzamento raggiunto con le parole semantiche, prima di uno slittamento
-			do {
-				// Cicla le parole semantiche nella frase del giocatore (slittando può confrontarsi con le più numerose dello scrittore)
-				for (var ps = ps_avan; ps < frase.length; ps++) { // ps: indice parola semantica
 
-					var ps_ok = 0; // indica una corrispondenza trovata tra una parola semantica del giocatore e dello scrittore
-					slit = 0; // lo slittamento per questa parola corrente non è ancora avvenuto
+			// Cicla le parole semantiche nella frase del giocatore (slittando può confrontarsi con quelle più numerose dello scrittore)
+			for (var ps = 0; ps < frase.length; ps++) { // ps: indice parola semantica
 
-					// Se è stato raggiunto lo slittamento massimo possibile, deve uscire dal ciclo
-					if (frasi[f][ps + ps_slit] === undefined) break;
+				var ps_ok = 0; // indica una corrispondenza trovata tra una parola semantica del giocatore e dello scrittore
+				slit = 0; // lo slittamento per questa parola corrente non è ancora avvenuto
 
-					// Cicla le parole semantiche alternative nella frase del giocatore
-					for (var psa = 0; psa < frase[ps].length; psa++) { // psa: indice parola semantica alternativa
+				// Se è stato raggiunto lo slittamento massimo possibile, deve uscire dal ciclo
+				if (frasi[f][ps + ps_slit] === undefined) break;
 
-						// Cicla le parole semantiche alternative nella frase dello scrittore
-						for (var psa2 = 0; psa2 < frasi[f][ps + ps_slit].length; psa2++) { // psa2: parole semantiche alternative in una frase dello scrittore
+				// Cicla le parole semantiche alternative nella frase del giocatore
+				for (var psa = 0; psa < frase[ps].length; psa++) { // psa: indice parola semantica alternativa
 
-							// Se c'è corrispondenza, esce dal ciclo di parole alternative e passa alla prossima parola
-							if (frase[ps][psa] === frasi[f][ps + ps_slit][psa2]) {
-								ps_ok = 1; ps_avan++; slit = 0; break;
-							// Se c'è una parola omettibile, deve avviare uno slittamento che farà confrontare la parola del giocatore corrente con la parola successiva della frase corrente dello scrittore. Lo slittamento va contato 1 sola volta, però deve essere incrementabile se il prossimo gruppo di psa contiene un altro termine omettibile.
-							} else if (slit === 0 && frasi[f][ps + ps_slit][0] === '') {
-								 slit = 1;
-							}
+					// Cicla le parole semantiche alternative nella frase dello scrittore
+					for (var psa2 = 0; psa2 < frasi[f][ps + ps_slit].length; psa2++) { // psa2: parole semantiche alternative in una frase dello scrittore
+
+						// Se c'è corrispondenza, esce dal ciclo di parole alternative e passa alla prossima parola
+						if (frase[ps][psa] === frasi[f][ps + ps_slit][psa2]) {
+							ps_ok = 1; slit = 0; break;
+						// Se c'è una parola omettibile, deve avviare uno slittamento che farà confrontare la parola del giocatore corrente con la parola successiva della frase corrente dello scrittore. Lo slittamento va contato 1 sola volta, però deve essere incrementabile se il prossimo gruppo di psa contiene un altro termine omettibile.
+						} else if (slit === 0 && frasi[f][ps + ps_slit][0] === '') {
+							 slit = 1;
 						}
-						// Se corrispondenza trovata, esce dal ciclo di parole
-						if (ps_ok === 1) break;
 					}
-					// Se c'è stato uno slittamento incrementa ora, non prima, perché serve solo dopo e prima guasterebbe i conti dei cicli correnti
-					if (slit === 1) ps_slit++;
-					// Se corrispondenza non trovata e non c'erano parole omettibili, deve provare altre frasi
-					if (ps_ok === 0 && ps_slit === 0) break;
+					// Se corrispondenza trovata, esce dal ciclo di parole
+					if (ps_ok === 1) break;
 				}
-			// Il ciclo può ripetere il ciclo di tutte le parole. Tener presente che ps_ok, arrivati qui, riguarda sempre l'ultima parola.
-			// Se l'ultima parola corrisponde, con o senza slittamento deve uscire dal ciclo. Se l'ultima parola non corrisponde, deve continuare a cercare solo se ci sono nuovi slittamenti.
-			} while (ps_ok === 0 && slit === 1);
+				// Se corrispondenza non trovata e non c'erano parole omettibili, deve provare altre frasi
+				if (ps_ok === 0 && slit === 0) break;
+				// Se c'è stato uno slittamento incrementa ora, non prima, perché serve solo dopo e prima guasterebbe i conti dei cicli correnti, inoltre deve rimanere sulla parola corrente del giocatore e fare confronti slittati
+				if (slit === 1) { ps_slit++; ps--; }
+			}
 
 			// Se arriva in fondo ad una frase e l'ultima parola risulta trovata, allora una frase "scrittore" corrisponde alla frase "giocatore", a meno che, la frase dello scrittore ha altre parole ancora, ma quella del giocatore è conclusa. In tal caso, non c'è corrispondenza.
 			if (ps_ok === 1 && frasi[f][frase.length + ps_slit] === undefined) return true;
