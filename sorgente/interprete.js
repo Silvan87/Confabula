@@ -229,9 +229,10 @@ var Vista = {
 		// L'avvio della scena 1 deve resettare la storia
 		if (n == 1) {
 			S.nuovaPartita();
+			Vista.caricamento = 0;
 			G.nScena = 0; // La scena 0 indica che le istruzioni chiamate sono all'interno del blocco istruzioniGenerali
 			istruzioniGenerali(); // (funzione nel file 'scene.js')
-			G.nScena = 1; // Reimposto la scena 1 che è quella appena chiamata
+			G.nScena = 1; G.nScenaP = 1; G.nScenaPP = 1; // Reimposto la scena 1 che è quella appena chiamata
 		};
 
 		// Segna i passaggi di scena
@@ -253,9 +254,10 @@ var Vista = {
 	svuotaScena: function() {
 
 		// Svuota i contenuti e nasconde gli elementi della scena
+		G.luoghiRagg.bloccati = 0;
 		Vista.intermezzo = [];
 		Vista.testo = '';
-		Vista.uscite = ''; G.luoghiRagg.bloccati = 0;
+		Vista.uscite = '';
 		Vista.scelte = '';
 		document.getElementById('audio').innerHTML = '';
 		document.getElementById('scelte').style.visibility = 'hidden';
@@ -502,7 +504,7 @@ var I = {
 		I.inputGrezzo = e_inp.value.trim();
 		if (I.inputGrezzo.charAt(0) == '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
 		// Rifiuta un input vuoto e reimposta la casella di input
-		if (I.inputGrezzo === '') { e_inp.value = '? '; return; }
+		if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
 
 		// Normalizza l'input grezzo del giocatore
 		I.inputNorm = Lingua.normalizzaInput(I.inputGrezzo, 1);
@@ -614,10 +616,13 @@ var I = {
 		if (cambioScena === 0) {
 			for (var a = 0; a < azioni.length; a++) {
 				if (azioni[a].azione === 'vaiA' && azioni[a].mosse !== undefined) {
-					I.eseguiIstruzione(azioni[a]);
-					azioni.splice(a, 1); a--;
-					cambioScena = 1;
-					break;
+					// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
+					if (I.controllaOggVar(azioni[a]) === true) {
+						I.eseguiIstruzione(azioni[a]);
+						azioni.splice(a, 1); a--;
+						cambioScena = 1;
+						break;
+					}
 				}
 			}
 		}
@@ -625,10 +630,13 @@ var I = {
 		if (cambioScena === 0) {
 			for (var a = 0; a < azioni.length; a++) {
 				if (azioni[a].azione === 'vaiA' && azioni[a].mosse === undefined) {
-					I.eseguiIstruzione(azioni[a]);
-					azioni.splice(a, 1); a--;
-					cambioScena = 1;
-					break;
+					// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
+					if (I.controllaOggVar(azioni[a]) === true) {
+						I.eseguiIstruzione(azioni[a]);
+						azioni.splice(a, 1); a--;
+						cambioScena = 1;
+						break;
+					}
 				}
 			}
 		}
@@ -636,8 +644,11 @@ var I = {
 		// Assicurarsi che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
 		for (var a = 0; a < azioni.length; a++) {
 			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse !== undefined) {
-				I.eseguiIstruzione(azioni[a]);
-				azioneEseguita = 1;
+				// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
+				if (I.controllaOggVar(azioni[a])) {
+					I.eseguiIstruzione(azioni[a]);
+					azioneEseguita = 1;
+				}
 			}
 		}
 
@@ -783,7 +794,7 @@ var I = {
 				eseguiAudio(istro.audio);
 			break;
 			case 'rispondi':
-				if (!istro.mosse) {
+				if (istro.mosse === undefined) {
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
 						coloreInline = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
@@ -805,7 +816,7 @@ var I = {
 				}
 			break;
 			case 'rispondiVai':
-				if (!istro.mosse) {
+				if (istro.mosse === undefined) {
 					document.getElementById('input').style.display = 'none';
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
@@ -839,12 +850,19 @@ var G = {
 	nScena: 1, // Numero scena corrente
 	nScenaP: 1, // Numero scena precedente
 	nScenaPP: 1, // Numero scena precedente alla precedente
-	mosse: 0, // Numero mosse del giocatore
 	passaggiScena: {}, // Dizionario che dato un nScena restituisce un array di nScena verso cui si è transitati
 	luoghiRagg: { // Luoghi raggiungibili
 		bloccati: 0,
 		nomi: [], // Nomi di luoghi verso cui dirigersi con il comando 'direzioni'
 		coppie: {} // Sono coppie chiave-valore per avere il nScena di un luogo o il nome di un luogo dato un nScena
+	},
+
+	nuovaPartita: function() {
+		G.passaggiScena = {};
+		G.luoghiRagg = {};
+		G.luoghiRagg.bloccati = 0;
+		G.luoghiRagg.nomi = [];
+		G.luoghiRagg.coppie = {};
 	},
 
 	pronto: function() {
@@ -872,9 +890,7 @@ var S = {
 		// Chiamare vocabolario crea sia i predicati ordinati che le equivalenze ordinate
 		if (Lingua.equivalenzeOrd.length !== 0) vocabolario();
 
-		G.mosse = 0; // Azzera il contatore delle mosse del giocatore
-		G.luoghiRagg.nomi = []; // Cancella tutti i nomi dei luoghi raggiungibili
-		G.luoghiRagg.coppie = {}; // Cancella tutte le associazioni tra nomi dei luoghi e nScena
+		G.nuovaPartita();
 		S.oggetti = {}; // Cancella tutti i contenitori con gli oggetti
 		S.variabili = {}; // Cancella tutte le variabili
 	},
@@ -1227,6 +1243,7 @@ function uscita(txt_in, nS, vis, nomeDest) {
 		// nomeDest viene usato se l'uscita è stata esplorata, altrimenti non deve comparire
 		if (['esplorato','esplorata'].indexOf(vis) !== -1 || G.uscitaEsplorata(nS)) {
 			if (nomeDest) {
+				txt_in += '|'+nomeDest+'|'+nomeUscita+' '+nomeDest;
 				nomeDest = '&nbsp;('+nomeDest+')';
 			} else if (G.luoghiRagg.coppie[nS] !== undefined) {
 				nomeDest = '&nbsp;('+G.luoghiRagg.coppie[nS]+')';
@@ -1349,7 +1366,7 @@ function nMosseRispondi(mosse, txt_out, rip) {
 	S.Istruzioni.valore('ripeti', rip);
 
 	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Scena.stile.inputBox = 1; }
+	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
 	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
