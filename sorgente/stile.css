@@ -4,7 +4,7 @@
 .coloreSfondo { background-color: #000; }
 .coloreTesto { color: #B5A594; }
 .coloreTestoInviato { color: #82776A; }
-.testoCarattere { font-family: Georgia, serif; }
+.testoCarattere { font-family: Verdana, sans-serif; }
 .testoGrandezza { font-size: 20px; line-height: 1.2em; }
 .testoAllineamento { text-align: left; }
 .coloreScelta { color: #9C8159; }
