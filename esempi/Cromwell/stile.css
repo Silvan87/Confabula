@@ -1,14 +1,14 @@
 
 /** Stile personalizzabile **/
 
-@font-face { font-family: "commodore"; src: url(commodore.ttf); }
+@font-face { font-family: "commodore"; src: url("commodore.ttf"); }
 /* Commodore64 Pixelized Free Font - http://all-free-download.com/font/download/commodore_64_pixelized_13026.html */
 
 .coloreSfondo { background-color: #000; }
 .coloreTesto { color: #B5A594; }
 .coloreTestoInviato { color: #82776A; }
 .testoCarattere { font-family: "commodore"; }
-.testoGrandezza { font-size: 20px; letter-spacing: -1.5px; line-height: 1.2em; }
+.testoGrandezza { font-size: 19.5px; letter-spacing: -2px; line-height: 22px; word-spacing: -4px; }
 .testoAllineamento { text-align: left; }
 .coloreScelta { color: #9C8159; }
 .coloreScelta:hover /*colore scelta selezionata*/ { color: #cc0; }
@@ -36,8 +36,9 @@ a {
 img {
 	max-width: 100%;
 	margin: 8px auto 8px auto;
+	image-rendering: pixelated;
 }
-#intermezzo, #testo, #input, #scelte {
+#testo, #input, #scelte {
 	margin: 0 auto 0 auto;
 	padding: 0 8px 0 8px;
 }

@@ -66,7 +66,7 @@ function istruzioniScena(n) {
 	case 1:
 		testo("<br /><span style=\"color:#0b0;\">CROMWELL © MMXVI</span><br />", "centrato");
 		immagine("drago.png");
-		testo("<span style=\"color:#0b0;\">Poteri arcani per soggiogare la morte</span><br /><br />", "centrato");
+		testo("<span style=\"color:#0b0;\">L'abate e il drago della palude</span><br /><br />", "centrato");
 		scegliVai("Inizia", 2, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
 		scegliRispondi("Licenza", "CROMWELL © MMXVI è una rivisitazione dell'avventura testuale EXCALIBUR © MCMLXXXVIII pubblicata sulla rivista Amiga Byte n.8 come opera di pubblico dominio, liberamente copiabile e distribuibile senza scopo di lucro. <a href=\"https://github.com/Druido87/Confabula\" target=\"_blank\">Confabula</a> è l'interprete JavaScript per creare ed eseguire avventure testuali, rilasciato da <a href=\"https://github.com/Druido87\" target=\"_blank\">Druido87</a> con licenza <a href=\"https://github.com/Druido87/Confabula/blob/master/LICENSE\" target=\"_blank\">GNU L-GPL</a>. La storia rivisitata è un esempio di utilizzo di Confabula.", "centrato");
