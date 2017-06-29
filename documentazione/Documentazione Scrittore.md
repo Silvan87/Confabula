@@ -50,17 +50,6 @@ Per quanto non siano necessarie le sotto cartelle, essendo possibile aggiungere 
 
 ## Scrivere una storia "passo passo"
 
+Suppongo ora che abbiate una cartella con il nome della vostra storia, per esempio, "La casa" e dentro contienga i file 'INIZIA.html' e 'interprete.js', i quali non vanno modificati, e i file 'vocabolario.js' e 'scene.js'.
+
 [LAVORI IN CORSO]
-
-Alcune funzioni possono essere utilizzate solo nel blocco istruzioniGenerali() e sono le seguenti.
-
-- titolo("Nome della storia");
-Imposta il titolo della storia all'inizio e non dovrebbe essere più cambiato.
-
-Alcune funzioni possono essere utilizzate solo all'interno di scene specifiche e sono le seguenti.
-
-- intermezzo("Questo testo compare prima della scena corrente");
-Serve per aumentare la dinamicità o creare un po' di suspence prima di presentare il testo di una scena. Questa funzione può essere ripetuta ed avrà l'effetto di presentare successivi testi di intermezzo prima del testo della scena corrente.
-
-Molte funzioni possono essere usate sia nella sezione generale che in scene specifiche e sono le seguenti.
-
