@@ -50,6 +50,6 @@ Per quanto non siano necessarie le sotto cartelle, essendo possibile aggiungere 
 
 ## Scrivere una storia "passo passo"
 
-Suppongo ora che abbiate una cartella con il nome della vostra storia, per esempio, "La casa" e dentro contienga i file 'INIZIA.html' e 'interprete.js', i quali non vanno modificati, e i file 'vocabolario.js' e 'scene.js'.
+Suppongo ora che abbiate una cartella con il nome della vostra storia, per esempio, "La casa" e dentro contenga i file 'INIZIA.html' e 'interprete.js', i quali non vanno modificati, e i file 'vocabolario.js' e 'scene.js'.
 
 [LAVORI IN CORSO]
