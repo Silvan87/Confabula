@@ -7,7 +7,7 @@ function istruzioniGenerali() {
 	rispondi("inventario", "Hai con te: @i@.");
 	rispondi("aiuto", "Scrivi 'istruzioni' per leggere le istruzioni e 'vocabolario' o 'v' per leggere i predicati con cui interagire con gli oggetti.");
 	rispondi("nord|sud|ovest|est|su|giù", "Non è possibile procedere in quella direzione.");
-	rispondi("istruzioni", "Scrivi in prima persona o usa l'imperativo. Puoi omettere gli articoli. Scrivi 'vocabolario' o 'v' per leggere i predicati disponibili. Il predicato 'esamino' è l'unico che può essere omesso. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali. Rileggi una scena scrivendo 'guardo' o 'g'. Scrivi 'inventario' o 'i' per consultarlo.");
+	rispondi("istruzioni", "Scrivi in prima persona o usa l'imperativo. Puoi omettere gli articoli e il predicato 'esamino'. Scrivi 'vocabolario' o 'v' per leggere i predicati disponibili; 'guardo' o 'g' per rileggere una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' quando vuoi rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali.");
 	condizioni("il pugnale@i");
 		rispondi("esamino il pugnale", "È un affilato coltello da caccia, lo hai portato con te pensando sarebbe stato utile.");
 	condizioni("il bastone@i", per => {
@@ -391,7 +391,7 @@ function istruzioniScena(n) {
 		});
 		break;
 	case 19:
-		testo("Improvvisamente una botola si apre sotto i tuoi piedi... Precipiti su dei pali acuminati piantati nel terreno. Non c'è via di scampo! Uno schianto secco e vieni trafitto mortalmente.<span class=\"ascii\">,-'\"\"`-.<br />;        :<br />:          :<br />: (_)  (_) ;<br />`   '`   '<br />:`++++';<br />``..''<\span>");
+		testo("Improvvisamente una botola si apre sotto i tuoi piedi... Precipiti su dei pali acuminati piantati nel terreno. Non c'è via di scampo! Uno schianto secco e vieni trafitto mortalmente.<span class=\"ascii\">,-'\"\"`-.<br />;           :<br />:             :<br />: (_)  (_) ;<br />`    '`    '<br />:`++++';<br />``..''<\span>");
 		scegliVai("Risorgi", 17);
 		break;
 	case 20:
