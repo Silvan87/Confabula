@@ -4,21 +4,21 @@
 
 ## Introduzione
 
-Benvenuto Scrittore! Scrivere un'avventura testuale non potrà mai essere banale, né per la logica di narrazione, né per le conoscenze minime da programmatore. L'intento è quello di semplificare e rendere il processo intuitivo, ma al tempo stesso offrire potenza e flessibilità. Conciliare tanti obiettivi richiederà un impegno da parte dello Scrittore, ma alla fine dello studio di questa documentazione, avrete modo di constatare che sarà piuttosto piacevole scrivere storie interattive.
+Benvenuto *scrittore*! Scrivere un'avventura testuale non potrà mai essere banale, né per la logica di narrazione, né per le conoscenze minime da programmatore. L'intento è quello di semplificare e rendere il processo intuitivo, ma al tempo stesso offrire potenza e flessibilità. Conciliare tanti obiettivi richiederà un impegno da parte dello scrittore, ma alla fine dello studio di questa documentazione, avrete modo di constatare che sarà piuttosto piacevole scrivere storie interattive.
 
 
 ## Scelta del formato HTML
 
 I browser Web sono lettori ormai onnipresenti sui nostri dispositivi ed il formato HTML5 e CSS3 è così ben standardizzato da risolvere il problema di formati speciali che richiedono l'installazione di programmi speciali per essere letti. Inoltre, un browser risolve gli aspetti grafici in modo brillante e semplice, basteranno pochi tocchi per avere risultati graficamente migliori rispetto a vari programmi di avventure testuali.
 
-La programmazione è svolta tramite JavaScript, un linguaggio che permette di rendere interattive le pagine HTML. Non serve una conoscenza difficile di JavaScript, gli aspetti più complessi sono stati separati e racchiusi nel file 'interprete.js', che non servirà mai aprirlo. L'unico file JavaScript su cui lavora lo scrittore è 'scene.js', ma qui le conoscenze di JavaScript richieste sono davvero minime.
+La programmazione è svolta tramite JavaScript, un linguaggio che permette di rendere interattive le pagine HTML. Non serve una conoscenza medio avanzata di JavaScript, gli aspetti più complessi sono stati separati e racchiusi nel file 'interprete.js', che non servirà mai aprirlo. Gli unici file JavaScript su cui lavora lo scrittore sono 'scene.js' e 'vocabolario.js', che richiedono conoscenze elementari di JavaScript.
 
 
 ## Iniziare con una nuova storia
 
-Per creare una nuova storia basterà copiare la cartella 'sorgente' di Confabula, rinominarla con il nome della storia nuova ed usare il vostro editor di testo preferito (è necessaria la colorazione del codice per non impazzire e suggerisco un tema di colori scuro, perché riposa la vista ed è più gradevole) per modificare quasi unicamente 'scene.js'.
+Per creare una nuova storia basterà copiare la cartella 'sorgente' di Confabula, rinominare la cartella con il nome della storia nuova ed usare il vostro editor di testo preferito per lavorare con i file (è necessaria la colorazione del codice per non impazzire e suggerisco un tema di colori scuro, perché riposa la vista ed è più gradevole).
 
-Si fa presente che attualmente le storie sono "in chiaro", ovvero non sono protette con una criptazione del codice. Quindi un utente medio può facilmente ispezionare il sorgente della pagina html della storia ed autosvelarsi tutto. Attualmente ci si affida alla reale intenzione dei giocatore di godersi la storia senza "trucchi", ma è in previsione una protezione del codice e delle immagini su Confabula. La quale non è difficile da implementare, ma ci sono altri aspetti prioritari da sviluppare.
+Si fa presente che attualmente le storie sono "in chiaro", ovvero non sono protette con una criptazione del codice. Quindi un utente medio può facilmente ispezionare il sorgente della pagina html della storia ed autosvelarsi tutto. Attualmente ci si affida alla reale intenzione del giocatore di godersi la storia senza "trucchi", ma è in previsione una protezione del codice e delle immagini su Confabula. La quale non è difficile da implementare, ma ci sono altri aspetti prioritari da sviluppare.
 
 
 ## Albero delle cartelle e dei file
@@ -48,7 +48,7 @@ Il vocabolario è più semplice da gestire, fondamentalmente serve a definire le
 Per quanto non siano necessarie le sotto cartelle, essendo possibile aggiungere immagini, animazioni GIF e audio nelle storie interattive, è comodo organizzare i file multimediali in sotto cartelle: immagini o img, audio, ecc., con il nome che preferite. Come recuperare ed usare questi file multimediali si vedrà in seguito.
 
 
-## Scrivere una storia passo per passo
+## Scrivere una storia "passo passo"
 
 [LAVORI IN CORSO]
 
