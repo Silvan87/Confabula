@@ -1,4 +1,4 @@
-# Documentazione per lo Sviluppatore
+# Documentazione per il Programmatore
 
 ## Introduzione
 
@@ -8,7 +8,7 @@ Confabula produce dei file HTML eseguibili su browser Web. All'avvio si presenta
 #### Come si presenta Confabula allo Scrittore
 Lo scrittore ed autore di un'avventura testuale potrà copiare la cartella 'sorgente', rinominarla con il nome della sua storia e dovrà principalmente editare un file dedicato alle scene dove scriverà la sua storia. Potrà personalizzare anche altri file ed aggiungere immagini o suoni.
 
-#### Come si presenta Confabula allo Sviluppatore
+#### Come si presenta Confabula al Programmatore
 Confabula è programmato in JavaScript 5 (più l'uso delle arrow function di JavaScript 6), i contenuti e la grafica sono realizzati con HTML5 e CSS3. Questa documentazione entrerà nei dettagli per spiegare tutto il codice di Confabula ed eventualmente continuare a svilupparlo.
 
 ## Albero delle cartelle e dei file
@@ -16,7 +16,7 @@ Confabula è programmato in JavaScript 5 (più l'uso delle arrow function di Jav
 Confabula ha una struttura gerarchica molto semplice. I file essenziali sono tutti presenti in un'unica cartella. Eventuali sotto cartelle sono utili per raccogliere immagini, suoni, font, ecc., se ci sono. Di seguito l'elenco dei file essenziali.
 
 #### INIZIA.html
-'INIZIA.html' è un file statico e non verrà mai modificato dallo scrittore, solo eventuali cambi strutturali profondi (quindi rari) possono portare lo sviluppatore (Programmatore) a rivedere alcuni punti.
+'INIZIA.html' è un file statico e non verrà mai modificato dallo scrittore, solo eventuali cambi strutturali profondi (quindi rari) possono portare lo sviluppatore (programmatore) a rivedere alcuni punti.
 
 #### interprete.js
 'interprete.js' è il cervello di Confabula, lo sviluppatore dovrà arricchire di nuove funzioni questo file per mettere a disposizione nuove funzioni per lo scrittore. Inoltre, qui è possibile migliorare la gestione della lingua naturale.
@@ -31,8 +31,11 @@ Inizia con una funzione "istruzioniGenerali" che contiene una serie di istruzion
 
 Infine, c'è un grande blocco internamente suddiviso nel caso 1, 2, 3, ecc., i cui numeri corrispondono alle relative scene. Ciascuna scena è definita da una serie di istruzioni che sono scritte tramite funzioni. Come sopra, tutte le istruzioni delle scene servono a definire le condizioni, continuamente verificate durante il gioco, affinché, quando soddisfatte, giunge il momento di doverle eseguire effettivamente.
 
-Le funzioni che descrivono le istruzioni nelle scene seguono indicativamente questo stile: preparatiAFareQuesto(condizione1, condizione2, effetto1, effetto2);
-Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più intuitivo per lo Scrittore. Lo scrittore deve pensare ad un Scena come da un insieme di righe, in cui per ciascuna riga si descrive qualcosa che può accadere in quella scena.
+Le funzioni che descrivono le istruzioni nelle scene seguono indicativamente questo stile:
+
+	preparatiAFareQuesto(condizione1, condizione2, effetto1, effetto2);
+
+Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più intuitivo per lo Scrittore, egli deve pensare ad un Scena come da un insieme di righe, in cui per ciascuna riga si descrive qualcosa che può accadere in quella scena.
 
 #### vocabolario.js
 'vocabolario.js' è il file che raccoglie le espressioni sinonime, attualmente si può creare il sinonimo di una parola con un'altra parola, ma è in previsione la possibilità di rendere un'espressione di 2 o 3 parole sinonimo di un'altra di una sola parola. Inoltre, potrebbe arricchirsi di nuove potenzialità in futuro.
@@ -44,69 +47,68 @@ Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più
 **N.B.**
 Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazione e non oggetti che possono esistere all'interno delle storie interattive.
 
-#### Oggetto: Vista
+#### ⚫ Oggetto: Vista
 
 **Scopo**: visualizzare la scena corrente.
 
-**Proprietà**: serviranno per definire ogni aspetto della scena corrente (i colori, il testo, ecc.)
+**Proprietà**: serviranno per definire ogni aspetto della scena corrente (i colori, il testo, ecc.).
 
-**Funzioni**: saranno poche, essenzialmente mostra e nascondi Vista.
+**Funzioni**: principalmente mostra e nascondi Vista, ma saranno più articolate.
 
-#### Oggetto: Scene
+#### ⚫ Oggetto: Scene
 
-**Scopo**: è un insieme di scene che memorizza tutte le informazioni relative a ciascuna scena o a tutte le scene in generale. Questo oggetto è definito dal file 'scene.js'.
+**Scopo**: è un insieme di scene che memorizza tutte le informazioni relative a ciascuna scena o relative a tutte le scene insieme. Questo oggetto è definito dal file 'scene.js'.
 
 **Proprietà**: tecnicamente nessuna, ma di fatto il file 'scene.js' definisce le istruzioni generali, ovvero cose che possono accadere in tutte le scene, e le istruzioni specifiche per ciascuna scena, ovvero cose che possono accadere in specifiche scene. Inoltre, ciascuna scena, come fosse in un array, riceve un numero. Le scene non sono in un classico array, ma sono gestite da un selettori di casi. Ciascuna funzione presente nelle scene definisce un'istruzione per quella scena e ciascuna istruzione può essere logicamente concepita come una proprietà della scena.
 
-**Funzioni**: ogni scena corrisponde ad un caso (1, 2, 3, ecc.) nel file 'scene.js', oltre alle istruzioni generali che valgono in tutte le scene. Ogni caso presenta una serie di funzioni, possiamo chiamare queste istruzioni, dato che ciascuna di queste descrive qualcosa che può accadere nella relativa scena, in particolare tramite gli argomenti della funzione si definiscono: le condizioni e gli effetti.
+**Funzioni**: ogni scena corrisponde ad un caso (1, 2, 3, ecc.), più le istruzioni generali (all'inizio) che valgono in tutte le scene. Ogni caso presenta una serie di funzioni, possiamo chiamare queste istruzioni, dato che ciascuna di queste descrive qualcosa che può accadere nella relativa scena, in particolare, tramite gli argomenti della funzione si definiscono le condizioni e gli effetti dell'istruzione.
 
-#### Oggetto: Input
+#### ⚫ Oggetto: Input
 
 **Scopo**: passare il testo dell'utente all'Interprete tramite invio.
 
 **Proprietà**: essenzialmente ci sarà il testo scritto sulla casella.
 
-**Funzioni**: scatteranno ad evento (es. pressione di invio e poco altro) per passare il testo all'Interprete.
+**Funzioni**: quella per far scattare l'evento (es. pressione di invio e poco altro) per passare il testo all'Interprete.
 
 **Note**: Input è una casella di testo che può essere visibile o meno nella Vista.
 
-#### Oggetto: Interprete
+#### ⚫ Oggetto: Interprete
 
 **Scopo**: decide in base all'Input del Giocatore quali azioni eseguire sulla Vista, sulle Scene, sul Giocatore ed in generale su ogni aspetto del gioco.
 
 **Proprietà**: non possiede rilevanti proprietà, queste sono tutte presenti sugli oggetti manipolati dall'Interprete.
 
-**Funzioni**: conterrà molte sofisticate funzioni per gestire la lingua ed eseguire azioni che nelle Scene sono solo descritte e mancano dell'effettivo codice che realizzerà gli effetti desiderati. Tale codice è sempre contenuto nell'Interprete.
+**Funzioni**: conterrà molte sofisticate funzioni per eseguire le azioni che nelle Scene sono solo descritte e mancano dell'effettivo codice che realizza gli effetti desiderati.
 
-#### Oggetto: Giocatore
+#### ⚫ Oggetto: Giocatore
 
-**Scopo**: tener traccia delle informazioni relative al Giocatore ed eventualmente eseguire azioni sul Giocatore.
-
-**Proprietà**: deducibili dallo scopo.
-
-**Funzioni**: dovrebbero essere poche e marginali.
-
-#### Oggetto: Storia
-
-**Scopo**: tener traccia delle informazioni relative allo sviluppo della storia della sua totalità.
+**Scopo**: tener traccia delle informazioni relative al Giocatore ed eventualmente eseguire poche pertinenti azioni.
 
 **Proprietà**: deducibili dallo scopo.
 
-**Funzioni**: dovrebbero essere poche e marginali.
+**Funzioni**: dovrebbero essere poche, in particolare "nuova partita".
 
-#### Oggetto: Lingua
+#### ⚫ Oggetto: Storia
 
-**Scopo**: conservare informazioni e dizionari sull'elaborazione della lingua ed eseguire funzioni generali.
+**Scopo**: tener traccia delle informazioni relative allo sviluppo della storia nella sua totalità.
+
+**Proprietà**: deducibili dallo scopo, in particolare oggetti e variabili (non nel senso della programmazione, ma intesi nel gioco: chiavi, tavoli, "libro preso", ecc.) vanno collocati qui.
+
+**Funzioni**: dovrebbero essere poche, in particolare "nuova partita" e "spostati alla scena n...".
+
+#### ⚫ Oggetto: Lingua
+
+**Scopo**: conservare informazioni ed eseguire funzioni generali per l'elaborazione della lingua.
 
 **Proprietà**: principalmente occorre inserire tutte le espressioni sinonime (ovvero i sinonimi, ma anche espressioni equivalenti).
 
-**Funzioni**: si deve gestire il rapporto tra l'input del giocatore e il testo atteso dallo scrittore, più altre funzioni di normalizzazione del testo.
+**Funzioni**: si deve gestire il rapporto tra l'input del giocatore e il testo atteso dallo scrittore, più altre funzioni di normalizzazione del testo. Deve essere presente una funzione che trasforma l'imperativo seconda persona in indicativo presente prima persona.
 
-==================================================
+
 ### Livello 1 - Proprietà e funzioni in dettaglio
-==================================================
 
-#### Oggetto: Vista
+#### ⚫ Oggetto: Vista
 
 **Proprietà**
 
@@ -132,7 +134,7 @@ _larghezzaMax_: larghezza massima della Vista specificata in pixel
 _nascondi_: nasconde l'intera vista
 _mostra_: mostra la vista secondo tutte le proprietà impostate
 
-#### Oggetto: Scene
+#### ⚫ Oggetto: Scene
 
 **Funzioni**
 
@@ -142,7 +144,7 @@ A questo livello lo Sviluppatore non deve implementare le funzioni, ma può faci
 
 La completa lista delle funzioni utilizzabili nelle scene è raccolta nella Documentazione per lo Scrittore e lì si rimanda.
 
-#### Oggetto: Input
+#### ⚫ Oggetto: Input
 
 **Proprietà**
 
@@ -154,13 +156,13 @@ _display_: servirà poter visualizzare o far sparire la casella di testo
 _onblur_: quando la casella perde il focus dopo pochi secondi lo deve riprendere
 _onkeypress_: quando si preme invio il testo va passato all'interprete
 
-#### Oggetto: Interprete
+#### ⚫ Oggetto: Interprete
 
 **Funzioni**
 
 Occorre sviluppare la documentazione mano a mano che si procede con la programmazione. Questa parte sarà la più difficile ed estesa di Confabula.
 
-#### Oggetto: Giocatore
+#### ⚫ Oggetto: Giocatore
 
 _nMosse_: n. delle mosse o azioni svolte nel gioco (è il modo più opportuno di contare il tempo in un'avventura testuale)
 _nPassaggiScena_: n. dei passaggi da scena a scena (una scena è solo un testo o una situazione di fronte al giocatore)
@@ -182,7 +184,7 @@ _nomeLuogoP_: nome del luogo precedente
 _luoghiRaggiungibili_: array dei nomi dei luoghi raggiungibili
 _usciteEsplorate_: elenco delle uscite (salvate come coppia di ID da nScena a nScena) che sono state attraversate
 
-#### Oggetto: Storia
+#### ⚫ Oggetto: Storia
 
 **Proprietà**
 
@@ -194,7 +196,7 @@ _contenitori_: un array di array, che elenca i contenitori creati dallo scrittor
 _variabili_: tutte le variabili di cui lo scrittore ha bisogno nella storia (es. drago morto, libro letto, ecc.)
 _vocabolario_: (facoltativo) è l'elenco dei predicati che il giocatore può usare nella storia
 
-#### Oggetto: Lingua
+#### ⚫ Oggetto: Lingua
 
 **Proprietà**
 
@@ -208,11 +210,9 @@ _normalizzaInput_: sia l'input del giocatore che il testo previsto dallo scritto
 _confrontaInput_: dati due input normalizzati risponde vero se sono equivalenti e falso se sono differenti (di fatto si realizza un confronto semantico)
 
 
-##################################################
 ## Come implementare la struttura logica
-<!-- Capitolo 3 -->
 
-Il file 'interprete.js' sarà un unico file che include non solo l'oggetto Interprete, ma anche quasi tutti gli altri.
+Il file 'interprete.js' sarà un unico file che include non solo l'oggetto Interprete, ma anche quasi tutti gli altri oggetti logici: Lingua, Vista, Interprete (abbreviato con I), Giocatore (abbreviato con G), Storia (abbreviato con S), Condizioni.
 
 #### Oggetto: Vista
 
