@@ -16,7 +16,7 @@ function vocabolario() {
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
 		["inventario|i"], ["direzione|d"],
-		["|x|esamino"], ["infilo|introduco"],
+		["|esamino|x"], ["infilo|introduco"],
 		["chiave|chiavi"], ["rovo|rovi"], ["scodella|ciotola"], ["ampolla|bottiglietta"], ["pugnale|coltello"], ["ramo|rametto|ramoscello|rami|rametti|ramoscelli"], ["fusti|alberi"], ["tombe|tumuli"], ["tomba|lapide"], ["bocca|fauci"]
 	]);
 }

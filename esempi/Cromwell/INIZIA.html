@@ -12,7 +12,7 @@
 <body id="corpo" class="coloreSfondo coloreTesto testoCarattere testoGrandezza testoAllineamento" onload="istruzioniScena(1)">
 	<div id="audio"></div>
 	<div id="testo" class="testoAllineamento larghezzaMaxStoria"></div>
-	<input id="input" class="coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria" type="text" value="? " tabindex="1" onkeypress="if (event.keyCode == 13) I.leggiInput();" onblur="setTimeout(G.pronto, 2000)" />
+	<input id="input" class="coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria" type="text" value="? " tabindex="1" onkeydown="if (this.readOnly === false) { switch (event.keyCode) { case 13: I.leggiInput(); break; case 38: this.disabled = true; Vista.scorriCronoInput(-1); break; case 40: Vista.scorriCronoInput(1); }}" />
 	<div id="scelte" class="larghezzaMaxStoria coloreScelta"></div>
 </body>
 </html>

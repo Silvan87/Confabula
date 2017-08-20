@@ -68,7 +68,8 @@ var Lingua = {
 		// Considerando che la prima parola dell'input del giocatore può essere un predicato, si deve chiamare questa funzione per eventualmente normalizzarla da imperativo a indicativo 1a persona.
 
 		// Se il predicato non termina con -a o -i, allora non è un imperativo da trasformare
-		if (str.substr(-1, 1) !== 'a' && str.substr(-1, 1) !== 'i') return str;
+		// Rifiuta anche le parole costituite da una sola lettera
+		if (str.length === 1 || (str.substr(-1, 1) !== 'a' && str.substr(-1, 1) !== 'i')) return str;
 
 		// Elenco di tutti gli imperativi che si trasformano in indicativo 1a persona in modo irregolare
 		var imperativiIrregolari = {'abbi':'ho','accogli':'accolgo','addivieni':'addivengo','adempi':'adempio','anteponi':'antepongo','appari':'appaio','appartieni':'appartengo','apponi':'appongo','assali':'assalgo','astieni':'astengo','astrai':'astraggo','attieni':'attengo','attrai':'attraggo','avvali':'avvalgo','avvieni':'avvengo','circonvieni':'circonvengo','cogli':'colgo','compari':'compaio','compi':'compio','compiaci':'compiaccio','componi':'compongo','conduoli':'condolgo','confa':'confaccio','confai':'confaccio','contieni':'contengo','contraffai':'contraffaccio','contrai':'contraggo','contrapponi':'contrappongo','contravvieni':'contravvengo','convieni':'convengo','cuci':'cucio','cuoci':'cuocio','da':'do','dai':'do','decomponi':'decompongo','deponi':'depongo','detieni':'detengo','detrai':'detraggo','di':'dico','disassuefai':'disassuefaccio','disciogli':'disciolgo','discomponi':'discompongo','disconvieni':'disconvengo','disfa':'disfaccio','disfà':'disfaccio','dispari':'dispaio','dispiaci':'dispiaccio','disponi':'dispongo','distogli':'distolgo','distrai':'distraggo','disvogli':'disvoglio','divieni':'divengo','duoli':'dolgo','empi':'empio','equivali':'equivalgo','esponi':'espongo','estrai':'estraggo','fa':'faccio','fai':'faccio','frapponi':'frappongo','giaci':'giaccio','giustapponi':'giustappongo','imponi':'impongo','incogli':'incolgo','indi':'indico','indisponi':'indispongo','interdi':'interdico','interponi':'interpongo','intervieni':'intervengo','intrattieni':'intrattengo','invali':'invalgo','liquefa':'liquefaccio','liquefai':'liquefaccio','malfa':'malfaccio','malfai':'malfaccio','mantieni':'mantengo','molci':'molcio','muori':'muoio','nuoci':'nuoccio','opponi':'oppongo','ottieni':'ottengo','pari':'paio','permani':'permango','pervieni':'pervengo','piaci':'piaccio','poni':'pongo','posponi':'pospongo','predi':'predico','predisponi':'predispongo','premuori':'premuoio','preponi':'prepongo','prescegli':'prescelgo','presupponi':'presuppongo','prevali':'prevalgo','previeni':'prevengo','proponi':'propongo','prosciogli':'prosciolgo','protrai':'protraggo','provieni':'provengo','puoi':'posso','putrefai':'putrefaccio','raccogli':'raccolgo','rarefai':'rarefaccio','rattieni':'rattengo','reci':'recio','redi':'redico','retrai':'retraggo','riabbi':'riò','riabbia':'riò','riai':'riò','riappari':'riappaio','riassali':'riassalgo','ricogli':'ricolgo','ricompari':'ricompaio','ricomponi':'ricompongo','riconvieni':'riconvengo','ricuci':'ricucio','ricuoci':'ricuocio','rida':'ridò','ridà':'ridò','ridai':'ridò','ridi':'ridico','ridisponi':'ridispongo','riempi':'riempio','rifa':'rifaccio','rifai':'rifaccio','rimani':'rimango','rinvieni':'rinvengo','riponi':'ripongo','riproponi':'ripropongo','risali':'risalgo','risappi':'riso','riscegli':'riscelgo','risciogli':'risciolgo','risii':'risono','risostieni':'risostengo','risovvieni':'risovvengo','rista':'ristò','ristà':'ristò','ristai':'ristò','ritieni':'ritengo','ritogli':'ritolgo','ritrai':'ritraggo','riva':'rivado','rivai':'rivado','rivali':'rivalgo','rivuoi':'rivoglio','sali':'salgo','sappi':'so','scegli':'scelgo','sciogli':'sciolgo','scompari':'scompaio','scompiaci':'scompiaccio','scomponi':'scompongo','sconvieni':'sconvengo','scuci':'scucio','scuoci':'scuocio','sfa':'sfaccio','sfai':'sfaccio','sii':'sono','soggiaci':'soggiaccio','sopraffa':'sopraffaccio','sopraffai':'sopraffaccio','sopravvieni':'sopravvengo','sostieni':'sostengo','sottaci':'sottaccio','sottoesponi':'sottoespongo','sottoponi':'sottopongo','sottosta':'sottostò','sottostà':'sottostò','sottostai':'sottostò','sottrai':'sottraggo','sovraesponi':'sovraespongo','sovrapponi':'sovrappongo','sovresponi':'sovrespongo','sovvieni':'sovvengo','spegni':'spengo','spiaci':'spiaccio','sta':'sto','stai':'sto','stracuoci':'stracuocio','strafa':'strafaccio','strafai':'strafaccio','stupefa':'stupefaccio','stupefai':'stupefaccio','suoli':'soglio','supponi':'suppongo','svieni':'svengo','taci':'taccio','tieni':'tengo','togli':'tolgo','torrefa':'torrefaccio','torrefai':'torrefaccio','trai':'traggo','trascegli':'trascelgo','traspari':'traspaio','trasponi':'traspongo','trattieni':'trattengo','tumefa':'tumefaccio','tumefai':'tumefaccio','va':'vado','vai':'vado','vali':'valgo','vieni':'vengo','vogli':'voglio','vuoi':'voglio'};
@@ -145,10 +146,10 @@ var Lingua = {
 			for (var p = 0; p < frasiSintattiche[f].length; p++) { // p: indice parola
 				// Prepara un array vuoto che potrà contenere più parole semantiche alternative
 				frasiSemantiche[f][p] = [];
-				// Se il termine non è presente nelle equivalenze, allora non ha sinonimi e va usato com'è
-				if (Lingua.equivalenzeOrd[frasiSintattiche[f][p]] === undefined) {
-					frasiSemantiche[f][p].push(frasiSintattiche[f][p]);
-				} else {
+				// Il termine va comunque conservato così com'è
+				frasiSemantiche[f][p].push(frasiSintattiche[f][p]);
+				// Il termine va anche cercato nelle equivalenze e queste aggiunte in forma normalizzata
+				if (Lingua.equivalenzeOrd[frasiSintattiche[f][p]] !== undefined) {
 					var sn = 0; // sn: stringa nulla
 					for (var psa = 0; psa < Lingua.equivalenzeOrd[frasiSintattiche[f][p]].length; psa++) { // psa: parola semantica alternativa
 						// Copio il sinonimo normalizzato per ridurre i calcoli
@@ -182,7 +183,7 @@ var Lingua = {
 						if (Lingua.equivalenzeOrd[indicativo1aP] === undefined) {
 							frasiSemantiche[f][0].push(indicativo1aP);
 						} else {
-						var sn = 0; // sn: stringa nulla
+							var sn = 0; // sn: stringa nulla
 							for (var psa = 0; psa < Lingua.equivalenzeOrd[indicativo1aP].length; psa++) { // psa: parola semantica alternativa
 								// Copio il sinonimo normalizzato per ridurre i calcoli
 								var sinonimoNorm = Lingua.equivalenzeOrd[indicativo1aP][psa];
@@ -262,6 +263,8 @@ var Lingua = {
 
 var Vista = {
 
+	cronoInput: [], // Cronologia degli input del giocatore
+	nCronoInput: 0, // Numero dell'input su cui ci si trova attualmente
 	caricamento: 0, // Indica se la vista è in preparazione ed il caricamento è concluso o meno
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
@@ -359,7 +362,7 @@ var Vista = {
 			Vista.intermezzo.splice(0, 1);
 			// Dopo 100 ms qualsiasi tasto che risulta premuto chiama passaIntermezzo()
 			setTimeout(function() {
-				document.addEventListener('keypress', Vista.passaIntermezzo);
+				document.addEventListener('keydown', Vista.passaIntermezzo);
 				document.addEventListener('click', Vista.passaIntermezzo);
 				}, 100);
 			// Dopo 5 sec compare la scritta "Premi un tasto" sotto il testo dell'intermezzo
@@ -503,40 +506,58 @@ var Vista = {
 		return out.join('');
 	},
 
+	scorriCronoInput: function(n) {
+		// L'evento keydown disabilita input box per non vedere il cursore del testo (spiacevole perché andando all'indietro con la cronologia input, il cursore si colloca prima all'inizio e poi alla fine). L'unica soluzione valida è disabilitare input box e farlo tornare pronto dopo pochissimo tempo
+		setTimeout(G.pronto, 100);
+		
+		// Se la cronologia è vuota annulla il comando
+		if (Vista.cronoInput.length === 0) return;
+
+		// Scorre di n (-1 o +1) la cronologia degli input
+		var e_inp = document.getElementById('input');
+		Vista.nCronoInput = Vista.nCronoInput + n;		
+		if (Vista.nCronoInput < 0) Vista.nCronoInput = 0;
+		if (Vista.nCronoInput > Vista.cronoInput.length - 1) {
+			Vista.nCronoInput = Vista.cronoInput.length;
+			e_inp.value = '? ';
+		} else {
+			e_inp.value = '? ' + Vista.cronoInput[Vista.nCronoInput];
+		}
+	},
+
 	premiUnTasto: function() {
 		var e_txt = document.getElementById('testo');
 		e_txt.innerHTML += '<p>[Premi un tasto per continuare]</p>';
 	},
 
 	passaErrore: function(event) {
-		document.removeEventListener('keypress', Vista.passaErrore);
+		document.removeEventListener('keydown', Vista.passaErrore);
 		document.removeEventListener('click', Vista.passaErrore);
 		clearTimeout(Vista.timerPassaErrore);
 		if (Vista.timerPassaErrore === undefined) return;
 		Vista.timerPassaErrore = undefined;
 		var e_inp = document.getElementById('input');
-		if (event !== undefined && event.keyCode !== undefined && event.keyCode !== 0) {
-			e_inp.value = '? ' + String.fromCharCode(event.keyCode);
-		} else {
-			e_inp.value = '? ';
-		}
+		e_inp.value = '? ';
 		e_inp.style.color = Vista.coloreTestoP;
 		e_inp.className = 'coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria';
 		e_inp.readOnly = false;
-		e_inp.focus();
-		// Posiziona il cursore in fondo alla stringa
-		e_inp.setSelectionRange(6, 6); // (6 è un valore di sicurezza)
+		if (event.keyCode === 38) {
+			e_inp.disabled = true;
+			Vista.scorriCronoInput(-1);
+		} else {
+			setTimeout(G.pronto, 100);
+		}
 	},
 
 	passaIntermezzo: function() {
-		document.removeEventListener('keypress', Vista.passaIntermezzo);
+		document.removeEventListener('keydown', Vista.passaIntermezzo);
 		document.removeEventListener('click', Vista.passaIntermezzo);
 		clearTimeout(Vista.timerPremiTasto);
 		Vista.mostra();
 	},
 
 	prossimaScena: function() {
-		document.removeEventListener('keypress', Vista.prossimaScena);
+		document.removeEventListener('keydown', Vista.prossimaScena);
 		document.removeEventListener('click', Vista.prossimaScena);
 		clearTimeout(Vista.timerPremiTasto);
 		istruzioniScena(G.nScenaPP);
@@ -559,6 +580,12 @@ var I = {
 
 		// Rifiuta un input vuoto e reimposta la casella di input
 		if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
+
+		// Salva l'input nella cronologia degli input con limite 20 elementi
+		// Se l'input precedente è uguale a quello attuale, non lo aggiunge
+		if (I.inputGrezzo !== Vista.cronoInput[Vista.cronoInput.length - 1]) Vista.cronoInput.push(I.inputGrezzo);
+		if (Vista.cronoInput.length === 21) Vista.cronoInput.splice(0, 1);
+		Vista.nCronoInput = Vista.cronoInput.length;
 
 		// Normalizza l'input grezzo del giocatore
 		I.inputNorm = Lingua.normalizzaInput(I.inputGrezzo, 1);
@@ -720,7 +747,7 @@ var I = {
 			Vista.timerPassaErrore = setTimeout(Vista.passaErrore, 1000);
 			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di errore
 			setTimeout(function() {
-				document.addEventListener('keypress', Vista.passaErrore);
+				document.addEventListener('keydown', Vista.passaErrore);
 				document.addEventListener('click', Vista.passaErrore);
 				}, 100);
 		} else {
@@ -887,7 +914,7 @@ var I = {
 				G.nScenaPP = istro.scena
 				// Dopo 100 ms qualsiasi tasto che risulta premuto chiama prossimaScena()
 				setTimeout(function() {
-					document.addEventListener('keypress', Vista.prossimaScena);
+					document.addEventListener('keydown', Vista.prossimaScena);
 					document.addEventListener('click', Vista.prossimaScena);
 					}, 100);
 				// Dopo 5 sec compare la scritta "Premi un tasto" sotto il testo dell'intermezzo
@@ -921,9 +948,10 @@ var G = {
 
 	pronto: function() {
 		var e_inp = document.getElementById('input');
+		e_inp.disabled = false;
 		e_inp.focus();
-		// Posiziona il cursore in fondo alla stringa predefinita '? '
-		if (e_inp.value == '? ') e_inp.setSelectionRange(4, 4); // (4 è un valore di sicurezza)
+		// Posiziona il cursore in fondo
+		e_inp.setSelectionRange(e_inp.value.length, e_inp.value.length);
 	},
 
 	uscitaEsplorata: function(nS) {
