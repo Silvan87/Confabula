@@ -1,6 +1,9 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("La mia storia");
+	rispondi("quit|exit", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
+	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
+	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);
 	uscita("guardo|g", 0, "invisibile");
 	rispondi("vocabolario|v", Lingua.predicatiOrdinati.join(', '));
 	contenitore("inventario", "");

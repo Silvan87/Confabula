@@ -4,7 +4,7 @@
 function vocabolario() {
 	Lingua.predicati("osservo|esamino|entro|esco|leggo|inventario|infilo|introduco|prendo|guardo|apro|chiudo|bevo|strappo");
 	Lingua.equivalenze([
-		["ovest|o"], ["nord|n"], ["est|e"], ["sud|s"],
+		["ovest|o|w"], ["nord|n"], ["est|e"], ["sud|s"],
 		["|il|lo|la|i|gli|le|l|gl"], ["|un|uno|una"],
 		["di|del|dello|della|dei|degli|delle|dell|d"],
 		["a|al|allo|alla|ai|agli|alle|all"],
@@ -16,7 +16,7 @@ function vocabolario() {
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
 		["inventario|i"], ["direzione|d"],
-		["|esamino"], ["g|guardo"], ["infilo|introduco"],
+		["|x|esamino"], ["infilo|introduco"],
 		["chiave|chiavi"], ["rovo|rovi"], ["scodella|ciotola"], ["ampolla|bottiglietta"], ["pugnale|coltello"], ["ramo|rametto|ramoscello|rami|rametti|ramoscelli"], ["fusti|alberi"], ["tombe|tumuli"], ["tomba|lapide"], ["bocca|fauci"]
 	]);
 }
