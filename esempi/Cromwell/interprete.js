@@ -64,6 +64,22 @@ var Lingua = {
 		}
 	},
 
+	normalizzaImperativo: function(str) {
+		// Considerando che la prima parola dell'input del giocatore può essere un predicato, si deve chiamare questa funzione per eventualmente normalizzarla da imperativo a indicativo 1a persona.
+
+		// Se il predicato non termina con -a o -i, allora non è un imperativo da trasformare
+		if (str.substr(-1, 1) !== 'a' && str.substr(-1, 1) !== 'i') return str;
+
+		// Elenco di tutti gli imperativi che si trasformano in indicativo 1a persona in modo irregolare
+		var imperativiIrregolari = {'abbi':'ho','accogli':'accolgo','addivieni':'addivengo','adempi':'adempio','anteponi':'antepongo','appari':'appaio','appartieni':'appartengo','apponi':'appongo','assali':'assalgo','astieni':'astengo','astrai':'astraggo','attieni':'attengo','attrai':'attraggo','avvali':'avvalgo','avvieni':'avvengo','circonvieni':'circonvengo','cogli':'colgo','compari':'compaio','compi':'compio','compiaci':'compiaccio','componi':'compongo','conduoli':'condolgo','confa':'confaccio','confai':'confaccio','contieni':'contengo','contraffai':'contraffaccio','contrai':'contraggo','contrapponi':'contrappongo','contravvieni':'contravvengo','convieni':'convengo','cuci':'cucio','cuoci':'cuocio','da':'do','dai':'do','decomponi':'decompongo','deponi':'depongo','detieni':'detengo','detrai':'detraggo','di':'dico','disassuefai':'disassuefaccio','disciogli':'disciolgo','discomponi':'discompongo','disconvieni':'disconvengo','disfa':'disfaccio','disfà':'disfaccio','dispari':'dispaio','dispiaci':'dispiaccio','disponi':'dispongo','distogli':'distolgo','distrai':'distraggo','disvogli':'disvoglio','divieni':'divengo','duoli':'dolgo','empi':'empio','equivali':'equivalgo','esponi':'espongo','estrai':'estraggo','fa':'faccio','fai':'faccio','frapponi':'frappongo','giaci':'giaccio','giustapponi':'giustappongo','imponi':'impongo','incogli':'incolgo','indi':'indico','indisponi':'indispongo','interdi':'interdico','interponi':'interpongo','intervieni':'intervengo','intrattieni':'intrattengo','invali':'invalgo','liquefa':'liquefaccio','liquefai':'liquefaccio','malfa':'malfaccio','malfai':'malfaccio','mantieni':'mantengo','molci':'molcio','muori':'muoio','nuoci':'nuoccio','opponi':'oppongo','ottieni':'ottengo','pari':'paio','permani':'permango','pervieni':'pervengo','piaci':'piaccio','poni':'pongo','posponi':'pospongo','predi':'predico','predisponi':'predispongo','premuori':'premuoio','preponi':'prepongo','prescegli':'prescelgo','presupponi':'presuppongo','prevali':'prevalgo','previeni':'prevengo','proponi':'propongo','prosciogli':'prosciolgo','protrai':'protraggo','provieni':'provengo','puoi':'posso','putrefai':'putrefaccio','raccogli':'raccolgo','rarefai':'rarefaccio','rattieni':'rattengo','reci':'recio','redi':'redico','retrai':'retraggo','riabbi':'riò','riabbia':'riò','riai':'riò','riappari':'riappaio','riassali':'riassalgo','ricogli':'ricolgo','ricompari':'ricompaio','ricomponi':'ricompongo','riconvieni':'riconvengo','ricuci':'ricucio','ricuoci':'ricuocio','rida':'ridò','ridà':'ridò','ridai':'ridò','ridi':'ridico','ridisponi':'ridispongo','riempi':'riempio','rifa':'rifaccio','rifai':'rifaccio','rimani':'rimango','rinvieni':'rinvengo','riponi':'ripongo','riproponi':'ripropongo','risali':'risalgo','risappi':'riso','riscegli':'riscelgo','risciogli':'risciolgo','risii':'risono','risostieni':'risostengo','risovvieni':'risovvengo','rista':'ristò','ristà':'ristò','ristai':'ristò','ritieni':'ritengo','ritogli':'ritolgo','ritrai':'ritraggo','riva':'rivado','rivai':'rivado','rivali':'rivalgo','rivuoi':'rivoglio','sali':'salgo','sappi':'so','scegli':'scelgo','sciogli':'sciolgo','scompari':'scompaio','scompiaci':'scompiaccio','scomponi':'scompongo','sconvieni':'sconvengo','scuci':'scucio','scuoci':'scuocio','sfa':'sfaccio','sfai':'sfaccio','sii':'sono','soggiaci':'soggiaccio','sopraffa':'sopraffaccio','sopraffai':'sopraffaccio','sopravvieni':'sopravvengo','sostieni':'sostengo','sottaci':'sottaccio','sottoesponi':'sottoespongo','sottoponi':'sottopongo','sottosta':'sottostò','sottostà':'sottostò','sottostai':'sottostò','sottrai':'sottraggo','sovraesponi':'sovraespongo','sovrapponi':'sovrappongo','sovresponi':'sovrespongo','sovvieni':'sovvengo','spegni':'spengo','spiaci':'spiaccio','sta':'sto','stai':'sto','stracuoci':'stracuocio','strafa':'strafaccio','strafai':'strafaccio','stupefa':'stupefaccio','stupefai':'stupefaccio','suoli':'soglio','supponi':'suppongo','svieni':'svengo','taci':'taccio','tieni':'tengo','togli':'tolgo','torrefa':'torrefaccio','torrefai':'torrefaccio','trai':'traggo','trascegli':'trascelgo','traspari':'traspaio','trasponi':'traspongo','trattieni':'trattengo','tumefa':'tumefaccio','tumefai':'tumefaccio','va':'vado','vai':'vado','vali':'valgo','vieni':'vengo','vogli':'voglio','vuoi':'voglio'};
+
+		if (imperativiIrregolari[str] !== undefined) {
+			return imperativiIrregolari[str];
+		} else {
+			return str.substr(0, str.length - 1)+'o';
+		}
+	},
+
 	normalizzaDiacritici: function(str) {
 		for (var i = 0; i < Lingua.mappaDiacritici.length; i++) {
 			str = str.replace(Lingua.mappaDiacritici[i].letters, Lingua.mappaDiacritici[i].base);
@@ -71,15 +87,16 @@ var Lingua = {
 		return str;
 	},
 
-	disarticolaEspressioniEq: function(str, nFrasi) {
+	disarticolaEspressioniEq: function(str, utente) {
 		// str: è una stringa di soli caratteri minuscoli e senza diacritici
+		// utente: 1 è il giocatore, 2 è lo scrittore
 
 		// Questa funzione rende utilizzabile la sintassi di Confabula per scrivere varie frasi alternative servendosi di caratteri speciali:
 		// | questo significa 'oppure'. Es. "apro la porta con la chiave|introduco la chiave nella serratura"
 		// [] queste definiscono un gruppo, utile per indicare parti facoltative. Es. "osservo le [|alte] conifere" - Notare che senza | non sarebbe cambiato nulla, ma mettere un'alternativa vuota all'aggettivo 'alte' significa che 'alte' può esserci o meno. Altro es. "parlo al [mago|Cromwell|stregone|abate]" - In questo modo almeno un termine è richiesto. Inoltre, le espressioni equivalenti definite all'inizio realizzano implicitamente l'equivalenza tra, per esempio, "a|al|allo| ecc."
 		var frasi;
 
-		if (nFrasi === 1) { // input inviato dal giocatore
+		if (utente === 1) { // input inviato dal giocatore
 			// momentaneamente la frase viene inserita in un array per coerenza con il successivo processo
 			frasi = [str];
 
@@ -98,22 +115,23 @@ var Lingua = {
 
 		// Restituisce 1 frase o un insieme di frasi (anche se 1 sola è contenuta) in relazione all'input giocatore o scrittore
 		// Le frasi disarticolate sono ancora frasi sintattiche
-		if (nFrasi === 1) { return frasi[0]; } else { return frasi; }
+		if (utente === 1) { return frasi[0]; } else { return frasi; }
 	},
 
-	normalizzaInput: function(inputGrezzo, nFrasi) {
-		// Normalizzare un input significa che la frase sintattica, in cui consiste tale input, fa parte di un insieme di frasi sintattiche potenziali e data una qualsiasi di queste frasi, essa viene trasformata in una frase unica e precisa che rappresenta tutte le frasi sintattiche. Così avremo comunque una frase sintattica (cioè una sequenza di parole), ma avranno valore semantico. Questo è il più semplice passaggio dal piano sintattico a quello semantico. Siccome una parola sintattica può portare a due o più parole semantiche, ciò crea un'ambiguità. La disambiguazione avverrà cercando di reagire agli input, le interpretazioni senza senso - in un'avventura testuale - quasi sicuramente non corrisponderanno ad alcun input previsto dallo scrittore, saranno scartate e resterà (quasi sicuramente) un'unica interpretazione dotata di senso.
-		// nFrasi: 1 è una sola frase del giocatore, 2 è un array di input previsti dallo scrittore (può avere anche un solo elemento)
+	normalizzaInput: function(inputGrezzo, utente) {
+		// L'input grezzo è una sequenza di caratteri, facilmente convertito in una frase sintattica, ovvero un insieme di parole. Normalizzare una frase sintattica significa che, siccome più frasi sintattiche varianti possono avere lo stesso significato (e portare alla stessa azione), ne viene scelta 1 unica che le rappresenta tutta, quella che qui viene chiamata "forma normale". Ciò permette di passare dal piano sintattico a quello semantico lavorando sempre con parole.
+		// È possibile che una frase sintattica ambigua porti a più frasi semantiche, la disambiguazione avviene nel tentativo di usare le frasi semantiche, quelle che non prevedono un evento in base a quanto previsto dallo scrittore, verranno semplicemente scartate. Nel contesto delle avventure testuali quasi tutti i casi si risolveranno in questo semplice modo, altrimenti verrà eseguito il primo senso riconosciuto.
+		// utente: 1 è il giocatore (che invia solo 1 frase); 2 è lo scrittore (che può preparare più frasi)
 
 		// Porta i caratteri in minuscolo e normalizza i diacritici
 		inputGrezzo = Lingua.normalizzaDiacritici(inputGrezzo.toLowerCase());
 
-		// Disarticola le frasi secondo le indicazioni scritte su disarticolaEspressioniEq() e restituisce un insieme di parole (frase) o più insiemi di parole (frasi) in relazione al nFrasi inviato.
-		var frasiSintattiche = Lingua.disarticolaEspressioniEq(inputGrezzo, nFrasi);
+		// Disarticola le frasi e restituisce un insieme di parole (frase) o più insiemi di parole (frasi) tenendo conto se provengono dal giocatore o dallo scrittore (con la variabile 'utente').
+		var frasiSintattiche = Lingua.disarticolaEspressioniEq(inputGrezzo, utente);
 		var frasiSemantiche = []; var ps = 0; // ps: indice parola semantica
 
-		if (nFrasi === 1) { // input inviato dal giocatore
-			// momentaneamente la frase viene inserita in un array per coerenza con il successivo processo
+		if (utente === 1) { // input del giocatore
+			// La frase viene inserita in un array per coerenza con il processo seguente
 			frasiSintattiche = [frasiSintattiche];
 		}
 
@@ -123,7 +141,7 @@ var Lingua = {
 			// Prepara un array vuoto che potrà contenere più frasi semantiche
 			frasiSemantiche[f] = [];
 
-			// Per ottenere una frase semantica devo prendere ciascun termine della frase sintattica e sostituirlo con i termini associati dentro equivalenzeOrd (ordinate). Le parole precedute da '__' indicano che va inserita una stringa nulla, cioè un segnaposto per una parola omettibile, a meno che quella sia l'unica parola che compone la frase. Può capitare che ci siano più parole semantiche possibili (ambiguità), vanno tutte conservate.
+			// Per ottenere una frase semantica devo prendere ciascun termine della frase sintattica e sostituirlo con i termini associati dentro equivalenzeOrd (ordinate). Le parole precedute da '__' indicano che va inserita una stringa nulla, cioè un segnaposto per una parola omettibile, eccetto se quella è l'unica parola che compone la frase. Può capitare che ci siano più parole semantiche possibili (ambiguità), vanno tutte conservate.
 			for (var p = 0; p < frasiSintattiche[f].length; p++) { // p: indice parola
 				// Prepara un array vuoto che potrà contenere più parole semantiche alternative
 				frasiSemantiche[f][p] = [];
@@ -150,10 +168,45 @@ var Lingua = {
 						}
 					}
 				}
+				// Se il termine è potenzialmente un imperativo va conservato (perché potremmo avere un "falso positivo"), ma anche va aggiunta la normalizzazione all'indicativo 1a persona. Operazione da effettuare solo sulla prima parola e solo sull'input del giocatore, lo scrittore è tenuto a non usare l'imperativo (ciò riduce ambiguità ed elaborazioni).
+				if (utente === 1 && p === 0) {
+					// Recupera il potenziale imperativo, scartando l'iniziale stringa vuota se presente
+					var potenzialeImp = '';
+					if (frasiSemantiche[f][0][0] === '') { potenzialeImp = frasiSemantiche[f][0][1] } else { potenzialeImp = frasiSemantiche[f][0][0] }
+					// Trasforma da imperativo a indicativo e aggiungi il nuovo termine solo se è effettivamente cambiato
+					var indicativo1aP = '';
+					indicativo1aP = Lingua.normalizzaImperativo(potenzialeImp);
+					if (indicativo1aP !== potenzialeImp) {
+						// Il nuovo termine va aggiunto, però se esiste una forma normalizzata del nuovo termine, va aggiunta quella
+						// (Questa parte di codice è di fatto duplicata e si potrebbe ottimizzare!)
+						if (Lingua.equivalenzeOrd[indicativo1aP] === undefined) {
+							frasiSemantiche[f][0].push(indicativo1aP);
+						} else {
+						var sn = 0; // sn: stringa nulla
+							for (var psa = 0; psa < Lingua.equivalenzeOrd[indicativo1aP].length; psa++) { // psa: parola semantica alternativa
+								// Copio il sinonimo normalizzato per ridurre i calcoli
+								var sinonimoNorm = Lingua.equivalenzeOrd[indicativo1aP][psa];
+								// Le parole omettibili '__' devono inserire la relativa parola ed una stringa nulla, eccetto quando la frase è composta da 1 sola parola: niente stringa nulla.
+								if (sinonimoNorm.substring(0, 2) === '__') {
+									// Il termine omettibile va comunque inserito, perché potrebbe essere anche inteso come una parola semantica senza sinonimi, ma con un concetto diverso rispetto a quello che le equivalenzeOrd considerano omettibile
+									frasiSemantiche[f][p].push(sinonimoNorm.substring(2, sinonimoNorm.length));
+									// Se siamo in presenza di più di una parola e il termine è omettibile, va segnalato con una stringa nulla
+									if (sn === 0 && frasiSintattiche[f].length > 1 && frasiSemantiche[f][p][0] !== '') {
+										// La stringa nulla va aggiunta una sola volta ed in prima posizione
+										frasiSemantiche[f][p] = [''].concat(frasiSemantiche[f][p]);
+										sn = 1; // Stringa nulla aggiunta 1 volta
+									}
+								} else {
+									frasiSemantiche[f][p].push(sinonimoNorm);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 		// Restituisce 1 frase o un insieme di frasi (anche se 1 sola è contenuta) in relazione all'input giocatore o scrittore
-		if (nFrasi === 1) { return frasiSemantiche[0]; } else { return frasiSemantiche; }
+		if (utente === 1) { return frasiSemantiche[0]; } else { return frasiSemantiche; }
 	},
 
 	fraseInFrasiSemantiche: function(frase, frasi) {
@@ -503,6 +556,7 @@ var I = {
 		var e_inp = document.getElementById('input');
 		I.inputGrezzo = e_inp.value.trim();
 		if (I.inputGrezzo.charAt(0) == '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
+
 		// Rifiuta un input vuoto e reimposta la casella di input
 		if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
 
@@ -514,7 +568,7 @@ var I = {
 		var cambioScena = 0;
 
 		// Deve controllare se l'input soddisfa qualche istruzione corrente ed eseguirla //
-		// Leggere (e comprendere) è inteso come stabilire quale azione eseguire dopo la lettura
+		// Leggere (e comprendere) qui significa stabilire quale azione eseguire dopo la lettura
 
 		// Istruzioni speciali integrate in Confabula //
 

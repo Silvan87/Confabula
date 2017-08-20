@@ -12,6 +12,6 @@ function vocabolario() {
 		["per|pel|perlo|perla|pei|pergli|perle|perl"],
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
-		["|esamino|esamina"], ["guardo|guarda"], ["osservo|osserva"], ["prendo|prendi"], ["apro|apri"], ["chiudo|chiudi"], ["entro|entra"], ["esco|esci"], ["leggo|leggi"]
+		["|esamino"]
 	]);
 }

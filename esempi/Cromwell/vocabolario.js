@@ -1,3 +1,6 @@
+/* NOTA
+ * I predicati equivalenti (sinonimi) vanno qui inseriti solo nella forma indicativo presente prima persona
+ */
 function vocabolario() {
 	Lingua.predicati("osservo|esamino|entro|esco|leggo|inventario|infilo|introduco|prendo|guardo|apro|chiudo|bevo|strappo");
 	Lingua.equivalenze([
@@ -13,7 +16,7 @@ function vocabolario() {
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
 		["inventario|i"], ["direzione|d"],
-		["|esamino|esamina"], ["entro|entra"], ["esco|esci"], ["leggo|leggi"], ["infilo|infila|introduco|introduci"], ["prendo|prendi"], ["guardo|guarda|g"], ["apro|apri"], ["chiudo|chiudi"], ["bevo|bevi"], ["strappo|strappi"],
+		["|esamino"], ["g|guardo"], ["infilo|introduco"],
 		["chiave|chiavi"], ["rovo|rovi"], ["scodella|ciotola"], ["ampolla|bottiglietta"], ["pugnale|coltello"], ["ramo|rametto|ramoscello|rami|rametti|ramoscelli"], ["fusti|alberi"], ["tombe|tumuli"], ["tomba|lapide"], ["bocca|fauci"]
 	]);
 }
