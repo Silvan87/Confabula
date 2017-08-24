@@ -40,7 +40,7 @@ function istruzioniGenerali() {
 			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
 			_variabili("no!drekann2+drekann3");
 		condizioni("drekann");
-			nMosseRispondi(2, "Avverti un boato cupo e lontano.");
+			nMosseRispondi(2, "Avverti un boato cupo e lontano.", "ripeti");
 			_variabili("no!drekann+drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
@@ -212,7 +212,8 @@ function istruzioniScena(n) {
 	case 24:
 		immagine("drago.png");
 		testo("Le zanne del drago ti si avventano contro e ti dilaniano orribilmente.");
-		scegliVai("Risorgi", 23);
+		variabili("drekann");
+		scegliVai("Risorgi", -2);
 		break;
 	case 25:
 		intermezzo("Con un'imprevista ingordigia, il drago afferra quel cuore con le sue fauci e inizia a masticarlo. Sembra quasi che aspettasse da tempo questo pasto... dopo circa un minuto lo sguardo del drago si spegne, fissa l'orizzonte e crolla al suolo senza vita.");
@@ -366,7 +367,6 @@ function istruzioniScena(n) {
 		rispondi("esamino i rampicanti", "Non sono rampicanti robusti...");
 		rispondi("prendo la lapide", "È impensabile portarsela via...");
 		rispondi("esamino gli alberi", "Gli alberi, avvolti nella nebbia, incutono timore.");
-		
 		condizioni("no!rampicanti eliminati", per => {
 			rispondi("esamino le lapidi", "Le lapidi, ricoperte di rampicanti, non si riescono a leggere.");
 			rispondi("strappo i rampicanti", "Elimini le erbacce e leggi le iscrizioni sulle pietre. Su una di esse vi è scritto: 'Qui giace J. T. Cromwell'. La lapide è posta in terra sconsacrata.");

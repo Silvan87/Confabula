@@ -589,7 +589,7 @@ var I = {
 
 		// Normalizza l'input grezzo del giocatore
 		I.inputNorm = Lingua.normalizzaInput(I.inputGrezzo, 1);
-		var istro = {}; // istro: istruzione
+		var istro; // istro: istruzione
 		var condSoddisfatte; // condizioni soddisfatte
 		var azioneEseguita = 0;
 		var cambioScena = 0;
@@ -599,38 +599,111 @@ var I = {
 
 		// Istruzioni speciali integrate in Confabula //
 
-		// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
-		istro['input'] = Lingua.normalizzaInput('direzioni|d', 2);
-		if (I.inputNorm.length === 1 && Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) {
-			if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
-				I.inputGrezzo = 'direzioni';
-				istro.azione = 'rispondi';
-				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
-			} else if (G.luoghiRagg.nomi.length === 0 || (G.luoghiRagg.nomi.length === 1 && G.luoghiRagg.coppie[G.nScena] !== undefined)) {
-				I.inputGrezzo = 'direzioni';
-				istro.azione = 'rispondi';
-				istro.output = 'Ancora non puoi dirigerti velocemente in nessun luogo.';
+		// Comando 'salva' per salvare la partita in corso
+		istro = {};
+		if (I.inputNorm.length === 1 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0])) {
+			istro.azione = 'rispondi';
+			istro.output = 'Specificare il numero della posizione da 0 a 9 in cui salvare. Esempio: \'save 2\'. I salvataggi saranno disponibili solo sul browser in cui sono stati eseguiti. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
+			I.eseguiIstruzione(istro);
+			azioneEseguita = 1;
+		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
+			istro.azione = 'rispondi';
+			// Salva tutte le variabili della partita nell'HTML5 storage
+			if (typeof(Storage) !== "undefined") {
+				try {
+					// Archivia tutte le info sulla partita in corso in un'unica stringa da infilare nell'HTML5 storage
+					localStorage.setItem(document.title+' '+I.inputNorm[1][0], [G.nScena, G.nScenaP, G.nScenaPP, JSON.stringify(G.passaggiScena), JSON.stringify(G.luoghiRagg), JSON.stringify(S.oggetti), JSON.stringify(S.variabili), JSON.stringify(S.Istruzioni.generali), JSON.stringify(S.Istruzioni.scena)].join('§§'));
+					// In ultima posizione viene salvato lo stato di tutte le istruzioni (generali e di scena), si potrebbe ottimizzare la memoria occupata salvando solo il n. di mosse trascorse e la presenza o meno delle azioni nMosse. Però, non è semplice gestire senza anomalie questa ottimizzazione. Ora che le istruzioni non vengono più eliminate è più semplice.
+					istro.output = 'Partita salvata in posizione ' + I.inputNorm[1][0];
+				} catch (err) {
+					// Chrome o Chromium possono avere i permessi di scrittura nell'HTML5 storage disabilitati
+					// Firefox ed Opera sono stati testati e risultano funzionanti (anche Chrome normalmente funziona)
+					istro.output = '<span class="coloreErrore">Impossibile salvare la partita.</span> Questo browser nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.';
+				}
 			} else {
-				I.inputGrezzo = 'direzioni';
-				istro.azione = 'rispondi';
-				istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
+				// HTML5 storage non supportato dal browser
+				istro.output = '<span class="coloreErrore">Impossibile salvare la partita.</span> Questo browser non supporta l\'HTML5 storage. Per salvare e caricare le partite si deve utilizzare un browser moderno che supporti questa funzionalità.';
 			}
 			I.eseguiIstruzione(istro);
 			azioneEseguita = 1;
-
-		// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
-		} else if (I.inputNorm.length > 1 && (I.inputNorm[0].indexOf('direzione') !== -1 || I.inputNorm[0].indexOf('d') !== -1) && G.luoghiRagg.bloccati === 1) {
+		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^reset$/.test(I.inputNorm[1][0])) {
+			for (var s = 0; s < 10; s++) {
+				localStorage.removeItem(document.title+' '+s);
+			}
 			istro.azione = 'rispondi';
-			istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+			istro.output = 'Tutti i salvataggi per '+ document.title +' sono stati eliminati.';
 			I.eseguiIstruzione(istro);
 			azioneEseguita = 1;
 		}
 
+		// Comando 'carica' per caricare una partita salvata
+		if (azioneEseguita === 0) {
+			istro = {};
+			if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
+				istro.azione = 'rispondi';
+				istro.output = 'Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
+				I.eseguiIstruzione(istro);
+				azioneEseguita = 1;
+			} else if (I.inputNorm.length === 2 && /^(load|carica|carico)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
+				var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
+				if (dati === null || dati === undefined) {
+					istro.azione = 'rispondi';
+					istro.output = 'Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.';
+					I.eseguiIstruzione(istro);
+					azioneEseguita = 1;
+				} else {
+					dati = dati.split('§§');
+					G.nScena = Number(dati[0]);
+					G.passaggiScena = JSON.parse(dati[3]);
+					G.luoghiRagg = JSON.parse(dati[4]);
+					S.oggetti = JSON.parse(dati[5]);
+					S.variabili = JSON.parse(dati[6]);
+					istruzioniScena(G.nScena);
+					// Dopo essersi collocato sulla giusta scena, sovrascrive le istruzioni con quelle salvate
+					S.Istruzioni.generali = JSON.parse(dati[7]);
+					S.Istruzioni.scena = JSON.parse(dati[8]);
+					// Anche il numero di scena precedente (P e PP) va sovrascritto alla fine
+					G.nScenaP = Number(dati[1]);
+					G.nScenaPP = Number(dati[2]);
+					return; // Inutile proseguire con altri controlli
+				}
+			}
+		}
+
+		// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
+		if (azioneEseguita === 0) {
+			istro = {};
+			if (I.inputNorm.length === 1 && /^(direzioni|direzione|d)$/.test(I.inputNorm[0][0])) {
+				if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
+					I.inputGrezzo = 'direzioni';
+					istro.azione = 'rispondi';
+					istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+				} else if (G.luoghiRagg.nomi.length === 0 || (G.luoghiRagg.nomi.length === 1 && G.luoghiRagg.coppie[G.nScena] !== undefined)) {
+					I.inputGrezzo = 'direzioni';
+					istro.azione = 'rispondi';
+					istro.output = 'Ancora non puoi dirigerti velocemente in nessun luogo.';
+				} else {
+					I.inputGrezzo = 'direzioni';
+					istro.azione = 'rispondi';
+					istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
+				}
+				I.eseguiIstruzione(istro);
+				azioneEseguita = 1;
+
+			// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
+			} else if (I.inputNorm.length > 1 && /^(direzione|d)$/.test(I.inputNorm[0][0]) && G.luoghiRagg.bloccati === 1) {
+				istro.azione = 'rispondi';
+				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+				I.eseguiIstruzione(istro);
+				azioneEseguita = 1;
+			}
+		}
+
 		// Prima controlla le istruzioni di scena, poi quelle generali
-		var livello = ['scena', 'generali']; // L: Livello delle istruzioni
+		var livello = ['scena', 'generali'];
 		var azioni = []; // Deve raccogliere tutte le istruzioni da eseguire, prima di eseguirle
 
-		livello.forEach(function(L) {
+		livello.forEach(function(L) { // L: Livello delle istruzioni
 			for (var ii = 0; ii < S.Istruzioni[L].length; ii++) { // i: indice istruzione
 
 				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro "nMosse" per farle avanzare
@@ -657,13 +730,14 @@ var I = {
 
 				// Verifica se c'è un numero di mosse da raggiungere e che sia stato raggiunto
 				// Le mosse vengono contate solo se e fintantoché le condizioni su ogg e var sono soddisfatte. Se il conteggio delle mosse è iniziato e le condizioni su ogg e var vengono meno prima che scatti un'azione, allora il contatore delle mosse viene resettato.
-				if (condSoddisfatte && istro.mosse !== undefined) {
+				if (condSoddisfatte && istro.mosse !== undefined && S.Istruzioni[L][ii].mossa !== undefined) {
 					if (istro.mossa >= istro.mosse) {
 						// Valuta se reimpostare un nuovo n. di mosse da raggiungere in base alla ripetitività
 						if (istro.ripeti === 1) {
 							S.Istruzioni[L][ii].mossa = 0;
 						} else {
-							S.Istruzioni[L].splice(ii, 1); ii--;
+							// Non si deve rimuovere un'istruzione nMosse, potrebbe tornare attiva per un caricamento di partita
+							S.Istruzioni[L][ii].mossa = undefined;
 						}
 					} else {
 						S.Istruzioni[L][ii].mossa++;
@@ -722,7 +796,7 @@ var I = {
 			}
 		}
 		// Poi i messaggi dopo nMosse
-		// Assicurarsi che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
+		// Ci si assicura che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
 		for (var a = 0; a < azioni.length; a++) {
 			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse !== undefined) {
 				// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
@@ -733,7 +807,7 @@ var I = {
 			}
 		}
 
-		// Se è avvenuto un cambio di scena, salta la parte finale (superflua)
+		// Se è avvenuto un cambio di scena, salta la parte finale che sarà superflua
 		if (cambioScena === 1) return;
 
 		// Se nessuna azione è stata eseguita, invita a provare altro
