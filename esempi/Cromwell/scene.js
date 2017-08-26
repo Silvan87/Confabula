@@ -7,7 +7,7 @@ function istruzioniGenerali() {
 	uscita("guardo|g", 0, "invisibile");
 	rispondi("vocabolario|v", Lingua.predicatiOrdinati.join(', '));
 	contenitore("i", "un|il pugnale");
-	rispondi("inventario", "Hai con te: @i@.");
+	rispondi("inventario|i", "Hai con te: @i@.");
 	rispondi("aiuto", "Scrivi 'istruzioni' per leggere le istruzioni e 'vocabolario' o 'v' per leggere i predicati con cui interagire con gli oggetti.");
 	rispondi("nord|sud|ovest|est|su|giù", "Non è possibile procedere in quella direzione.");
 	rispondi("istruzioni", "Scrivi in prima persona o usa l'imperativo. Puoi omettere gli articoli e il predicato 'esamino'. Scrivi 'vocabolario' o 'v' per leggere i predicati disponibili; 'guardo' o 'g' per rileggere una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' quando vuoi rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali.");
@@ -15,13 +15,13 @@ function istruzioniGenerali() {
 		rispondi("esamino il pugnale", "È un affilato coltello da caccia, lo hai portato con te pensando sarebbe stato utile.");
 	condizioni("il bastone@i", per => {
 		rispondi("esamino il bastone", "È un bastone di prestigio con intarsi metallici che formano rune, forse apparteneva al cadavere da cui hai recuperato la chiave.");
-		rispondi("leggo le rune sul bastone|esamino le rune sul bastone", "Non comprendi le rune...");
+		rispondi("[leggo|esamino] le rune sul bastone", "Non comprendi le rune...");
 	});
 	condizioni("l'ampolla@i", per => {
 		condizioni("no!ampolla bevuta", per => {
 			rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.");
-			rispondi("apro l'ampolla|apro il tappo|apro il tappo di sughero", "Togli il tappo dell'ampolla. Da questa fuoriescono dei vapori azzurrognoli e un tanfo pestilenziale pervade l'aria.");
-			rispondi("bevo|bevo l'ampolla|bevo dall'ampolla|bevo il liquido|bevo il liquido azzurrognolo|bevo il liquido azzurro|bevo lo strano liquido", "Porti alle labbra la piccola bottiglia e ne bevi il contenuto. Dopo pochi istanti ti senti strano... provi un senso di nausea, ma passa presto. Senti rinsaldarsi in te un legame con un potere sovrannaturale. Le parole che pensi e pronunci è come se avessero una carica prima sconosciuta...");
+			rispondi("apro il [ampolla|tappo|tappo di sughero]", "Togli il tappo dell'ampolla. Da questa fuoriescono dei vapori azzurrognoli e un tanfo pestilenziale pervade l'aria.");
+			rispondi("bevo [|l'ampolla|dall'ampolla|il liquido|il liquido azzurrognolo|il liquido azzurro|lo strano liquido]", "Porti alle labbra la piccola bottiglia e ne bevi il contenuto. Dopo pochi istanti ti senti strano... provi un senso di nausea, ma passa presto. Senti rinsaldarsi in te un legame con un potere sovrannaturale. Le parole che pensi e pronunci è come se avessero una carica prima sconosciuta...");
 			_variabili("ampolla bevuta");
 		});
 		condizioni("ampolla bevuta");
@@ -32,7 +32,7 @@ function istruzioniGenerali() {
 	condizioni("la chiave@i");
 		rispondi("esamino la chiave", "È una chiave di bronzo con qualche semplice ricamo.");
 	condizioni("la gamba di sedia@i");
-		rispondi("esamino la gamba|esamino la gamba di sedia", "È legno fragile e un po' scheggiato.");
+		rispondi("esamino la gamba [|di sedia]", "È legno fragile e un po' scheggiato.");
 	condizioni("no!drago morto", per => {
 		condizioni("drekann3");
 			nMosseVai(2, 23);
@@ -44,10 +44,10 @@ function istruzioniGenerali() {
 			_variabili("no!drekann+drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
-		rispondi("esamino il cuore|esamino il cuore di Cromwell|esamino il cuore dell'abate", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
+		rispondi("esamino il cuore [|di Cromwell|dell'abate]", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
 		rispondi("strappo il cuore|strappo il cuore dell'abate|strappo il cuore di Cromwell", "Inizi a strappare il cuore da un lato, ma ti fermi prima di raggiungere la metà. Nulla accade e preferisci conservarlo in un unico pezzo.");
 		condizioni("il pugnale@i");
-			rispondi("infilo il pugnale nel cuore|infilo il pugnale nel cuore dell'abate|infilo il pugnale nel cuore di Cromwell", "Trafiggi il cuore con il pugnale e lo ritrai lasciandoci un buco, ma non accade nulla.");
+			rispondi("infilo il pugnale nel cuore [|dell'abate|di Cromwell]", "Trafiggi il cuore con il pugnale e lo ritrai lasciandoci un buco, ma non accade nulla.");
 	});
 	rispondi("osservo", "Cosa vorresti osservare? Puoi farlo anche da lontano.");
 	rispondi("esamino", "Cosa vorresti esaminare? Devono essere oggetti raggiungibili.");
@@ -98,11 +98,11 @@ function istruzioniScena(n) {
 		});
 		condizioni("dentro cespugli", per => {
 			rispondi("ovest|nord|est|sud|giú|su", "Devi uscire dai cespugli se vuoi proseguire.");
-			rispondi("esco dai cespugli|esco", "Sei venuto qui per sconfiggere l'oscurità, non è il caso di nasconderti. Esci dai cespugli e riprendi la tua ricerca.");
+			rispondi("esco [|dai cespugli]", "Sei venuto qui per sconfiggere l'oscurità, non è il caso di nasconderti. Esci dai cespugli e riprendi la tua ricerca.");
 			_variabili("no!dentro cespugli");
 		});
-		rispondi("esamino i fusti|esamino gli alti fusti|osservo i fusti|osservo gli alti fusti", "Sono alberi secolari molto alti.");
-		rispondi("esamino i cespugli|esamino i fitti cespugli", "Tra essi intravvedi un sentiero che va verso est.");
+		rispondi("[esamino|osservo] i [|alti] fusti", "Sono alberi secolari molto alti.");
+		rispondi("esamino i [|fitti] cespugli", "Tra essi intravvedi un sentiero che va verso est.");
 		_variabili("sentiero visto");
 		condizioni("sentiero visto");
 			rispondi("esamino il sentiero", "Per conoscere un sentiero devi percorrerlo...");
@@ -117,31 +117,31 @@ function istruzioniScena(n) {
 		condizioni("abate morto");
 			rispondi("nord", "È il luogo dove l'abate Cromwell si è dissolto in una nube di zolfo, meglio non tornarci.");
 		uscita("sud", 3);
-		rispondi("osservo la luce|osservo la luce crepuscolare", "Ti sembra di veder qualche luce tremolante, ma appena fissi meglio lo sguardo l'effetto svanisce.");
-		rispondi("esamino le rovine|esamino le rovine dell'abbazia", "Sulla collina, le rovine dell'antico maniero sembrano celare arcani misteri. Tra le pietre noti un enorme monolite con delle iscrizioni in caratteri runici.");
+		rispondi("osservo la luce [|crepuscolare]", "Ti sembra di veder qualche luce tremolante, ma appena fissi meglio lo sguardo l'effetto svanisce.");
+		rispondi("esamino le rovine [|dell'abbazia]", "Sulla collina, le rovine dell'antico maniero sembrano celare arcani misteri. Tra le pietre noti un enorme monolite con delle iscrizioni in caratteri runici.");
 		rispondi("esamino il monolite", "Il blocco di pietra è alto circa tre metri e ha uno spessore di quasi due. Sotto l'iscrizione vi è inciso un cerchio con al centro una croce. Lateralmente vi è un foro di piccole dimensioni. Sulla sommità sembrano esservi degli altri simboli.");
-		rispondi("esamino l'iscrizione|esamino le iscrizioni|leggo l'iscrizione|leggo le iscrizioni|leggo le rune|esamino le rune|esamino i caratteri runici|leggo i caratteri runici", "Non riesci a comprendere i caratteri runici...");
+		rispondi("[esamino|leggo] la [iscrizione|iscrizioni|rune|caratteri|caratteri runici]", "Non riesci a comprendere i caratteri runici...");
 		rispondi("esamino le pietre", "Sono pietre molto dure e compatte.");
 		rispondi("prendo le pietre", "Sono pietre grandi e imponenti, non puoi portarle con te.");
-		rispondi("esamino la croce|esamino il cerchio", "È un simbolo celtico, una larga croce dentro un cerchio.");
-		rispondi("esamino gli altri simboli|esamino i simboli|leggo i simboli|esamino la sommità", "Pur collocati in alto, riconosci che si tratta di lettere latine. Una sola parola è scritta e sembra essere la trascrizione di una parola celtica: 'YGGWYRD'.");
+		rispondi("esamino la [croce|cerchio]", "È un simbolo celtico, una larga croce dentro un cerchio.");
+		rispondi("[esamino|leggo] i [|altri] simboli|[esamino|leggo] la sommità", "Pur collocati in alto, riconosci che si tratta di lettere latine. Una sola parola è scritta e sembra essere la trascrizione di una parola celtica: 'YGGWYRD'.");
 		condizioni("no!monolite aperto", per => {
-			rispondi("esamino il foro|esamino il piccolo foro|infilo il dito nel foro|infilo il dito nel piccolo foro", "È un foro realizzato con precisione, comprendi che deve avere un senso. Infili lentamente un dito nel foro... ma non accade nulla, deve essere piuttosto profondo.");
+			rispondi("esamino il [|piccolo] foro|infilo il dito nel [|piccolo] foro", "È un foro realizzato con precisione, comprendi che deve avere un senso. Infili lentamente un dito nel foro... ma non accade nulla, deve essere piuttosto profondo.");
 			condizioni("la gamba di sedia@i");
-				rispondi("infilo la gamba di sedia nel foro|infilo la gamba nel foro|infilo la gamba di legno nel foro", "Non succede nulla e dopo poco sfili la gamba della sedia.");
+				rispondi("infilo la gamba [|di sedia|di legno] nel [|piccolo] foro", "Non succede nulla e dopo poco sfili la gamba della sedia.");
 			condizioni("il bastone@i");
-				rispondi("infilo il bastone nel foro", "Azioni un elementare meccanismo che scopre una cavità all'interno del monolite dentro la quale trovi una ampolla di vetro.");
+				rispondi("infilo il bastone nel [|piccolo] foro", "Azioni un elementare meccanismo che scopre una cavità all'interno del monolite dentro la quale trovi una ampolla di vetro.");
 				_variabili("monolite aperto");
 		});
 		condizioni("monolite aperto", per => {
-			rispondi("esamino il foro|esamino il piccolo foro|infilo il dito nel foro|infilo il dito nel piccolo foro", "È un foro realizzato con precisione, dopo averci infilato il bastone di un druido, si è aperta una piccola cavità.");
+			rispondi("esamino il [|piccolo] foro|infilo il dito nel [|piccolo] foro", "È un foro realizzato con precisione, dopo averci infilato il bastone di un druido, si è aperta una piccola cavità.");
 			condizioni("no!l'ampolla@i", per => {
 				rispondi("esamino la cavità", "È una piccola cavità che contiene unicamente un'ampolla.");
-				rispondi("bevo|bevo l'ampolla|bevo dall'ampolla|bevo il liquido|bevo il liquido azzurrognolo|bevo il liquido azzurro|bevo lo strano liquido", "Prima devi prendere l'ampolla.");
-				rispondi("prendo l'ampolla|prendo l'ampolla di vetro", "Hai preso la bottiglietta.");
+				rispondi("bevo [|l'ampolla|dall'ampolla|il liquido|il liquido azzurrognolo|il liquido azzurro|lo strano liquido]", "Prima devi prendere l'ampolla.");
+				rispondi("prendo l'ampolla [|di vetro]", "Hai preso la bottiglietta.");
 				_oggetti("l'ampolla@i");
 				rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.");
-				rispondi("esamino il tappo|esamino il tappo di sughero", "Il tappo sigilla perfettamente l'ampolla.");
+				rispondi("esamino il tappo [|di sughero]", "Il tappo sigilla perfettamente l'ampolla.");
 			});
 			condizioni("l'ampolla@i", per => {
 				rispondi("esamino la cavità", "È una piccola cavità che non contiene piú nulla.");
@@ -175,7 +175,7 @@ function istruzioniScena(n) {
 		testo("Sei nella palude di Verdefango. Dalle acque palustri si levano densi vapori.<br />Puoi vedere: tetri alberi privi di foglie.");
 		uscita("est", 3);
 		uscita("sud", 8);
-		rispondi("esamino gli alberi|esamino i tetri alberi", "Le piante dai rami contorti ispirano inquietanti immagini.");
+		rispondi("esamino gli [|tetri] alberi", "Le piante dai rami contorti ispirano inquietanti immagini.");
 		rispondi("osservo le immagini", "Lasci libera la mente di fronte a queste immagini e ti sembra di vedere sguardi minacciosi e gelosi.");
 		rispondi("osservo le acque", "Qualcosa di innaturale ha sconvolto questo luogo...");
 		rispondi("osservo i vapori", "I vapori fuoriescono come sbuffi irregolari, da varie parti della palude.");
@@ -204,7 +204,7 @@ function istruzioniScena(n) {
 		bloccaDirezioni();
 		variabili("no!drekann3");
 		condizioni("il cuore di cromwell@i");
-			rispondiVai("introduco il cuore nelle fauci|introduco il cuore nella bocca del drago|introduco il cuore dell'abate nella bocca del drago|introduco il cuore di Cromwell nella bocca del drago|introduco il cuore dell'abate nelle fauci|introduco il cuore di Cromwell nelle fauci", "Lanci il cuore di Cromwell verso la faccia del drago...", 25);
+			rispondiVai("[infilo|lancio] il cuore [|di Cromwell|dell'abate] [nelle fauci|nella bocca|nella bocca del drago]", "Lanci il cuore di Cromwell verso la faccia del drago...", 25);
 			_variabili("drago morto");
 		condizioni("no!drago morto");
 			nMosseVai(1, 24);
@@ -228,7 +228,7 @@ function istruzioniScena(n) {
 		uscita("ovest", 3);
 		condizioni("sentiero visto 2");
 			uscita("est", 11, "esplorabile");
-		rispondi("esamino le conifere|esamino le alte conifere|esamino le vecchie conifere|esamino le alte e vecchie conifere", "Tra gli alberi vedi che il sentiero prosegue verso est.");
+		rispondi("esamino le [|alte|vecchie] conifere", "Tra gli alberi vedi che il sentiero prosegue verso est.");
 		_variabili("sentiero visto 2");
 		break;
 	case 11:
@@ -237,11 +237,11 @@ function istruzioniScena(n) {
 		testo("Sei in una radura, pochi alberi ti circondano e grandi pietre sono presenti in un angolo.<br />Puoi vedere: delle pietre e alcuni alberi.");
 		uscita("ovest", 10);
 		uscita("sud", 12);
-		rispondi("esamino le pietre|esamino le grandi pietre", "Le pietre sono ricoperte di muschio e sembrano molto antiche. Una di questre pietre è una statua.");
+		rispondi("esamino le [|grandi] pietre", "Le pietre sono ricoperte di muschio e sembrano molto antiche. Una di questre pietre è una statua.");
 		rispondi("esamino la statua", "A prima vista era irriconoscibile, ma ora comprendi che è la statua di un guerriero ed è priva della testa e di un braccio.");
-		rispondi("esamino gli alberi|esamino alcuni alberi", "Ai piedi di una quercia trovi il braccio di una statua.");
-		rispondi("esamino il braccio|esamino il braccio della statua|esamino il braccio di una statua|esamino il braccio di statua", "Il braccio è parzialmente coperto di muschio.");
-		rispondi("prendo il braccio", "È pesante e non sarebbe comodo portarselo dietro. Lo lasci sul terreno.");
+		rispondi("esamino [gli|alcuni] alberi", "Ai piedi di una quercia trovi il braccio di una statua.");
+		rispondi("esamino il braccio [|della statua|di una statua]", "Il braccio è parzialmente coperto di muschio.");
+		rispondi("prendo il braccio [|della statua]", "È pesante e non sarebbe comodo portarselo dietro. Lo lasci sul terreno.");
 		rispondi("prendo la statua", "È impensabile spostarla da lí.");
 		break;
 	case 12:
@@ -250,9 +250,9 @@ function istruzioniScena(n) {
 		uscita("ovest", 13);
 		uscita("nord", 11);
 		uscita("sud", 16);
-		rispondi("esamino i cespugli|esamino i rovi|esamino i cespugli di rovo", "Scivoli e cadi tra i rovi, procurandoti delle abrasioni.");
-		rispondi("entro nei rovi|entro nei cespugli di rovo", "Scivoli e rotoli tra le spine procurandoti brutte ferite lacero-contuse. Non riesci a entrare nei rovi e non ha senso insistere.");
-		rispondi("osservo i rovi", "I rovi sono molto contorti e pieni di spine, il terreno su cui si estendono è piuttosto irregolare, meglio starci lontani.");
+		rispondi("esamino i [cespugli|rovi|cespugli di rovo]", "Scivoli e cadi tra i rovi, procurandoti delle abrasioni.");
+		rispondi("entro nei [cespugli|rovi|cespugli di rovo]", "Scivoli e rotoli tra le spine procurandoti brutte ferite lacero-contuse. Non riesci a entrare nei rovi e non ha senso insistere.");
+		rispondi("osservo i [cespugli|rovi|cespugli di rovo]", "I rovi sono molto contorti e pieni di spine, il terreno su cui si estendono è piuttosto irregolare, meglio starci lontani.");
 		break;
 	case 13:
 		nomeLuogo("spiazzo con capanna|spiazzo|spiazzo bosco|spiazzo nel bosco");
@@ -261,16 +261,16 @@ function istruzioniScena(n) {
 		uscita("est", 12);
 		uscita("sud", 15);
 		condizioni("no!capanna aperta");
-			rispondi("apro la porta|entro|entro nella capanna|apro la capanna", "Inutilmente cerchi di aprire la robusta porta. Nonostante l'aspetto fatiscente della costruzione, la porta si rivela molto robusta ed è chiusa a chiave.");
+			rispondi("apro la [porta|capanna]|entro [|nella capanna]", "Inutilmente cerchi di aprire la robusta porta. Nonostante l'aspetto fatiscente della costruzione, la porta si rivela molto robusta ed è chiusa a chiave.");
 		condizioni("capanna aperta", per => {
 			uscita("ovest", 14, "esplorabile");
-			rispondiVai("apro la porta|entro|entro nella capanna|apro la capanna|ovest", "Entri nella capanna...", 14);
-			rispondi("chiudo la porta|chiudo la porta della capanna", "Per sicurezza eviti di richiudere la porta a chiave: dovesse non riaprirsi...");
+			rispondiVai("apro la [porta|capanna]|entro [|nella capanna]|ovest", "Entri nella capanna...", 14);
+			rispondi("chiudo la porta [|della capanna]", "Per sicurezza eviti di richiudere la porta a chiave: dovesse non riaprirsi...");
 		});
 		rispondi("esamino la capanna", "Tra la rigogliosa vegetazione la capanna risulta quasi invisibile. La porta sembra chiusa e le erbacce, sul sentiero che concude ad essa, rivelano il suo stato di abbandono.");
 		rispondi("esamino la porta", "È una porta massiccia e ben lavorata, anche volendo non avresti i mezzi per sfondarla.");
 		condizioni("la chiave@i");
-			rispondi("apro la porta con la chiave|introduco la chiave nella serratura|apro la capanna con la chiave", "Introduci la chiave nella serratura e la giri ripetutamente. Con due scatti metallici la porta si apre facendo cigolare i cardini.");
+			rispondi("apro la [porta|capanna] con la chiave|introduco la chiave nella serratura", "Introduci la chiave nella serratura e la giri ripetutamente. Con due scatti metallici la porta si apre facendo cigolare i cardini.");
 			_variabili("capanna aperta");
 		condizioni("il pugnale@i");
 			rispondi("apro la porta con il pugnale", "Potresti giusto arrecargli qualche graffio, ma non c'è modo di aprirla cosí...");
@@ -280,27 +280,27 @@ function istruzioniScena(n) {
 		immagine("capanna.png");
 		testo("Ti trovi all'interno della cadente costruzione. Le pareti sono ricoperte di muffa.<br />Puoi vedere: un tavolo, un baule, una sedia e un giaciglio.");
 		uscita("est|esco|esco dalla capanna", 13);
-		rispondi("osservo le pareti|osservo la muffa", "Alcuni angoli sono piú ricoperti di muffa rispetto ad altri. L'interno è piuttosto umido.");
+		rispondi("osservo le [pareti|muffa]", "Alcuni angoli sono piú ricoperti di muffa rispetto ad altri. L'interno è piuttosto umido.");
 		rispondi("esamino il tavolo", "È un robusto e massiccio tavolo in rovere scuro. Su di esso vi sono una brocca di terracotta e una scodella di legno.");
-		rispondi("esamino la brocca|esamino la terracotta|esamino la brocca di terracotta", "Dentro la brocca vi è un denso liquido rosso cupo.");
+		rispondi("esamino la [brocca|terracotta|brocca di terracotta]", "Dentro la brocca vi è un denso liquido rosso cupo.");
 		rispondi("prendo la brocca", "La brocca ti renderebbe meno veloce nei movimenti, la lasci qui.");
-		rispondi("esamino il liquido|esamino il liquido rosso", "Difficile stabilire di che si tratta... è molto viscoso e non può essere sangue.");
-		rispondi("bevo il liquido|bevo il liquido rosso|bevo dalla brocca|bevo dalla terracotta|bevo dalla brocca di terracotta", "A causa della forte viscosità del liquido a stento cola lungo una parete. Con la lingua riesci giusto ad assaggiarlo: è dolciastro, ma lascia l'amaro dopo il dolce. Forse è stato fatto con delle bacche. Non sembra accaderti nulla.");
+		rispondi("esamino il liquido [|rosso]", "Difficile stabilire di che si tratta... è molto viscoso e non può essere sangue.");
+		rispondi("bevo il liquido [|rosso]|bevo dalla [brocca|terracotta|brocca di terracotta]", "A causa della forte viscosità del liquido a stento cola lungo una parete. Con la lingua riesci giusto ad assaggiarlo: è dolciastro, ma lascia l'amaro dopo il dolce. Forse è stato fatto con delle bacche. Non sembra accaderti nulla.");
 		condizioni("no!sedia rotta");
 			rispondi("esamino la sedia", "Ti siedi e stramazzi a terra. La sedia stava in piedi per miracolo.");
 			_variabili("sedia rotta");
 		condizioni("sedia rotta", per => {
-			rispondi("osservo la sedia|esamino la sedia", "La sedia è rotta in tre pezzi.");
+			rispondi("[esamino|osservo] la sedia", "La sedia è rotta in tre pezzi.");
 			condizioni("no!gamba sedia presa");
-				rispondi("esamino i tre pezzi|esamino i pezzi|esamino i pezzi della sedia", "Lo schienale ha una parte della seduta attaccata con sotto una gamba. La seduta è rotta poco oltre la metà e conserva le due gambe frontali. Infine, una gamba è rotolata via da tutto il resto...");
+				rispondi("esamino i [|tre] pezzi [|della sedia]", "Lo schienale ha una parte della seduta attaccata con sotto una gamba. La seduta è rotta poco oltre la metà e conserva le due gambe frontali. Infine, una gamba è rotolata via da tutto il resto...");
 			condizioni("gamba sedia presa");
 				rispondi("esamino i tre pezzi|esamino i pezzi|esamino i pezzi della sedia", "Lo schienale ha una parte della seduta attaccata con sotto una gamba. La seduta è rotta poco oltre la metà e conserva le due gambe frontali. La rimanente gamba è stata presa da te.");
-			rispondi("prendo lo schienale|prendo la seduta", "Troppo ingombrante da portare con te...");
+			rispondi("prendo lo [schienale|seduta]", "Troppo ingombrante da portare con te...");
 		});
 		rispondi("osservo la sedia", "La sedia sembra molto fragile...");
-		rispondi("esamino lo schienale|esamino la seduta|esamino la gamba|esamino la gamba di sedia", "È legno fragile e un po' scheggiato.");
+		rispondi("esamino lo [schienale|seduta|gamba|gamba di sedia]", "È legno fragile e un po' scheggiato.");
 		condizioni("no!gamba sedia presa");
-			rispondi("prendo la gamba|prendo la gamba di sedia", "Hai preso la gamba della sedia.");		
+			rispondi("prendo la gamba [|di sedia]", "Hai preso la gamba della sedia.");		
 			_oggetti("la gamba di sedia@i");
 			_variabili("gamba sedia presa");
 		condizioni("il bastone@i");
@@ -308,16 +308,16 @@ function istruzioniScena(n) {
 		condizioni("no!il bastone@i", per => {
 			rispondi("esamino il giaciglio", "È un modesto giaciglio di paglia. Pare che non venga usato da molto tempo. Lí vicino, adagiato ad una parete, trovi un bastone di ottima fattura con intarsi metallici che formano rune.");
 			rispondi("esamino il bastone", "È un bastone di prestigio con intarsi metallici che formano rune, forse apparteneva al cadavere da cui hai recuperato la chiave.");
-			rispondi("leggo le rune|esamino le rune|esamino gli intarsi", "Non riesci a comprendere le rune...");
+			rispondi("[esamino|leggo] le [rune|intarsi]", "Non riesci a comprendere le rune...");
 			rispondi("prendo il bastone", "Hai preso il bastone.");
 			_oggetti("il bastone@i");
 		});
-		rispondi("esamino la scodella|esamino la scodella di legno", "La ciotola è vuota.");
-		rispondi("prendo la scodella|prendo la scodella di legno", "È solo una ciotola vuota... la lasci dov'è.");
+		rispondi("esamino la scodella [|di legno]", "La ciotola è vuota.");
+		rispondi("prendo la scodella [|di legno]", "È solo una ciotola vuota... la lasci dov'è.");
 		rispondi("esamino il baule", "Il robusto forziere è dotato di placche metalliche ed è chiuso con un vecchio lucchetto.");
 		rispondi("apro il baule", "Non riesci ad aprire il baule. Un vecchio lucchetto lo tiene chiuso.");
 		condizioni("il pugnale@i");
-			rispondi("introduco il pugnale nel lucchetto|apro il lucchetto con il pugnale", "Non puoi tagliare il lucchetto in questo modo...");
+			rispondi("infilo il pugnale nel lucchetto|apro il lucchetto con il pugnale", "Non puoi tagliare il lucchetto in questo modo...");
 		rispondi("esamino il lucchetto", "Il vecchio lucchetto risulta insolitamente robusto.");
 		break;
 	case 15:
@@ -328,16 +328,16 @@ function istruzioniScena(n) {
 		uscita("nord", 13);
 		uscita("est", 16);
 		uscita("sud", 17);
-		rispondi("esamino il cartello|leggo il cartello", "Sul cartello di legno vi sono delle scritte. La prima dice: 'ovest palude del drago', la seconda 'nord abbazia', la terza 'est sentiero del bosco', la quarta è stata bruciata.");
+		rispondi("[esamino|leggo] il cartello", "Sul cartello di legno vi sono delle scritte. La prima dice: 'ovest palude del drago', la seconda 'nord abbazia', la terza 'est sentiero del bosco', la quarta è stata bruciata.");
 		break;
 	case 16:
 		immagine("bosco2.png");
 		testo("Stai percorrendo un sentiero che taglia l'intricata vegetazione.<br />Puoi vedere: alti pini e una staccionata.");
 		rispondi("esamino i pini", "Tra i pini noti delle rudimentali croci infisse nel terreno. Si tratta di tombe.");
-		rispondi("esamino le tombe|esamino le croci", "Ti avvicini ai tumuli e scopri che vicino ad alcuni di essi vi sono delle armi arrugginite. Sembra che lí vi sia stata una cruenta battaglia molti anni fa.");
+		rispondi("esamino le [tombe|croci]", "Ti avvicini ai tumuli e scopri che vicino ad alcuni di essi vi sono delle armi arrugginite. Sembra che lí vi sia stata una cruenta battaglia molti anni fa.");
 		rispondi("esamino le armi", "Sono i resti di pesanti armature. Trovi un elmo, uno scudo, alcune spade, la lama di una lancia ed una alabarda. Tutte le armi sono solo degli inutili pezzi di ferro arrugginito.");
-		rispondi("esamino le armi|esamino l'elmo|esamino lo scudo|esamino la spada|esamino le spade|esamino la lama|esamino la lancia|esamino l'alabarda", "Non c'è nulla di rilevante in questo ferro arrugginito.");
-		rispondi("prendo le armi|prendo l'elmo|prendo lo scudo|prendo la spada|prendo le spade|prendo la lama|prendo la lancia|prendo l'alabarda", "Oltre all'ingombro, è tutto consumato dalla ruggine. Lasci questi pezzi di ferro dove sono.");
+		rispondi("esamino le [armi|elmo|scudo|spada|spade|lama|lancia|alabarda]", "Non c'è nulla di rilevante in questo ferro arrugginito.");
+		rispondi("prendo le [armi|elmo|scudo|spada|spade|lama|lancia|alabarda]", "Oltre all'ingombro, è tutto consumato dalla ruggine. Lasci questi pezzi di ferro dove sono.");
 		rispondi("esamino la staccionata", "Poco dietro la staccionata trovi un altro cadavere, consumato dal tempo. Si direbbe sia morto successivamente agli altri sepolti.");
 		condizioni("la chiave@i");
 			rispondi("esamino il cadavere", "Tra le spoglie del cadavere non trovi altro, oltre la chiave che hai preso.");
@@ -353,8 +353,8 @@ function istruzioniScena(n) {
 	case 17:
 		immagine("bosco.png");
 		testo("Stai seguendo una via tra gli alberi.<br />Puoi vedere: i resti di una costruzione.");
-		rispondiVai("esamino i resti|esamino la costruzione", "Ti avvicini alla costruzione...", 19);
-		rispondi("osservo i resti|osservo la costruzione", "Da lontano non riesci a capire di che si tratta... è il luogo che avrebbe indicato l'insegna bruciata del cartello nel crocevia.");
+		rispondiVai("esamino i [resti|costruzione]", "Ti avvicini alla costruzione...", 19);
+		rispondi("osservo i [resti|costruzione]", "Da lontano non riesci a capire di che si tratta... è il luogo che avrebbe indicato l'insegna bruciata del cartello nel crocevia.");
 		uscita("ovest", 18);
 		uscita("nord", 15);
 		break;
@@ -375,21 +375,21 @@ function istruzioniScena(n) {
 		condizioni("rampicanti eliminati", per => {
 			rispondi("esamino le lapidi", "Tra le lapidi hai trovato la tomba dell'abate Cromwell.");
 			condizioni("no!tomba aperta", per => {
-				rispondi("esamino la tomba|esamino la tomba di Cromwell|esamino la tomba dell'abate", "La lapide è posta in terra sconsacrata e la sepoltura potrebbe essere stata la parte di un rito.");
-				rispondi("apro la tomba|apro la tomba di Cromwell|apro la tomba dell'abate", "Una lastra orizzontale di pietra chiude la tomba, con un notevole sforzo fisico sollevi la lastra da un lato e la fai scorrere via. La tomba è aperta.");
+				rispondi("esamino la tomba [|di Cromwell|dell'abate]", "La lapide è posta in terra sconsacrata e la sepoltura potrebbe essere stata la parte di un rito.");
+				rispondi("apro la tomba [|di Cromwell|dell'abate]", "Una lastra orizzontale di pietra chiude la tomba, con un notevole sforzo fisico sollevi la lastra da un lato e la fai scorrere via. La tomba è aperta.");
 				_variabili("tomba aperta");
 			});
 			condizioni("tomba aperta", per => {
-				rispondi("chiudo la tomba|chiudo la tomba di Cromwell|chiudo la tomba dell'abate", "Ti senti un po' spossato per ripetere lo sforzo precedente. Lasci la tomba aperta.");
+				rispondi("chiudo la tomba [|di Cromwell|dell'abate]", "Ti senti un po' spossato per ripetere lo sforzo precedente. Lasci la tomba aperta.");
 				condizioni("no!cuore preso", per => {
-					rispondi("esamino la tomba|esamino la tomba di Cromwell|esamino la tomba dell'abate", "Dentro la tomba non trovi il corpo dell'abate, ma solo un cuore essiccato e rigido.");
-					rispondi("prendo il cuore|prendo il cuore di Cromwell|prendo il cuore dell'abate", "Hai preso il cuore dell'abate.");
+					rispondi("esamino la tomba [|di Cromwell|dell'abate]", "Dentro la tomba non trovi il corpo dell'abate, ma solo un cuore essiccato e rigido.");
+					rispondi("prendo il cuore [|di Cromwell|dell'abate]", "Hai preso il cuore dell'abate.");
 					_variabili("cuore preso");
 					_oggetti("il cuore di Cromwell@i");
-					rispondi("esamino il cuore|esamino il cuore di Cromwell|esamino il cuore dell'abate", "Il cuore risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
+					rispondi("esamino il cuore [|di Cromwell|dell'abate]", "Il cuore risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
 				});
 				condizioni("cuore preso");
-					rispondi("esamino la tomba|esamino la tomba di Cromwell|esamino la tomba dell'abate", "La tomba dell'abate è vuota, vi hai trovato il suo cuore ed è stato preso da te.");
+					rispondi("esamino la tomba [|di Cromwell|dell'abate]", "La tomba dell'abate è vuota, vi hai trovato il suo cuore ed è stato preso da te.");
 			});
 		});
 		break;
@@ -404,8 +404,8 @@ function istruzioniScena(n) {
 		uscita("ovest", 21);
 		uscita("est", 15);
 		uscita("sud", 18);
-		rispondi("esamino le piante|osservo le piante", "Con stupore misto a raccapriccio ti accorgi che dai rami degli alberi pendono corpi umani.");
-		rispondi("esamino i corpi|esamino i corpi umani|osservo i corpi|osservo i corpi umani", "I corpi orrendamente mutilati risultano irriconoscibili. Probabilmente si tratta di guerrieri o esploratori uccisi dal perfido abate Cromwell.");
+		rispondi("[esamino|osservo] le piante", "Con stupore misto a raccapriccio ti accorgi che dai rami degli alberi pendono corpi umani.");
+		rispondi("[esamino|osservo] i corpi [|umani]", "I corpi orrendamente mutilati risultano irriconoscibili. Probabilmente si tratta di guerrieri o esploratori uccisi dal perfido abate Cromwell.");
 		rispondi("esamino i corvi", "Sono troppo lontani per poterli esaminare.");
 		rispondi("osservo i corvi", "Gli uccellacci neri volano lenti sulle carogne in putrefazione. Sembrano quasi danzare per un sinistro banchetto.");
 		break;
@@ -423,7 +423,7 @@ function istruzioniScena(n) {
 		uscita("est", 21);
 		rispondi("esamino i cespugli", "I cespugli celano i resti mortali di tre cavalieri uccisi probabilmente in un'imboscata.");
 		rispondi("entro nei cespugli", "Ci sono già tre cadaveri, meglio restarne fuori...");
-		rispondi("osservo le conifere|esamino le conifere", "Tra gli alberi vedi uno strano bagliore, ma presto svanisce...");
+		rispondi("[esamino|osservo] le conifere", "Tra gli alberi vedi uno strano bagliore, ma presto svanisce...");
 		break;
 	}
 	Vista.mostra();

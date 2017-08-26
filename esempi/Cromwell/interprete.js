@@ -88,22 +88,98 @@ var Lingua = {
 		return str;
 	},
 
+	articolaFrasi: function(parti) {
+		var frasi = []; var nf = 0; // nf: numero frasi
+		var nsp = []; // nsp: numeri (indici) per le sotto parti
+		var tsp = []; // tsp: totale sotto parti
+		var np = 0; // numero parte (per muoversi tra le parti di frasi e tra i nsp)
+
+		for (np = 0; np < parti.length; np++) { // np: numero parte
+			parti[np] = parti[np].split('|');
+			tsp.push(parti[np].length);
+			nsp.push(0);
+		}
+		do {
+			frasi.push('');
+			for (np = 0; np < parti.length; np++) {
+				if (np === 0) {
+					frasi[nf] += parti[np][nsp[np]];
+				} else {
+					frasi[nf] += ' ' + parti[np][nsp[np]];
+				}
+			}
+			nf++; // Siccome parte da 0, aggiunge la frase, ci lavora e poi incrementa
+			np = 0;
+			var a; // a: avanza le combinazioni di parti di frasi
+			do {
+				a = 0;
+				nsp[np]++;
+				if (nsp[np] === tsp[np]) {
+					nsp[np] = 0;
+					np++;
+					if (np === nsp.length) return frasi;
+					a = 1;
+				}
+			} while (a === 1);
+		} while (true);
+	},
+
 	disarticolaEspressioniEq: function(str, utente) {
 		// str: è una stringa di soli caratteri minuscoli e senza diacritici
 		// utente: 1 è il giocatore, 2 è lo scrittore
 
 		// Questa funzione rende utilizzabile la sintassi di Confabula per scrivere varie frasi alternative servendosi di caratteri speciali:
 		// | questo significa 'oppure'. Es. "apro la porta con la chiave|introduco la chiave nella serratura"
-		// [] queste definiscono un gruppo, utile per indicare parti facoltative. Es. "osservo le [|alte] conifere" - Notare che senza | non sarebbe cambiato nulla, ma mettere un'alternativa vuota all'aggettivo 'alte' significa che 'alte' può esserci o meno. Altro es. "parlo al [mago|Cromwell|stregone|abate]" - In questo modo almeno un termine è richiesto. Inoltre, le espressioni equivalenti definite all'inizio realizzano implicitamente l'equivalenza tra, per esempio, "a|al|allo| ecc."
-		var frasi;
+		// [] queste definiscono un gruppo, utile per indicare parti facoltative. Es. "osservo le [|alte] conifere" - Notare che senza | non sarebbe cambiato nulla, ma mettere un'alternativa vuota all'aggettivo 'alte' significa che 'alte' può esserci o meno. Altro es. "parlo a [mago|Cromwell|stregone|abate]" - In questo modo almeno un termine è richiesto. Inoltre, le espressioni equivalenti definite nel vocabolario realizzano implicitamente l'equivalenza tra, per esempio, "a|al|allo| ecc."
+		var frasi = [];
+
+if (str === '[esamino|osservo] i [|alti] fusti') {
+	frasi = [];
+}
 
 		if (utente === 1) { // input inviato dal giocatore
 			// momentaneamente la frase viene inserita in un array per coerenza con il successivo processo
 			frasi = [str];
 
 		} else { // input previsti dallo scrittore (insieme di frasi da disarticolare)
-			// Ricava l'insieme di frasi alternative (attualmente è implementato solo | )
-			frasi = str.split('|');
+			// Ricava l'insieme di frasi alternative (attualmente è implementato | e [] non annidate)
+			var s = [0]; // s: segnaposti (il primo è già inserito: l'inizio)
+			var ns = 0; // ns: numero segnaposto
+			var ss = [0, 0]; // ss: segnaposti speciali (servono per verificare se si incontra prima | o [
+			var parti = []; // parti che articolano le varie frasi
+
+			do {
+				ss[0] = str.indexOf('[', s[ns]);
+				ss[1] = str.indexOf('|', s[ns]);
+				if (ss[0] !== -1 && (ss[1] === -1 || ss[0] < ss[1])) {
+					s.push(ss[0]); ns++;
+					// Aggiunge una parte (se non è vuota) dal segnaposto precedente fino alla trovata [
+					if (s[ns - 1] !== s[ns]) parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
+					s[ns]++; // Anche se la stringa è vuota deve collocarsi appena dopo la trovata [
+					s.push(str.indexOf(']', s[ns])); ns++;
+					parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
+					s[ns]++; // Si deve collocare appena dopo la trovata ]
+				} else if (ss[1] !== -1 && (ss[0] === -1 || ss[1] < ss[0])) {
+					s.push(ss[1]); ns++;
+					// Aggiunge ultimo pezzo (se non è vuoto) dal segnaposto precedente fino alla trovata |
+					if (s[ns - 1] !== s[ns]) {
+						parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
+						s[ns]++; // Si deve collocare appena dopo la trovata |
+					}
+					// Usa le parti per articolare una o più frasi, poi svuota le parti
+					if (parti.length > 0) frasi = frasi.concat(Lingua.articolaFrasi(parti));
+					parti = [];
+				} else {
+					s.push(str.length); ns++;
+					if (s[ns - 1] !== s[ns]) {
+						parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
+					}
+					// Usa le parti per articolare una o più frasi, poi svuota le parti ed esce dal ciclo
+					if (parti.length > 0) frasi = frasi.concat(Lingua.articolaFrasi(parti));
+					parti = [];
+					break;
+				}
+			} while (true);
 		}
 
 		// Trasforma l'insieme di frasi in un insieme di insiemi di insiemi di parole semantiche
