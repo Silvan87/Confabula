@@ -2,7 +2,7 @@
  * I predicati equivalenti (sinonimi) vanno qui inseriti solo nella forma indicativo presente prima persona
  */
 function vocabolario() {
-	Lingua.predicati("guardo|osservo|esamino|prendo|inventario|apro|chiudo|entro|esco|leggo");
+	Lingua.predicati("accendo|aiuto|apro|aspetto|bevo|entro|esamino|esco|forzo|guardo|leggo|mangio|osservo|prendo|rompo|scendo|sfondo|sollevo|spengo|uccido|verso|inventario");
 	Lingua.equivalenze([
 		["ovest|o|w"], ["nord|n"], ["est|e"], ["sud|s"],
 		["|il|lo|la|i|gli|le|l|gl"], ["|un|uno|una"],
@@ -15,6 +15,6 @@ function vocabolario() {
 		["per|pel|perlo|perla|pei|pergli|perle|perl"],
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
-		["|esamino|x"], ["direzione|d"]
+		["|esamino|x"], ["direzione|d"], ["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"]
 	]);
 }
