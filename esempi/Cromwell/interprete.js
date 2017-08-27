@@ -133,10 +133,6 @@ var Lingua = {
 		// [] queste definiscono un gruppo, utile per indicare parti facoltative. Es. "osservo le [|alte] conifere" - Notare che senza | non sarebbe cambiato nulla, ma mettere un'alternativa vuota all'aggettivo 'alte' significa che 'alte' può esserci o meno. Altro es. "parlo a [mago|Cromwell|stregone|abate]" - In questo modo almeno un termine è richiesto. Inoltre, le espressioni equivalenti definite nel vocabolario realizzano implicitamente l'equivalenza tra, per esempio, "a|al|allo| ecc."
 		var frasi = [];
 
-if (str === '[esamino|osservo] i [|alti] fusti') {
-	frasi = [];
-}
-
 		if (utente === 1) { // input inviato dal giocatore
 			// momentaneamente la frase viene inserita in un array per coerenza con il successivo processo
 			frasi = [str];
@@ -162,10 +158,8 @@ if (str === '[esamino|osservo] i [|alti] fusti') {
 				} else if (ss[1] !== -1 && (ss[0] === -1 || ss[1] < ss[0])) {
 					s.push(ss[1]); ns++;
 					// Aggiunge ultimo pezzo (se non è vuoto) dal segnaposto precedente fino alla trovata |
-					if (s[ns - 1] !== s[ns]) {
-						parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
-						s[ns]++; // Si deve collocare appena dopo la trovata |
-					}
+					if (s[ns - 1] !== s[ns]) parti.push(str.substr(s[ns - 1], s[ns] - s[ns - 1]));
+					s[ns]++; // Si deve collocare appena dopo la trovata |
 					// Usa le parti per articolare una o più frasi, poi svuota le parti
 					if (parti.length > 0) frasi = frasi.concat(Lingua.articolaFrasi(parti));
 					parti = [];
