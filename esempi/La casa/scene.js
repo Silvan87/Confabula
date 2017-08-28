@@ -37,11 +37,10 @@ function istruzioniGenerali() {
 	condizioni("la bottiglietta d'alcol@i");
 		rispondi("verso l'alcol|verso la bottiglietta [|d'alcol]", "Versi il liquido infiammabile dappertutto e appicchi il fuoco. Subito le fiamme si propagano.");
 		_variabili("incendio");
-	condizioni("incendio");
+	condizioni("incendio", per => {
 		nMosseRispondi(2, "Fuoco e fiamme sono ormai dappertutto...");
-	condizioni("incendio");
 		nMosseVai(4, 10);
-		_variabili("no!incendio");
+	});
 }
 // Istruzioni specifiche per ciascuna scena
 function istruzioniScena(n) {

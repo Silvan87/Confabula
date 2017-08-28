@@ -611,7 +611,7 @@ var Vista = {
 		e_inp.style.color = Vista.coloreTestoP;
 		e_inp.className = 'coloreSfondo coloreTesto testoCarattere testoGrandezza larghezzaMaxStoria';
 		e_inp.readOnly = false;
-		if (event.keyCode === 38) {
+		if (event !== undefined && event.keyCode === 38) {
 			e_inp.disabled = true;
 			Vista.scorriCronoInput(-1);
 		} else {
@@ -777,10 +777,10 @@ var I = {
 			for (var ii = 0; ii < S.Istruzioni[L].length; ii++) { // i: indice istruzione
 
 				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro "nMosse" per farle avanzare
-				if (azioneEseguita === 1 && S.Istruzioni[L][ii].mosse === undefined) continue;
+				if (azioneEseguita === 1 && S.Istruzioni[L][ii].mossa === undefined) continue;
 
 				// Se è in fase di caricamento della scena non deve partire subito il contatore delle istro "nMosse", perché il giocatore deve avere il tempo di fare delle mosse nella nuova scena. Inoltre, andare ad una nuova scena è già contata come mossa.
-				if (Vista.caricamento === 1 && S.Istruzioni[L][ii].mosse !== undefined) continue;
+				if (Vista.caricamento === 1 && S.Istruzioni[L][ii].mossa !== undefined) continue;
 
 				// Copia l'istruzione, così si è liberi di rimuoverla qualora non servisse più
 				istro = S.Istruzioni[L][ii];
@@ -788,26 +788,29 @@ var I = {
 				// Assume inizialmente che le condizioni siano soddisfatte
 				condSoddisfatte = 1;
 
-				// Verifica che le condizioni sugli oggetti e le variabili siano soddisfatte
-				if (I.controllaOggVar(istro) === false) condSoddisfatte = 0;
+				// Se c'è un n. di mosse da raggiungere, ma il contatore è stato eliminato (undefined), considera l'istro non soddisfatta
+				if (istro.mosse !== undefined && istro.mossa === undefined) condSoddisfatte = 0;
 
-				// Se le condizioni non sono soddisfatte passa alla prossima istruzione, ma gestisce il contatore delle mosse
+				// Verifica che le condizioni sugli oggetti e le variabili siano soddisfatte
+				if (condSoddisfatte && I.controllaOggVar(istro) === false) condSoddisfatte = 0;
+
+				// Se le condizioni non sono soddisfatte passa alla prossima istruzione ed eventualmente azzera nMosse
 				if (!condSoddisfatte) {
-					// La perdita delle condizioni idonee per un'istruzione con n. di mosse fa azzerare le mosse
-					if (istro.mosse !== undefined) S.Istruzioni[L][ii].mossa = 0;
+					// La perdita delle condizioni idonee per un'istruzione nMosse fa azzerare le mosse
+					if (istro.mossa !== undefined) S.Istruzioni[L][ii].mossa = 0;
 					continue; // Prossima istruzione
 				}
 
-				// Verifica se c'è un numero di mosse da raggiungere e che sia stato raggiunto
+				// Verifica che ci sia un numero di mosse da raggiungere e che sia stato raggiunto
 				// Le mosse vengono contate solo se e fintantoché le condizioni su ogg e var sono soddisfatte. Se il conteggio delle mosse è iniziato e le condizioni su ogg e var vengono meno prima che scatti un'azione, allora il contatore delle mosse viene resettato.
-				if (condSoddisfatte && istro.mosse !== undefined && S.Istruzioni[L][ii].mossa !== undefined) {
+				if (condSoddisfatte && istro.mossa !== undefined) {
 					if (istro.mossa >= istro.mosse) {
 						// Valuta se reimpostare un nuovo n. di mosse da raggiungere in base alla ripetitività
 						if (istro.ripeti === 1) {
 							S.Istruzioni[L][ii].mossa = 0;
 						} else {
-							// Non si deve rimuovere un'istruzione nMosse, potrebbe tornare attiva per un caricamento di partita
-							S.Istruzioni[L][ii].mossa = undefined;
+							// Non si deve rimuovere un'istruzione nMosse, potrebbe tornare attiva per un caricamento di partita o altro
+							delete S.Istruzioni[L][ii].mossa; delete istro.mossa;
 						}
 					} else {
 						S.Istruzioni[L][ii].mossa++;
@@ -1019,7 +1022,7 @@ var I = {
 				eseguiAudio(istro.audio);
 			break;
 			case 'rispondi':
-				if (istro.mosse === undefined) {
+				if (istro.mossa === undefined) {
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
 						coloreInline = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
@@ -1041,7 +1044,7 @@ var I = {
 				}
 			break;
 			case 'rispondiVai':
-				if (istro.mosse === undefined) {
+				if (istro.mossa === undefined) {
 					document.getElementById('input').style.display = 'none';
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
