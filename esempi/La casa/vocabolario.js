@@ -15,6 +15,6 @@ function vocabolario() {
 		["per|pel|perlo|perla|pei|pergli|perle|perl"],
 		["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 		["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
-		["|esamino|x"], ["direzione|d"], ["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"]
+		["|esamino|x"], ["direzione|d"], ["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"], ["bottiglia|bottiglietta"]
 	]);
 }

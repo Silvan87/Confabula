@@ -47,9 +47,10 @@ function istruzioniScena(n) {
 	Vista.preparaScena(n);
 	switch (n) {
 	case 1:
-		testo("<br />Una produzione DJ SOFT<br /><img src=\"casa.png\" style=\"width:468px; height:280px;\" /><br />LA CASA © MCMLXXXVIII<br />Vi sta aspettando... ma non entrate!<br />", "centrato");
-		scegliVai("Inizia", 2, "centrato");
+		testo("<br />LA CASA © MMXVII<br /><img src=\"casa.png\" style=\"width:468px; height:280px;\" /><br />Un'insaziabile creatura vi sta aspettando...<br /><br />", "centrato");
+		scegliVai("Entra", 5, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
+		scegliRispondi("Licenza", "LA CASA © MMXVII è una rivisitazione dell'avventura testuale LA CASA © MCMLXXXVIII pubblicata sulla rivista Amiga Byte n.7 come opera di pubblico dominio, liberamente copiabile e distribuibile senza scopo di lucro. <a href=\"https://github.com/Druido87/Confabula\" target=\"_blank\">Confabula</a> è l'interprete JavaScript per creare ed eseguire avventure testuali, rilasciato da <a href=\"https://github.com/Druido87\" target=\"_blank\">Druido87</a> con licenza <a href=\"https://github.com/Druido87/Confabula/blob/master/LICENSE\" target=\"_blank\">GNU L-GPL</a>. La storia rivisitata è un esempio di utilizzo di Confabula.", "centrato");
 		break;
 	case 2:
 		nomeLuogo("soggiorno");
@@ -57,9 +58,9 @@ function istruzioniScena(n) {
 		testo("Ti trovi nel soggiorno. Il soffitto è sorretto da grosse travi, mentre le pareti recano evidenti tracce di umidità.<br />Puoi vedere: un divano, un tappeto, un tavolo, un mobile, un caminetto, dei quadri ed un pendolo.");
 		condizioni("botola aperta");
 			testo("Una botola è stata aperta.");
-		uscita("sud", 4);
-		uscita("est", 5);
 		uscita("ovest", 6);
+		uscita("est", 5);
+		uscita("sud", 4);
 		rispondi("esamino il divano", "Si tratta di un divano con disegni a fiori. Il tessuto è logoro e strappato in piú punti.");
 		rispondi("esamino il tappeto", "Il tappeto è ricoperto di polvere; in un angolo vi è una macchia scura.");
 		rispondi("sollevo il tappeto", "Sotto il tappeto c'è una botola.");
@@ -76,21 +77,22 @@ function istruzioniScena(n) {
 		rispondi("esamino i quadri", "Sono strani ritratti di famiglia.");
 		rispondi("sollevo i quadri", "Dietro i quadri non scopri nulla di rilevante.");
 		rispondi("esamino il pendolo", "L'orologio, pieno di polvere e ragnatele, è fermo con le lancette sulle 12. Mezzanotte è l'ora delle streghe.");
-		condizioni("no!botola aperta");
-			rispondi("apro la botola", "Non riesci ad aprire la botola. Ti servirebbe qualcosa per far leva...");
 		condizioni("il cacciavite@i");
 			rispondi("forzo la botola con il cacciavite", "Hai aperto la botola. Sotto è molto buio.");
 			_variabili("botola aperta");
-		condizioni("no!botola aperta");
+		condizioni("no!botola aperta", per => {
+			rispondi("apro la botola", "Non riesci ad aprire la botola. Ti servirebbe qualcosa per far leva...");
 			rispondi("forzo la botola", "Devi servirti di qualcosa per forzare la botola.");
-		condizioni("no!il cacciavite@i+no!botola_aperta");
-			rispondi("forzo la botola con il cacciavite", "Non hai un cacciavite...");
-		condizioni("la candela accesa@i+botola aperta");
-			rispondiVai("giù|cantina|[entro|scendo] [|nella botola]", "Ti introduci nella botola con la candela accesa...", 7);
-		condizioni("no!la candela accesa@i+botola aperta");
-			rispondiVai("giù|cantina|[entro|scendo] [|nella botola]", "Ti introduci nella botola...", 8);
-		condizioni("botola aperta");
-			uscita("giù", 7, 1);
+			condizioni("no!il cacciavite@i");
+				rispondi("forzo la botola con il cacciavite", "Non hai un cacciavite...");
+		});
+		condizioni("botola aperta", per => {
+			condizioni("la candela accesa@i");
+				rispondiVai("giù|cantina|[entro|scendo] [|nella botola]", "Ti introduci nella botola con la candela accesa...", 7);
+			condizioni("no!la candela accesa@i");
+				rispondiVai("giù|cantina|[entro|scendo] [|nella botola]", "Ti introduci nella botola...", 8);
+			uscita("giù", 7, 'esplorabile');
+		});
 		break;
 	case 3:
 		immagine("mostro.png");
@@ -123,19 +125,24 @@ function istruzioniScena(n) {
 	case 5:
 		nomeLuogo("cucina");
 		immagine("cucina.png");
-		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, un forno a legna, un cucinino e il contatore generale.");
+		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, una madia, un lavabo, un cucinino e un forno a legna. Il contatore generale sulla parete e in terra alcuni coltelli.");
 		uscita("ovest", 2);
-		rispondi("aiuto", "La prudenza non è mai troppa...... Attento!");
-		rispondi("esamino la porta", "È la massiccia porta di rovere grazie alla quale sei entrato in questa casa.");
+		condizioni("no!trappola");
+			effetto("Un rumore di serratura alle tue spalle. Sei chiuso dentro.", 1000, "parole", 300);
+			_variabili("trappola");
+		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato in questa casa.");
 		rispondi("apro la porta", "È chiusa a chiave. Eppure, quando sei entrato, era aperta. Non sarà facile riaprirla.");
 		condizioni("no!la chiave@i");
 			rispondi("apro la porta con la chiave", "Purtroppo, le chiavi di questa casa non sono con te...");
 		rispondi("sfondo la porta", "È davvero massiccia e resistente, insistendo potresti giusto romperti una spalla.");
-		rispondiVai("esamino la credenza", "Ti avvicini alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
-		rispondi("esamino il forno [|a legna]", "Il forno contiene dei resti umani carbonizzati.");
+		rispondi("esamino la credenza", "Gli sportelli vetrati riflettono una pallida figura umana e non comprendi se sei tu o qualcos'altro.");
+		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
+		rispondi("esamino il forno [|a legna]", "Il forno a legna contiene resti umani carbonizzati.");
 		contenitore("cucinino", "dei|i fiammiferi");
 		condizioni("i fiammiferi@cucinino");
 			rispondi("esamino il cucinino", "Sul cucinino vi sono dei fiammiferi.");
+		condizioni("no!i fiammiferi@cucinino");
+			rispondi("esamino il cucinino", "Sul cucinino non c'è niente di appoggiato.");
 		condizioni("i fiammiferi@cucinino");
 			rispondi("prendo i fiammiferi", "Hai preso i fiammiferi.");
 			_oggetti("i fiammiferi@i+no!i fiammiferi@cucinino");

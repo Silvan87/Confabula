@@ -346,6 +346,8 @@ var Vista = {
 	timerImmagini: 0, // ID dell'evento che controlla se le immagini sono state caricate
 	timerPremiTasto: 0, // ID dell'evento temporizzato che fa comparire la scritta "Premi un tasto"
 	timerPassaErrore: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Prova altro"
+	effetti: [], // Array che contiene oggetti e parametri degli effetti
+	timerEffetti: 0, // ID dell'evento temporizzato che fa avanzare un effetto
 
 	preparaScena: function(n) {
 
@@ -536,15 +538,15 @@ var Vista = {
 		e_aud.innerHTML = '<audio src="' + aud + '" autoplay="autoplay"></audio>';
 	},
 
-	aliStyle: function(ali) {
-		switch(ali) {
-			case 'giustificato': ali = ' style="text-align:justify;"'; break;
-			case 'centrato': ali = ' style="text-align:center;"'; break;
-			case 'destra': ali = ' style="text-align:right;"'; break;
-			case 'sinistra': ali = ' style="text-align:left;"'; break;
+	cssAll: function(all) {
+		switch(all) {
+			case 'giustificato': case 'justify': all = ' style="text-align:justify;"'; break;
+			case 'centrato': case 'center': all = ' style="text-align:center;"'; break;
+			case 'destra': case 'right': all = ' style="text-align:right;"'; break;
+			case 'sinistra': case 'left': all = ' style="text-align:left;"'; break;
 			default: return '';
 		}
-		return ali;
+		return all;
 	},
 
 	contenuto: function(nome) {
@@ -1012,12 +1014,12 @@ var I = {
 		if (istro.audio) eseguiAudio(istro.audio);
 
 		// Prepara alcuni aspetti dello stile
-		var ali = ''; if (istro.allineamento) ali = Vista.aliStyle(istro.allineamento);
-		if (!ali && Vista.stile.testoAllineamento) ali = Vista.aliStyle(Vista.stile.testoAllineamento);
-		var classi = ''; var coloreInline = '';
+		var ali = ''; if (istro.allineamento) ali = Vista.cssAll(istro.allineamento);
+		if (!ali && Vista.stile.testoAllineamento) ali = Vista.cssAll(Vista.stile.testoAllineamento);
+		var classi = ''; var cssCol = ''; // Stile css in linea per il colore
 
 		// Esegue l'azione principale
-		switch (istro.azione) { // (si intende il tipo di azione)
+		switch (istro.azione) { // il tipo di azione dell'istruzione
 			case 'audio':
 				eseguiAudio(istro.audio);
 			break;
@@ -1025,17 +1027,66 @@ var I = {
 				if (istro.mossa === undefined) {
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
-						coloreInline = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
+						cssCol = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
 					} else {
 						classi += ' coloreTestoInviato';
 					}
 					classi += '"';
-					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? '+ I.inputGrezzo +'</p>';
+					e_txt.innerHTML += '<p'+ ali + cssCol + classi +'>? '+ I.inputGrezzo +'</p>';
 				}
 				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 			break;
+			case 'effetto':
+				if (istro.colore !== undefined) {
+					cssCol = ' style="color:'+istro.colore+';"';
+				}
+				switch (istro.tipo) {
+					case 'caratteri':
+						Vista.effetti.push({'output':istro.output});
+						Vista.effetti[Vista.effetti.length - 1].IDelem = 'ef'+Vista.effetti.length;
+						Vista.effetti[Vista.effetti.length - 1].contatore = 0;
+						e_txt.innerHTML += '<p id="'+'ef'+Vista.effetti.length+'"'+ali+cssCol+'>&nbsp;</p>';
+						Vista.timerEffetti = setInterval(function() {
+							if (Vista.effetti[Vista.effetti.length - 1].contatore >= Vista.effetti[Vista.effetti.length - 1].output.length) {
+								clearTimeout(Vista.timerEffetti);
+								return;
+							}
+							var e_eff = document.getElementById('ef'+Vista.effetti.length);
+							if (Vista.effetti[Vista.effetti.length - 1].contatore === 0) {
+								e_eff.innerHTML = Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
+							} else {
+								e_eff.innerHTML += Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
+							}
+							Vista.effetti[Vista.effetti.length - 1].contatore++;
+						}, istro.intervallo);
+					break;
+					case 'parole':
+						var parole = [];
+						parole = istro.output.split(/([^\s]+\s)/).filter(Boolean);
+						Vista.effetti.push({'output':parole});
+						Vista.effetti[Vista.effetti.length - 1].IDelem = 'ef'+Vista.effetti.length;
+						Vista.effetti[Vista.effetti.length - 1].contatore = 0;
+						e_txt.innerHTML += '<p id="'+'ef'+Vista.effetti.length+'"'+ali+cssCol+'>&nbsp;</p>';
+						Vista.timerEffetti = setInterval(function() {
+							if (Vista.effetti[Vista.effetti.length - 1].contatore >= Vista.effetti[Vista.effetti.length - 1].output.length) {
+								clearTimeout(Vista.timerEffetti);
+								return;
+							}
+							var e_eff = document.getElementById('ef'+Vista.effetti.length);
+							if (Vista.effetti[Vista.effetti.length - 1].contatore === 0) {
+								e_eff.innerHTML = Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
+							} else {
+								e_eff.innerHTML += Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
+							}
+							Vista.effetti[Vista.effetti.length - 1].contatore++;
+						}, istro.intervallo);
+					break;
+					case 'tuono':
+					break;
+				}
+			break;
 			case 'vaiA':
-				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni in corso di verifica da parte di leggiInput().
+				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni "in corso di verifica" su leggiInput().
 				switch (istro.scena) {
 					case 0: istruzioniScena(G.nScena); break;
 					case -1: istruzioniScena(G.nScenaP); break;
@@ -1048,12 +1099,12 @@ var I = {
 					document.getElementById('input').style.display = 'none';
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
-						coloreInline = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
+						cssCol = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
 					} else {
 						classi += ' coloreTestoInviato';
 					}
 					classi += '"';
-					e_txt.innerHTML += '<p'+ ali + coloreInline + classi +'>? ' + I.inputGrezzo + '</p>';
+					e_txt.innerHTML += '<p'+ ali + cssCol + classi +'>? ' + I.inputGrezzo + '</p>';
 				}
 				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 				// Per procedere serve ora premere un tasto
@@ -1250,9 +1301,51 @@ function testo(txt, ali) {
 	} else { esegui = 1; }
 	
 	if (esegui == 1) {
-		if (ali) { ali = Vista.aliStyle(ali); } else { ali = ''; }
-		if (Vista.stile.testoAllineamento) ali = Vista.aliStyle(Vista.stile.testoAllineamento);
+		if (ali) { ali = Vista.cssAll(ali); } else { ali = ''; }
+		if (Vista.stile.testoAllineamento) ali = Vista.cssAll(Vista.stile.testoAllineamento);
 		Vista.testo += '<p'+ali+'>' + txt + '</p>';
+	}
+}
+function effetto(txt, op0, op1, op2, op3, op4) {
+	// txt: testo da visualizzare, anche html
+	// op1: (facoltativo) allineamento testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	// op2: ritardo effetto
+	// op3: nome effetto da applicare
+	// op4: (facoltativo) colore testo
+	// op5: ulteriore parametro per l'effetto
+	var opz = [op0, op1, op2, op3, op4]; var i = 0; // indice opzioni
+	var rit = 0;
+	
+	if (G.nScena === 0) { alert('L\'istruzione "effetto()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
+	
+	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
+	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice Ultimo Blocco
+	if (Condizioni.righeCoinvolte[iUB] > 0) {
+		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+	} else { esegui = 1; }
+	
+	if (esegui == 1) {
+		var istro = {};
+		istro.azione = 'effetto';
+		istro.output = txt;
+		if (/^(giustificato|centrato|destra|sinistra|justify|center|right|left)$/.test(opz[0])) {
+			istro.allineamento = Vista.cssAll(opz[0]); i++;
+		} else if (Vista.stile.testoAllineamento) {
+			istro.allineamento = Vista.cssAll(Vista.stile.testoAllineamento);
+		}
+		rit = Number(opz[i]); i++; // ritardo effetto
+		istro.tipo = opz[i]; i++;
+		if (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(opz[i])) {
+			istro.colore = opz[i]; i++; // colore testo
+		}
+		switch (istro.tipo) {
+			case 'caratteri':
+			case 'parole':
+				istro.intervallo = Number(opz[i]);
+			break;
+		}
+		setTimeout(function() { I.eseguiIstruzione(istro); }, rit);
 	}
 }
 function immagine(img, w, h) {
@@ -1610,7 +1703,7 @@ function scegliVai(txt, nS, ali) {
 	// nS: numero della scena verso cui andare
 	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 
-	if (ali !== undefined) { ali = Vista.aliStyle(ali); } else { ali = ''; }
+	if (ali !== undefined) { ali = Vista.cssAll(ali); } else { ali = ''; }
 	Vista.scelte += '<p class="scelta coloreScelta" '+ ali +' onclick="S.vaiA('+nS+')">' + txt + '</p>';
 }
 function scegliRispondi(txt, txt_out, ali1, ali2) {
@@ -1619,7 +1712,7 @@ function scegliRispondi(txt, txt_out, ali1, ali2) {
 	// ali1: allineamento del testo della scelta selezionabile
 	// ali2: allineamento del testo stampato in risposta
 
-	if (ali1 !== undefined) { ali1 = Vista.aliStyle(ali1); } else { ali1 = ''; }
+	if (ali1 !== undefined) { ali1 = Vista.cssAll(ali1); } else { ali1 = ''; }
 	if (txt_out !== undefined && txt_out !== '') {
 		var istro = {}; // istro: istruzione
 		istro['azione'] = 'rispondi';
