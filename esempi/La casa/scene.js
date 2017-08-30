@@ -128,7 +128,7 @@ function istruzioniScena(n) {
 		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, una madia, un lavabo, un cucinino e un forno a legna. Il contatore generale sulla parete e in terra alcuni coltelli.");
 		uscita("ovest", 2);
 		condizioni("no!trappola");
-			effetto("Un rumore di serratura alle tue spalle. Sei chiuso dentro.", 1000, "parole", 300);
+			effetto("Un rumore di serratura alle tue spalle. Ora sei chiuso dentro.", 1000, "parole", 300);
 			_variabili("trappola");
 		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato in questa casa.");
 		rispondi("apro la porta", "È chiusa a chiave. Eppure, quando sei entrato, era aperta. Non sarà facile riaprirla.");
