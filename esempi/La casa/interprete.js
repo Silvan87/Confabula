@@ -1,6 +1,5 @@
 var Lingua = {
 
-	predicatiOrdinati: [], // (il nome della funzione è tutto per esteso perché compare su 'scene.js' dove lo scrittore lavora)
 	equivalenzeOrd: {}, // equivalenze ordinate
 	mappaDiacritici: [ // Mappa diacritici per le vocali italiane minuscole
 		{'base':'à', 'letters':/[\u00e0\u00e1]/g},
@@ -10,11 +9,6 @@ var Lingua = {
 		{'base':'u','letters':/[\u00f9\u00fa]/g}
 		// La i e la u non presentano in italiano parole abbastanza importanti che cambiano di significato in relazione all'accento. Quindi è preferibile avere l'equivalenza di giu e giù, mentre si deve distinguere papa e papà, o e ed è, anche toto e totò.
 	],
-
-	predicati: function(str) {
-		// Mette i predicati in un array ed in ordine alfabetico, pronti all'uso
-		Lingua.predicatiOrdinati = str.split('|').sort();
-	},
 
 	equivalenze: function(espressioniEq) { // argomento: espressioni equivalenti
 		// Per velocizzare l'elaborazione nel ridurre un input alla forma normalizzata, occorre usare la struttura del dizionario (basata sulla veloce hashtable). Il risultato è che a ciascuna parola dovrà essere associata la parola normalizzata. Dato un insieme di parole tra loro equivalenti (sinonime), nell'ordine posto dallo scrittore, si prende la prima che sarà quella normalizzata. La parola può far parte di più insiemi di parole sinonime ed un insieme di sinonimi mira ad un significato abbastanza preciso. Non si devono unificare questi insiemi, quindi avremo più parole normalizzate associate ad una parola da normalizzare.

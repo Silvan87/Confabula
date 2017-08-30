@@ -2,7 +2,6 @@
  * I predicati equivalenti (sinonimi) vanno qui inseriti solo nella forma indicativo presente prima persona
  */
 function vocabolario() {
-	Lingua.predicati("osservo|esamino|entro|esco|leggo|inventario|infilo|introduco|prendo|guardo|apro|chiudo|bevo|strappo");
 	Lingua.equivalenze([
 		["ovest|o|w"], ["nord|n"], ["est|e"], ["sud|s"],
 		["|il|lo|la|i|gli|le|l|gl"], ["|un|uno|una"],

@@ -5,7 +5,7 @@ function istruzioniGenerali() {
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
 	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);
 	uscita("guardo|g", 0, "invisibile");
-	rispondi("vocabolario|v", Lingua.predicatiOrdinati.join(', '));
+	rispondi("vocabolario|v", "apro, bevo, chiudo, entro, esamino, esco, guardo, infilo, introduco, inventario, leggo, osservo, prendo, strappo");
 	contenitore("i", "un|il pugnale");
 	rispondi("inventario|i", "Hai con te: @i@.");
 	rispondi("aiuto", "Scrivi 'istruzioni' per leggere le istruzioni e 'vocabolario' o 'v' per leggere i predicati con cui interagire con gli oggetti.");
