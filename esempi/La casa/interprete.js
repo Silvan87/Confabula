@@ -7,7 +7,7 @@ var Lingua = {
 		{'base':'i', 'letters':/[\u00eC\u00ed\u00ee]/g},
 		{'base':'ò', 'letters':/[\u00f2\u00f3]/g},
 		{'base':'u','letters':/[\u00f9\u00fa]/g}
-		// La i e la u non presentano in italiano parole abbastanza importanti che cambiano di significato in relazione all'accento. Quindi è preferibile avere l'equivalenza di giu e giù, mentre si deve distinguere papa e papà, o e ed è, anche toto e totò.
+		// La i e la u non presentano in italiano parole abbastanza importanti che cambiano di significato in relazione all'accento. Quindi è preferibile avere l'equivalenza di giu e giù, mentre si deve distinguere papa e papà, o e ed è, anche pero e però.
 	],
 
 	equivalenze: function(espressioniEq) { // argomento: espressioni equivalenti
@@ -45,7 +45,7 @@ var Lingua = {
 			// In caso di stringhe vuote al primo posto, che rendono un termine omettibile, bisogna poter gestire anche i casi in cui non si potranno omettere. La soluzione adottata è conservare il primo termine dopo la stringa vuota, ma facendolo iniziare con due underscore '__'
 			var paroleSemantiche = [];
 			for (var g = 0; g < Lingua.equivalenzeOrd[po].length; g++) { // g: indice gruppo
-				if (Lingua.equivalenzeOrd[po][g][0] == '') {
+				if (Lingua.equivalenzeOrd[po][g][0] === '') {
 					paroleSemantiche.push('__'+Lingua.equivalenzeOrd[po][g][1]);
 				} else {
 					paroleSemantiche.push(Lingua.equivalenzeOrd[po][g][0]);
@@ -54,7 +54,7 @@ var Lingua = {
 			Lingua.equivalenzeOrd[po] = paroleSemantiche;
 
 			// Può capitare che la parola "sintattica" sia uguale a quella "semantica", in tal caso va rimossa per ottimizzare lo spazio
-			if (Lingua.equivalenzeOrd[po].length === 1 && po == Lingua.equivalenzeOrd[po][0]) delete Lingua.equivalenzeOrd[po];
+			if (Lingua.equivalenzeOrd[po].length === 1 && po === Lingua.equivalenzeOrd[po][0]) delete Lingua.equivalenzeOrd[po];
 		}
 	},
 
@@ -333,7 +333,7 @@ var Vista = {
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
 	testo: '', // Testo, anche html, che descrive la scena
-	uscite: '', // Elenco di uscite (link), separate da una virgola e spazio
+	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
 	stile: {}, // Array che contiene proprietà e valori inerenti lo stile grafico
 	coloreTestoP: '', // Colore testo precedente
@@ -341,7 +341,8 @@ var Vista = {
 	timerPremiTasto: 0, // ID dell'evento temporizzato che fa comparire la scritta "Premi un tasto"
 	timerPassaErrore: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Prova altro"
 	effetti: [], // Array che contiene oggetti e parametri degli effetti
-	timerEffetti: 0, // ID dell'evento temporizzato che fa avanzare un effetto
+	nEffetti: 0, // Numeratore degli ID degli effetti
+	timerEffetto: null, // ID dell'evento temporizzato che fa avanzare un effetto
 
 	preparaScena: function(n) {
 
@@ -349,7 +350,7 @@ var Vista = {
 		if (Vista.caricamento === 0) Vista.caricamento = 1;
 
 		// L'avvio della scena 1 deve resettare la storia
-		if (n == 1) {
+		if (n === 1) {
 			S.nuovaPartita();
 			Vista.caricamento = 0;
 			G.nScena = 0; // La scena 0 indica che le istruzioni chiamate sono all'interno del blocco istruzioniGenerali
@@ -374,6 +375,12 @@ var Vista = {
 	},
 
 	svuotaScena: function() {
+
+		// Annulla tutti gli effetti in corso
+		clearTimeout(Vista.timerEffetto);
+		Vista.timerEffetto = null;
+		Vista.effetti = [];
+		Vista.nEffetti = 0;
 
 		// Svuota i contenuti e nasconde gli elementi della scena
 		G.luoghiRagg.bloccati = 0;
@@ -425,7 +432,7 @@ var Vista = {
 			e_txt.innerHTML = '<p>'+Vista.intermezzo[0]+'</p>';
 			e_txt.style.visibility = 'visible';
 			// Elimina il primo intermezzo inserito dall'autore, pop() darebbe un effetto inverso non desiderato
-			Vista.intermezzo.splice(0, 1);
+			Vista.intermezzo.shift();
 			// Dopo 100 ms qualsiasi tasto che risulta premuto chiama passaIntermezzo()
 			setTimeout(function() {
 				document.addEventListener('keydown', Vista.passaIntermezzo);
@@ -454,8 +461,8 @@ var Vista = {
 
 		// Aggiunge le attuali uscite visibili in fondo al testo
 		if (Vista.uscite !== '') {
-			var ali = ''; if (Vista.stile.testoAllineamento) ali = alignStyle(Vista.stile.testoAllineamento);
-			Vista.testo += '<p'+ ali +'>Uscite visibili:' + Vista.uscite.substr(1) + '.</p>';
+			var all = ''; if (Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
+			Vista.testo += '<p'+ all +'>Uscite visibili:' + Vista.uscite.substr(1) + '.</p>';
 		}
 
 		// Per sicurezza, una volta che si prosegue con il caricamento finale, è bene reimpostare il testo
@@ -485,15 +492,15 @@ var Vista = {
 			e_inp.style.fontSize = Vista.stile.testoGrandezza + 'px';
 		}
 		if (Vista.stile.testoAllineamento) {
-			var ali;
+			var all;
 			switch(Vista.stile.testoAllineamento) {
-				case 'giustificato': ali = 'justify'; break;
-				case 'centrato': ali = 'center'; break;
-				case 'destra': ali = 'right'; break;
-				case 'sinistra': ali = 'left'; break;
+				case 'giustificato': all = 'justify'; break;
+				case 'centrato': all = 'center'; break;
+				case 'destra': all = 'right'; break;
+				case 'sinistra': all = 'left'; break;
 			}
-			e_cor.style.textAlign = ali;
-			e_inp.style.textAlign = ali;
+			e_cor.style.textAlign = all;
+			e_inp.style.textAlign = all;
 		}
 		if (Vista.stile.coloreScelta || Vista.stile.coloreSceltaSelez) {
 			var ee_scelte = document.getElementsByClassName("scelta");
@@ -558,7 +565,16 @@ var Vista = {
 
 	testoSpeciale: function(str) {
 		// str: stringa con testo speciale da riconoscere e risolvere
-		// Attualmente verifica solo la presenza di contenitori: @nome contenitore@
+
+		// Verifica la randomizzazione del testo
+		if (str[0] === '*' && str[1] === '*') {
+			str = str.split('**');
+			str.shift();
+			var n = Math.floor((Math.random() * str.length) + 1) - 1;
+			str = str[n];
+		}
+
+		// Verifica la presenza di contenitori: @nome contenitore@
 		var out = [];
 		out = str.split('@');
 		if (out.length < 3) return str;
@@ -627,6 +643,47 @@ var Vista = {
 		document.removeEventListener('click', Vista.prossimaScena);
 		clearTimeout(Vista.timerPremiTasto);
 		istruzioniScena(G.nScenaPP);
+	},
+	
+	avanzaEffetto: function() {
+
+		// Se non ci sono più effetti in pila disattiva il timer
+		if (Vista.effetti.length === 0) {
+			clearTimeout(Vista.timerEffetto);
+			Vista.timerEffetto = null;
+			return;
+		}
+
+		// Recupera elemento su cui applicare l'effetto e se non esiste lo crea
+		var e_eff = document.getElementById(Vista.effetti[0].IDelem);
+		if (e_eff === null) {
+			var e_txt = document.getElementById('testo');
+			e_txt.innerHTML += '<p id="'+Vista.effetti[0].IDelem+'"'+Vista.effetti[0].stile+'>&nbsp;</p>';
+			e_eff = document.getElementById(Vista.effetti[0].IDelem);
+		}
+
+		// Porta avanti l'effetto corrente
+		switch (Vista.effetti[0].tipo) {
+			case 'caratteri':
+			case 'parole':
+				if (Vista.effetti[0].contatore === 0) {
+					e_eff.innerHTML = Vista.effetti[0].output[Vista.effetti[0].contatore];
+				} else {
+					e_eff.innerHTML += Vista.effetti[0].output[Vista.effetti[0].contatore];
+				}
+				Vista.effetti[0].contatore++;
+				if (Vista.effetti[0].contatore >= Vista.effetti[0].output.length) {
+					clearTimeout(Vista.timerEffetto);
+					Vista.timerEffetto = null;
+					Vista.effetti.shift();
+					if (Vista.effetti.length >= 1) {
+						Vista.timerEffetto = setInterval(Vista.avanzaEffetto, Vista.effetti[0].intervallo);
+					}
+				}
+			break;
+			case 'tuono':
+			break;
+		}
 	}
 }
 
@@ -642,7 +699,7 @@ var I = {
 		// Salva l'input grezzo, così come inserito dall'utente, ma senza spazi in testa o in coda
 		var e_inp = document.getElementById('input');
 		I.inputGrezzo = e_inp.value.trim();
-		if (I.inputGrezzo.charAt(0) == '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
+		if (I.inputGrezzo.charAt(0) === '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
 
 		// Rifiuta un input vuoto e reimposta la casella di input
 		if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
@@ -650,7 +707,7 @@ var I = {
 		// Salva l'input nella cronologia degli input con limite 20 elementi
 		// Se l'input precedente è uguale a quello attuale, non lo aggiunge
 		if (I.inputGrezzo !== Vista.cronoInput[Vista.cronoInput.length - 1]) Vista.cronoInput.push(I.inputGrezzo);
-		if (Vista.cronoInput.length === 21) Vista.cronoInput.splice(0, 1);
+		if (Vista.cronoInput.length === 21) Vista.cronoInput.shift();
 		Vista.nCronoInput = Vista.cronoInput.length;
 
 		// Normalizza l'input grezzo del giocatore
@@ -948,7 +1005,7 @@ var I = {
 		var presenza; var nome; var contenitore;
 		for (var i = 0; i < elementi.length; i++) {
 			// Se presente il "no!" l'oggetto o la variabile vanno cancellati
-			if (elementi[i].substr(0, 3) == 'no!') {
+			if (elementi[i].substr(0, 3) === 'no!') {
 				presenza = 0;
 				elementi[i] = elementi[i].substr(3); // Viene rimosso il "no!"
 			} else {
@@ -958,13 +1015,13 @@ var I = {
 				elementi[i] = elementi[i].split('@'); // Scomposizione oggetto@contenitore
 				nome = elementi[i][0];
 				contenitore = elementi[i][1];
-				if (presenza == 1) {
+				if (presenza === 1) {
 					if (S.oggetti[contenitore] === undefined) {
 						S.oggetti[contenitore] = [];
 						S.oggetti[contenitore].push([]); // Elenco oggetti con articolo determinativo (id)
 						S.oggetti[contenitore].push([]); // Elenco oggetti con articolo indeterminativo
 					}
-					if (S.oggetti[contenitore][0].indexOf(nome) == -1) {
+					if (S.oggetti[contenitore][0].indexOf(nome) === -1) {
 						S.oggetti[contenitore][0].push(nome);
 						S.oggetti[contenitore][1].push(nome);
 					}
@@ -976,7 +1033,7 @@ var I = {
 					}
 				}
 			} else { // Se non contiene una chiocciola è una variabile
-				if (presenza == 1) {
+				if (presenza === 1) {
 					if (S.variabili[elementi[i]] === undefined) S.variabili[elementi[i]] = 1;
 				} else {
 					if (S.variabili[elementi[i]] !== undefined) delete S.variabili[elementi[i]];
@@ -1008,8 +1065,8 @@ var I = {
 		if (istro.audio) eseguiAudio(istro.audio);
 
 		// Prepara alcuni aspetti dello stile
-		var ali = ''; if (istro.allineamento) ali = Vista.cssAll(istro.allineamento);
-		if (!ali && Vista.stile.testoAllineamento) ali = Vista.cssAll(Vista.stile.testoAllineamento);
+		var all = ''; if (istro.allineamento) all = Vista.cssAll(istro.allineamento);
+		if (!all && Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
 		var classi = ''; var cssCol = ''; // Stile css in linea per il colore
 
 		// Esegue l'azione principale
@@ -1026,58 +1083,33 @@ var I = {
 						classi += ' coloreTestoInviato';
 					}
 					classi += '"';
-					e_txt.innerHTML += '<p'+ ali + cssCol + classi +'>? '+ I.inputGrezzo +'</p>';
+					e_txt.innerHTML += '<p'+ all + cssCol + classi +'>? '+ I.inputGrezzo +'</p>';
 				}
-				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
+				e_txt.innerHTML += '<p'+all+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 			break;
 			case 'effetto':
 				if (istro.colore !== undefined) {
 					cssCol = ' style="color:'+istro.colore+';"';
 				}
+				Vista.nEffetti++;
+				Vista.effetti.push({'IDelem':'ef'+Vista.nEffetti});
+				Vista.effetti[Vista.effetti.length - 1].stile = all + cssCol;
+				Vista.effetti[Vista.effetti.length - 1].tipo = istro.tipo;
+				Vista.effetti[Vista.effetti.length - 1].contatore = 0;
 				switch (istro.tipo) {
 					case 'caratteri':
-						Vista.effetti.push({'output':istro.output});
-						Vista.effetti[Vista.effetti.length - 1].IDelem = 'ef'+Vista.effetti.length;
-						Vista.effetti[Vista.effetti.length - 1].contatore = 0;
-						e_txt.innerHTML += '<p id="'+'ef'+Vista.effetti.length+'"'+ali+cssCol+'>&nbsp;</p>';
-						Vista.timerEffetti = setInterval(function() {
-							if (Vista.effetti[Vista.effetti.length - 1].contatore >= Vista.effetti[Vista.effetti.length - 1].output.length) {
-								clearTimeout(Vista.timerEffetti);
-								return;
-							}
-							var e_eff = document.getElementById('ef'+Vista.effetti.length);
-							if (Vista.effetti[Vista.effetti.length - 1].contatore === 0) {
-								e_eff.innerHTML = Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
-							} else {
-								e_eff.innerHTML += Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
-							}
-							Vista.effetti[Vista.effetti.length - 1].contatore++;
-						}, istro.intervallo);
+						Vista.effetti[Vista.effetti.length - 1].output = istro.output;
 					break;
 					case 'parole':
 						var parole = [];
 						parole = istro.output.split(/([^\s]+\s)/).filter(Boolean);
-						Vista.effetti.push({'output':parole});
-						Vista.effetti[Vista.effetti.length - 1].IDelem = 'ef'+Vista.effetti.length;
-						Vista.effetti[Vista.effetti.length - 1].contatore = 0;
-						e_txt.innerHTML += '<p id="'+'ef'+Vista.effetti.length+'"'+ali+cssCol+'>&nbsp;</p>';
-						Vista.timerEffetti = setInterval(function() {
-							if (Vista.effetti[Vista.effetti.length - 1].contatore >= Vista.effetti[Vista.effetti.length - 1].output.length) {
-								clearTimeout(Vista.timerEffetti);
-								return;
-							}
-							var e_eff = document.getElementById('ef'+Vista.effetti.length);
-							if (Vista.effetti[Vista.effetti.length - 1].contatore === 0) {
-								e_eff.innerHTML = Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
-							} else {
-								e_eff.innerHTML += Vista.effetti[Vista.effetti.length - 1].output[Vista.effetti[Vista.effetti.length - 1].contatore];
-							}
-							Vista.effetti[Vista.effetti.length - 1].contatore++;
-						}, istro.intervallo);
+						Vista.effetti[Vista.effetti.length - 1].output = parole;
 					break;
 					case 'tuono':
 					break;
 				}
+				Vista.effetti[Vista.effetti.length - 1].intervallo = istro.intervallo;
+				if (Vista.timerEffetto === null) Vista.timerEffetto = setInterval(Vista.avanzaEffetto, istro.intervallo);
 			break;
 			case 'vaiA':
 				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni "in corso di verifica" su leggiInput().
@@ -1098,9 +1130,9 @@ var I = {
 						classi += ' coloreTestoInviato';
 					}
 					classi += '"';
-					e_txt.innerHTML += '<p'+ ali + cssCol + classi +'>? ' + I.inputGrezzo + '</p>';
+					e_txt.innerHTML += '<p'+ all + cssCol + classi +'>? ' + I.inputGrezzo + '</p>';
 				}
-				e_txt.innerHTML += '<p'+ali+'>' + Vista.testoSpeciale(istro.output) + '</p>';
+				e_txt.innerHTML += '<p'+all+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 				// Per procedere serve ora premere un tasto
 				// Siccome nScenaPP (precedente alla precedente) verrà sovrascritto da nScenaP, si può usare come valore temporaneo per il caricamento di scena che effettuerà la funzione prossimaScena()
 				G.nScenaPP = istro.scena
@@ -1218,22 +1250,25 @@ var S = {
 	}
 }
 
-// Pila delle Condizioni che si sommano entrando in blocchi annidati
+// Pila delle Condizioni che si sommano quando si entra in blocchi annidati
 var Condizioni = {
-	correntiABlocchi: [], // Contiene blocchi di condizioni "seOggetti e seVariabili" che si applicano alle istruzioni condizionate
-	correnti: {}, // Somma dei blocchi di condizioni correnti
+
+	blocchi: [], // Contiene blocchi di condizioni "seOggetti e seVariabili" che si applicano alle istruzioni condizionate
+	somma: {}, // Somma dei blocchi di condizioni correnti
 	righeCoinvolte: [], // 0: nessuna condizione; 1: solo la singola riga successiva; 2: una serie di righe di istruzioni (blocco)
-	sommaCondizioni: function() {
-		Condizioni.correnti = {'seOggetti': [], 'seVariabili': []};
-		for (var b = 0; b < Condizioni.correntiABlocchi.length; b++) {
-			Condizioni.correnti.seOggetti = Condizioni.correnti.seOggetti.concat(Condizioni.correntiABlocchi[b].seOggetti);
-			Condizioni.correnti.seVariabili = Condizioni.correnti.seVariabili.concat(Condizioni.correntiABlocchi[b].seVariabili);
+
+	creaSomma: function() { // Aggiorna la somma delle condizioni derivanti da tutti i blocchi
+		Condizioni.somma = {'seOggetti': [], 'seVariabili': []};
+		for (var b = 0; b < Condizioni.blocchi.length; b++) { // b: blocco
+			Condizioni.somma.seOggetti = Condizioni.somma.seOggetti.concat(Condizioni.blocchi[b].seOggetti);
+			Condizioni.somma.seVariabili = Condizioni.somma.seVariabili.concat(Condizioni.blocchi[b].seVariabili);
 		}
 	},
-	popUltimoBlocco: function() {
+
+	popBlocco: function() { // Rimuove l'ultimo blocco quando si esce da un annidamento
 		Condizioni.righeCoinvolte.pop(); // Sono state gestite le righe di istruzioni per questo blocco e va rimosso il tracciamento
-		Condizioni.correntiABlocchi.pop(); // Le istruzioni per il blocco sono state eseguite, quindi si svuotano le ultime condizioni
-		Condizioni.sommaCondizioni(); // Se un blocco di condizioni viene rimosso, va aggiornata la somma delle condizioni restanti
+		Condizioni.blocchi.pop(); // Le istruzioni per il blocco sono state eseguite, quindi si svuotano le ultime condizioni
+		Condizioni.creaSomma(); // Se un blocco di condizioni viene rimosso, va aggiornata la somma delle condizioni restanti
 	}
 }
 
@@ -1260,10 +1295,10 @@ function coloreScelte(col1, col2) {
 function coloreErrore(col) {
 	if (col) Vista.stile.coloreErrore = col;
 }
-function carattereTesto(fnt, siz, ali) {
+function carattereTesto(fnt, siz, all) {
 	if (fnt) Vista.stile.testoCarattere = fnt;
 	if (siz) Vista.stile.testoGrandezza = siz;
-	if (ali) Vista.stile.testoAllineamento = ali;
+	if (all) Vista.stile.testoAllineamento = all;
 }
 function intermezzo(txt, aud) {
 	// txt: testo da visualizzare, anche html
@@ -1273,31 +1308,31 @@ function intermezzo(txt, aud) {
 	if (aud !== undefined) { aud = aud + '&&&'; } else { aud = ''; }
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice Ultimo Blocco
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 
-	if (esegui == 1) Vista.intermezzo.push(aud + txt);
+	if (esegui === 1) Vista.intermezzo.push(aud + txt);
 }
-function testo(txt, ali) {
+function testo(txt, all) {
 	// txt: testo da visualizzare, anche html
-	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 
 	if (G.nScena === 0) { alert('L\'istruzione "testo()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice Ultimo Blocco
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) {
-		if (ali) { ali = Vista.cssAll(ali); } else { ali = ''; }
-		if (Vista.stile.testoAllineamento) ali = Vista.cssAll(Vista.stile.testoAllineamento);
-		Vista.testo += '<p'+ali+'>' + txt + '</p>';
+	if (esegui === 1) {
+		if (all) { all = Vista.cssAll(all); } else { all = ''; }
+		if (Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
+		Vista.testo += '<p'+all+'>' + txt + '</p>';
 	}
 }
 function effetto(txt, op0, op1, op2, op3, op4) {
@@ -1313,13 +1348,13 @@ function effetto(txt, op0, op1, op2, op3, op4) {
 	if (G.nScena === 0) { alert('L\'istruzione "effetto()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice Ultimo Blocco
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) {
+	if (esegui === 1) {
 		var istro = {};
 		istro.azione = 'effetto';
 		istro.output = txt;
@@ -1349,13 +1384,13 @@ function immagine(img, w, h) {
 	if (img === undefined || img === '') return;
 
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 
-	if (esegui == 1) {
+	if (esegui === 1) {
 		var e_txt = document.getElementById('testo');
 		if (w === undefined) { w = ''; } else { w = ' width="'+w+'"'; }
 		if (h === undefined) { h = ''; } else { h = ' height="'+h+'"'; }
@@ -1366,13 +1401,13 @@ function audio(aud) {
 	if (G.nScena === 0) { alert('L\'istruzione "audio()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
 	
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice Ultimo Blocco
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
+	if (esegui === 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
 }
 function contenitore(cont, ogg) {
 	// cont: nome del contenitore che fa da chiave nell'array dei contenitori di oggetti: S.oggetti
@@ -1438,66 +1473,66 @@ function contenitore(cont, ogg) {
 }
 function oggetti(oo) {
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) I.impostaOggVar(oo);
+	if (esegui === 1) I.impostaOggVar(oo);
 }
 function variabili(vv) {
 	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.correntiABlocchi.length - 1;
+	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.correnti) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	} else { esegui = 1; }
 	
-	if (esegui == 1) I.impostaOggVar(vv);
+	if (esegui === 1) I.impostaOggVar(vv);
 }
 
 // Istruzioni per il comportamento delle scene //
 
-function condizioni(cond, istruzioni) {
+function condizioni(cond, istro) {
 	// cond: stringa per specificare quali oggetti devono essere in certi contenitori e quali variabili si richiedono
 	// formato stringa condizioni: [no!]l'oggetto@contenitore+[no!]nome variabile
-	// istruzioni(): è la funzione per eseguire tutte le istruzioni condizionate
+	// istro(): è la funzione per eseguire tutte le istruzioni condizionate
 	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
 
-	var lastID = Condizioni.correntiABlocchi.length;
-	Condizioni.correntiABlocchi.push({'seOggetti': [], 'seVariabili': []});
+	var lastID = Condizioni.blocchi.length;
+	Condizioni.blocchi.push({'seOggetti': [], 'seVariabili': []});
 
 	var presenza;
 	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
 	for (var i = 0; i < cond.length; i++) {
 		// Stabilire se si tratta di un oggetto o una variabile
 		if (cond[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto
-			if (cond[i].substr(0, 3) == 'no!') {
+			if (cond[i].substr(0, 3) === 'no!') {
 				presenza = 0;
 				cond[i] = cond[i].substr(3);
 			} else {
 				presenza = 1;
 			}
 			cond[i] = cond[i].split('@'); // Scomposizione oggetto@contenitore
-			Condizioni.correntiABlocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
+			Condizioni.blocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
 		} else { // Se non contiene una chiocciola è una variabile
-			if (cond[i].substr(0, 3) == 'no!') {
+			if (cond[i].substr(0, 3) === 'no!') {
 				presenza = 0;
 				cond[i] = cond[i].substr(3);
 			} else {
 				presenza = 1;
 			}
-			Condizioni.correntiABlocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
+			Condizioni.blocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
 		}
 	}
 	// Ogni volta che vengono aggiunte le condizioni per blocchi, aggiornare la somma delle condizioni
-	Condizioni.sommaCondizioni();
+	Condizioni.creaSomma();
 	// Se è stato definito un blocco di istruzioni condizionate, vanno eseguite, altrimenti è coinvolta solo la singola riga successiva
-	if (istruzioni !== undefined) {
+	if (istro !== undefined) {
 		Condizioni.righeCoinvolte.push(2);
-		istruzioni();
-		Condizioni.popUltimoBlocco();
+		istro();
+		Condizioni.popBlocco();
 	} else {
 		// L'esecuzione dell'istruzione successiva dovrà svuotare le condizioni ed eliminare il tracciamento delle righe coinvolte
 		Condizioni.righeCoinvolte.push(1);
@@ -1584,12 +1619,12 @@ function uscita(txt_in, nS, vis, nomeDest) {
 	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
 	// Aggiungi condizioni correnti
-	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	}
 }
 function rispondi(txt_in, txt_out) {
@@ -1608,12 +1643,12 @@ function rispondi(txt_in, txt_out) {
 	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
 	// Aggiungi condizioni correnti
-	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	}
 }
 function rispondiVai(txt_in, txt_out, nS) {
@@ -1634,12 +1669,12 @@ function rispondiVai(txt_in, txt_out, nS) {
 	var L; // Livello delle istruzioni (generali o di scena)
 	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
-	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	}
 }
 function nMosseVai(mosse, nS, rip) {
@@ -1659,12 +1694,12 @@ function nMosseVai(mosse, nS, rip) {
 	var L; // Livello delle istruzioni (generali o di scena)
 	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
-	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	}
 }
 function nMosseRispondi(mosse, txt_out, rip) {
@@ -1684,40 +1719,40 @@ function nMosseRispondi(mosse, txt_out, rip) {
 	var L; // Livello delle istruzioni (generali o di scena)
 	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
 
-	var iUB = Condizioni.correntiABlocchi.length - 1; // iUB: indice ultimo blocco
+	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
 	if (Condizioni.righeCoinvolte[iUB] > 0) {
 		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.correnti.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.correnti.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] == 1) Condizioni.popUltimoBlocco();
+		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 	}
 }
-function scegliVai(txt, nS, ali) {
+function scegliVai(txt, nS, all) {
 	// txt: testo della scelta selezionabile
 	// nS: numero della scena verso cui andare
-	// ali: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 
-	if (ali !== undefined) { ali = Vista.cssAll(ali); } else { ali = ''; }
-	Vista.scelte += '<p class="scelta coloreScelta" '+ ali +' onclick="S.vaiA('+nS+')">' + txt + '</p>';
+	if (all !== undefined) { all = Vista.cssAll(all); } else { all = ''; }
+	Vista.scelte += '<p class="scelta coloreScelta" '+ all +' onclick="S.vaiA('+nS+')">' + txt + '</p>';
 }
-function scegliRispondi(txt, txt_out, ali1, ali2) {
+function scegliRispondi(txt, txt_out, al1, al2) {
 	// txt: testo della scelta selezionabile (se txt_out = "" allora txt verrà trattato come un input dell'utente)
 	// txt_out: testo stampato dopo aver cliccato sulla scelta
-	// ali1: allineamento del testo della scelta selezionabile
-	// ali2: allineamento del testo stampato in risposta
+	// al1: allineamento del testo della scelta selezionabile
+	// al2: allineamento del testo stampato in risposta
 
-	if (ali1 !== undefined) { ali1 = Vista.cssAll(ali1); } else { ali1 = ''; }
+	if (al1 !== undefined) { al1 = Vista.cssAll(al1); } else { al1 = ''; }
 	if (txt_out !== undefined && txt_out !== '') {
 		var istro = {}; // istro: istruzione
 		istro['azione'] = 'rispondi';
 		I.inputGrezzo = txt;
 		istro['output'] = txt_out.replace(/'/g, '"');
-		if (ali2 !== undefined) istro['allineamento'] = ali2;
-		Vista.scelte += '<p class="scelta coloreScelta" ' + ali1 + ' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(istro).replace(/"/g, '\'')+');">' + txt + '</p>';
+		if (al2 !== undefined) istro['allineamento'] = al2;
+		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(istro).replace(/"/g, '\'')+');">' + txt + '</p>';
 	} else {
-		if (ali2 !== undefined) { ali2 = ', {\'outAli\':\''+ali2+'\'}'; } else { ali2 = ''; }
+		if (al2 !== undefined) { al2 = ', {\'outAli\':\''+al2+'\'}'; } else { al2 = ''; }
 		txt =  txt.replace(/'/g, '"').replace(/"/g, '\'');
-		Vista.scelte += '<p class="scelta coloreScelta" ' + ali1 + ' onclick="this.style.display = \'none\'; I.scriviInput(\''+txt+'\''+ali2+');">' + txt + '</p>';
+		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.scriviInput(\''+txt+'\''+al2+');">' + txt + '</p>';
 	}
 }
 
@@ -1739,6 +1774,6 @@ function _immagine(img, w, h) {
 }
 function x(str) {
 	var ee = str.split('|');
-	var n = Math.floor((Math.random() * ee.length) + 1);
-	return ee[n];
+	var n = Math.floor((Math.random() * ee.length) + 1) - 1;
+	if (isNaN(ee[n])) { return ee[n]; } else { return Number(ee[n]); }
 }

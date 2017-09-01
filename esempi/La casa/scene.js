@@ -125,7 +125,7 @@ function istruzioniScena(n) {
 	case 5:
 		nomeLuogo("cucina");
 		immagine("cucina.png");
-		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, una madia, un lavabo, un cucinino e un forno a legna. Il contatore generale sulla parete e in terra alcuni coltelli.");
+		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, una madia, un lavabo, un cucinino, un forno a legna, un tavolo ed il contatore generale.");
 		uscita("ovest", 2);
 		condizioni("no!trappola");
 			effetto("Un rumore di serratura alle tue spalle. Ora sei chiuso dentro.", 1000, "parole", 300);
