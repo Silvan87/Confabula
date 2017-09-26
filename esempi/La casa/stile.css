@@ -19,6 +19,20 @@ a:hover { /*colore link selezionato*/ color: #9F57DE; }
 
 /** Impostazioni raccomandate **/
 
+html {
+	overflow-y: scroll;
+}
+::-webkit-scrollbar {
+	background:#000;
+	width:10px;
+}
+::-webkit-scrollbar-thumb {
+	background:#666;
+	border-radius:10px;
+}
+::-webkit-scrollbar-track {
+	background:#000;
+}
 body {
 	text-align: center;
 	margin: 8px 0 0 0;
@@ -31,7 +45,7 @@ p.br {
 	margin-top: -8px;
 }
 a {
-	text-decoration:none;
+	text-decoration: none;
 }
 img {
 	max-width: 100%;
@@ -59,4 +73,7 @@ img {
 .scelta {
 	margin: 0;
 	cursor: pointer;
+}
+.ribaltato {
+	transform: rotate(180deg);
 }

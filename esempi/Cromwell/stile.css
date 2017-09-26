@@ -19,6 +19,20 @@ a:hover { /*colore link selezionato*/ color: #9F57DE; }
 
 /** Impostazioni raccomandate **/
 
+html {
+	overflow-y: scroll;
+}
+::-webkit-scrollbar {
+	background:#000;
+	width:10px;
+}
+::-webkit-scrollbar-thumb {
+	background:#82776A;
+	border-radius:10px;
+}
+::-webkit-scrollbar-track {
+	background:#000;
+}
 body {
 	text-align: center;
 	margin: 8px 0 0 0;
