@@ -333,6 +333,7 @@ var Vista = {
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
 	testo: '', // Testo, anche html, che descrive la scena
+	messaggiErrore: [], // Array di messaggi di errore da mostrare casualmente
 	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
 	stile: {}, // Array che contiene proprietà e valori inerenti lo stile grafico
@@ -942,8 +943,8 @@ var I = {
 			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
 			if (Vista.stile.coloreErrore) { e_inp.style.color = Vista.stile.coloreErrore; } else { e_inp.className += ' coloreErrore'; }
-			e_inp.value = 'Prova qualcos\'altro...';
-			// Dopo 1 sec scompare la scritta "Prova qualcos'altro..."
+			e_inp.value = Vista.messaggiErrore[Math.floor((Math.random() * Vista.messaggiErrore.length))];
+			// Dopo 1 sec scompare il msg di errore
 			Vista.timerPassaErrore = setTimeout(Vista.passaErrore, 1000);
 			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di errore
 			setTimeout(function() {
@@ -1069,6 +1070,9 @@ var I = {
 		if (!all && Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
 		var classi = ''; var cssCol = ''; // Stile css in linea per il colore
 
+		// Se l'azione non deriva da un inputGrezzo (es. scelta selezionabile), allora questo va impostato
+		if (I.inputGrezzo === '' && istro.input !== undefined) I.inputGrezzo = istro.input;
+
 		// Esegue l'azione principale
 		switch (istro.azione) { // il tipo di azione dell'istruzione
 			case 'audio':
@@ -1146,6 +1150,7 @@ var I = {
 			break;
 		}
 		Vista.testo = e_txt.innerHTML; // Devo tener aggiornato il testo nell'oggetto Vista
+		I.inputGrezzo = ''; // Devo svuotare l'inputGrezzo
 	}
 }
 
@@ -1294,6 +1299,9 @@ function coloreScelte(col1, col2) {
 }
 function coloreErrore(col) {
 	if (col) Vista.stile.coloreErrore = col;
+}
+function messaggiErrore(msg) {
+	Vista.messaggiErrore = msg.split('|');
 }
 function carattereTesto(fnt, siz, all) {
 	if (fnt) Vista.stile.testoCarattere = fnt;
@@ -1745,13 +1753,13 @@ function scegliRispondi(txt, txt_out, al1, al2) {
 	if (txt_out !== undefined && txt_out !== '') {
 		var istro = {}; // istro: istruzione
 		istro['azione'] = 'rispondi';
-		I.inputGrezzo = txt;
+		istro['input'] = txt;
 		istro['output'] = txt_out.replace(/'/g, '"');
 		if (al2 !== undefined) istro['allineamento'] = al2;
 		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(istro).replace(/"/g, '\'')+');">' + txt + '</p>';
 	} else {
 		if (al2 !== undefined) { al2 = ', {\'outAli\':\''+al2+'\'}'; } else { al2 = ''; }
-		txt =  txt.replace(/'/g, '"').replace(/"/g, '\'');
+		txt = txt.replace(/'/g, '"').replace(/"/g, '\'');
 		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.scriviInput(\''+txt+'\''+al2+');">' + txt + '</p>';
 	}
 }

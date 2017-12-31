@@ -1070,6 +1070,9 @@ var I = {
 		if (!all && Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
 		var classi = ''; var cssCol = ''; // Stile css in linea per il colore
 
+		// Se l'azione non deriva da un inputGrezzo (es. scelta selezionabile), allora questo va impostato
+		if (I.inputGrezzo === '' && istro.input !== undefined) I.inputGrezzo = istro.input;
+
 		// Esegue l'azione principale
 		switch (istro.azione) { // il tipo di azione dell'istruzione
 			case 'audio':
@@ -1147,6 +1150,7 @@ var I = {
 			break;
 		}
 		Vista.testo = e_txt.innerHTML; // Devo tener aggiornato il testo nell'oggetto Vista
+		I.inputGrezzo = ''; // Devo svuotare l'inputGrezzo
 	}
 }
 
@@ -1749,13 +1753,13 @@ function scegliRispondi(txt, txt_out, al1, al2) {
 	if (txt_out !== undefined && txt_out !== '') {
 		var istro = {}; // istro: istruzione
 		istro['azione'] = 'rispondi';
-		I.inputGrezzo = txt;
+		istro['input'] = txt;
 		istro['output'] = txt_out.replace(/'/g, '"');
 		if (al2 !== undefined) istro['allineamento'] = al2;
 		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(istro).replace(/"/g, '\'')+');">' + txt + '</p>';
 	} else {
 		if (al2 !== undefined) { al2 = ', {\'outAli\':\''+al2+'\'}'; } else { al2 = ''; }
-		txt =  txt.replace(/'/g, '"').replace(/"/g, '\'');
+		txt = txt.replace(/'/g, '"').replace(/"/g, '\'');
 		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.scriviInput(\''+txt+'\''+al2+');">' + txt + '</p>';
 	}
 }

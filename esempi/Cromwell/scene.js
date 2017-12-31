@@ -1,6 +1,7 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("Cromwell");
+	messaggiErrore("Prova qualcos'altro...|No, questo no...|Prova ancora...|Mmmmmm...");
 	rispondi("quit|exit", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
 	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);
