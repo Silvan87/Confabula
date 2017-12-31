@@ -1,7 +1,8 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("La casa");
-	rispondi("quit|exit", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
+	messaggiErrore("Prova qualcos'altro...|No, questo no...|Prova ancora...|Mmmm...");
+	rispondi("quit|exit|esci dal [gioco|storia|avventura]", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
 	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);
 	uscita("guardo|g", 0, "invisibile");
@@ -47,7 +48,7 @@ function istruzioniScena(n) {
 	Vista.preparaScena(n);
 	switch (n) {
 	case 1:
-		testo("<br />LA CASA © MMXVII<br /><img src=\"casa.png\" style=\"width:468px; height:280px;\" /><br />Un'insaziabile creatura vi sta aspettando...<br /><br />", "centrato");
+		testo("<br />LA CASA © MMXVII<br /><img src=\"casa.png\" style=\"width:468px; height:280px;\" /><br />Un'insaziabile creatura attende nel buio...<br /><br />", "centrato");
 		scegliVai("Entra", 5, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
 		scegliRispondi("Licenza", "LA CASA © MMXVII è una rivisitazione dell'avventura testuale LA CASA © MCMLXXXVIII pubblicata sulla rivista Amiga Byte n.7 come opera di pubblico dominio, liberamente copiabile e distribuibile senza scopo di lucro. <a href=\"https://github.com/Druido87/Confabula\" target=\"_blank\">Confabula</a> è l'interprete JavaScript per creare ed eseguire avventure testuali, rilasciato da <a href=\"https://github.com/Druido87\" target=\"_blank\">Druido87</a> con licenza <a href=\"https://github.com/Druido87/Confabula/blob/master/LICENSE\" target=\"_blank\">GNU L-GPL</a>. La storia rivisitata è un esempio di utilizzo di Confabula.", "centrato");
@@ -128,20 +129,21 @@ function istruzioniScena(n) {
 		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro.<br />Puoi vedere: una porta, una credenza, una madia, un lavabo, un cucinino, un forno a legna, un tavolo ed il contatore generale.");
 		uscita("ovest", 2);
 		condizioni("no!trappola");
-			effetto("Un rumore di serratura alle tue spalle. Ora sei chiuso dentro.", 800, "parole", 300);
+			effetto("Un rumore di serratura alle tue spalle ed ora sei chiuso dentro.", 800, "parole", 300);
 			_variabili("trappola");
-		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato in questa casa.");
-		rispondi("apro la porta", "È chiusa a chiave. Eppure, quando sei entrato, era aperta. Non sarà facile riaprirla.");
+		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato.");
+		rispondi("apro la porta|esco", "La porta è chiusa a chiave. Eppure, quando sei entrato, era aperta. Non sarà facile riaprirla.");
 		condizioni("no!la chiave@i");
 			rispondi("apro la porta con la chiave", "Purtroppo, le chiavi di questa casa non sono con te...");
 		rispondi("sfondo la porta", "È davvero massiccia e resistente, insistendo potresti giusto romperti una spalla.");
 		rispondi("[busso|picchio|calcio] [alla|la] porta", "Nessuno potrà sentirti, questa casa è piuttosto isolata.");
-		rispondi("esamino la credenza", "Gli sportelli vetrati riflettono una pallida figura umana e non comprendi se sei tu o qualcos'altro.");
-		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
+		rispondi("esamino la credenza", "Gli sportelli a vetro riflettono una pallida figura umana e non comprendi se sei tu o qualcos'altro.");
+		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli|[busso|picchio|sfondo] [alla|la] credenza", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
 		rispondi("esamino la madia", "Senti odore di muffa vicino alla madia. Sopra appoggiata c'è una bottiglia.");
-		rispondi("esamino la bottiglia", "È una bottiglia vuota e l'odore lascia intuire che contenesse vino.");
-		rispondi("prendo la bottiglia", "Non pensi che una bottiglia vuota ora possa servirti...");
+		rispondi("esamino la bottiglia", "È una bottiglia vuota e l'odore lascia intuire che contenesse aceto.");
+		rispondi("prendo la bottiglia", "Non pensi che una bottiglia vuota possa servirti...");
 		rispondi("apro la madia", "Apri lentamente la madia e dentro trovi una testa umana semi ricoperta da barbe di muffa. Inorridito, richiudi.");
+		rispondi("chiudo la madia", "È già chiusa.");
 		rispondi("esamino il lavabo", "Il lavabo è vuoto, ma chiazze rosso scure rivelano che del sangue è stato versato.");
 		contenitore("cucinino", "dei|i fiammiferi");
 		condizioni("i fiammiferi@cucinino");
@@ -152,7 +154,7 @@ function istruzioniScena(n) {
 			rispondi("prendo i fiammiferi", "Hai preso i fiammiferi.");
 			_oggetti("i fiammiferi@i+no!i fiammiferi@cucinino");
 		rispondi("esamino il forno [|a legna]", "Il forno a legna contiene resti umani carbonizzati.");
-		rispondi("esamino il tavolo", "Sul tavolo ci sono coltelli da cucina insanguinati ed un paio di forbici. Non consideri di toccar nulla. Se ti servirà qualcosa, meglio arnesi non compromessi.");
+		rispondi("esamino il tavolo", "Sul tavolo ci sono coltelli da cucina insanguinati ed un paio di forbici. Preferisci non toccare nulla. Se ti servirà qualcosa, meglio arnesi non coinvolti in qualche crimine.");
 		rispondi("esamino il contatore [|generale]", "Il contatore gira all'impazzata nonostante le luci delle stanze siano spente.");
 		condizioni("la chiave@i+incendio");
 			rispondiVai("apro la porta con la chiave", "Hai aperto la porta ed esci...", 12);

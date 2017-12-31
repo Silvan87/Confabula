@@ -333,6 +333,7 @@ var Vista = {
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
 	testo: '', // Testo, anche html, che descrive la scena
+	messaggiErrore: [], // Array di messaggi di errore da mostrare casualmente
 	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
 	stile: {}, // Array che contiene proprietà e valori inerenti lo stile grafico
@@ -942,8 +943,8 @@ var I = {
 			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
 			if (Vista.stile.coloreErrore) { e_inp.style.color = Vista.stile.coloreErrore; } else { e_inp.className += ' coloreErrore'; }
-			e_inp.value = 'Prova qualcos\'altro...';
-			// Dopo 1 sec scompare la scritta "Prova qualcos'altro..."
+			e_inp.value = Vista.messaggiErrore[Math.floor((Math.random() * Vista.messaggiErrore.length))];
+			// Dopo 1 sec scompare il msg di errore
 			Vista.timerPassaErrore = setTimeout(Vista.passaErrore, 1000);
 			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di errore
 			setTimeout(function() {
@@ -1294,6 +1295,9 @@ function coloreScelte(col1, col2) {
 }
 function coloreErrore(col) {
 	if (col) Vista.stile.coloreErrore = col;
+}
+function messaggiErrore(msg) {
+	Vista.messaggiErrore = msg.split('|');
 }
 function carattereTesto(fnt, siz, all) {
 	if (fnt) Vista.stile.testoCarattere = fnt;
