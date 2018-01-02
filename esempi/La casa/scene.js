@@ -1,7 +1,7 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
 	titolo("La casa");
-	messaggiErrore("Prova qualcos'altro...|No, questo no...|Prova ancora...|Mmmmmm...");
+	messaggiRifiuto("Prova qualcos'altro...|No, questo no...|Non ci siamo...|Mmmmmm...");
 	rispondi("quit|exit|esci dal [gioco|storia|avventura]", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
 	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);

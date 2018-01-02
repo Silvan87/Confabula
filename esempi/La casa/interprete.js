@@ -333,14 +333,14 @@ var Vista = {
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	intermezzo: [], // Array di testi, anche html, presentati prima della scena
 	testo: '', // Testo, anche html, che descrive la scena
-	messaggiErrore: [], // Array di messaggi di errore da mostrare casualmente
+	messaggiRifiuto: [], // Array di messaggi di rifiuto da mostrare casualmente
 	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
 	stile: {}, // Array che contiene proprietà e valori inerenti lo stile grafico
 	coloreTestoP: '', // Colore testo precedente
 	timerImmagini: 0, // ID dell'evento che controlla se le immagini sono state caricate
 	timerPremiTasto: 0, // ID dell'evento temporizzato che fa comparire la scritta "Premi un tasto"
-	timerPassaErrore: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Prova altro"
+	timerFineRifiuto: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Rifiuto input"
 	effetti: [], // Array che contiene oggetti e parametri degli effetti
 	nEffetti: 0, // Numeratore degli ID degli effetti
 	timerEffetto: null, // ID dell'evento temporizzato che fa avanzare un effetto
@@ -613,12 +613,12 @@ var Vista = {
 		e_txt.innerHTML += '<p>[Premi un tasto per continuare]</p>';
 	},
 
-	passaErrore: function(event) {
-		document.removeEventListener('keydown', Vista.passaErrore);
-		document.removeEventListener('click', Vista.passaErrore);
-		clearTimeout(Vista.timerPassaErrore);
-		if (Vista.timerPassaErrore === undefined) return;
-		Vista.timerPassaErrore = undefined;
+	fineRifiuto: function(event) {
+		document.removeEventListener('keydown', Vista.fineRifiuto);
+		document.removeEventListener('click', Vista.fineRifiuto);
+		clearTimeout(Vista.timerFineRifiuto);
+		if (Vista.timerFineRifiuto === undefined) return;
+		Vista.timerFineRifiuto = undefined;
 		var e_inp = document.getElementById('input');
 		e_inp.value = '? ';
 		e_inp.style.color = Vista.coloreTestoP;
@@ -943,13 +943,13 @@ var I = {
 			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
 			if (Vista.stile.coloreErrore) { e_inp.style.color = Vista.stile.coloreErrore; } else { e_inp.className += ' coloreErrore'; }
-			e_inp.value = Vista.messaggiErrore[Math.floor((Math.random() * Vista.messaggiErrore.length))];
+			e_inp.value = Vista.messaggiRifiuto[Math.floor((Math.random() * Vista.messaggiRifiuto.length))];
 			// Dopo 1 sec scompare il msg di errore
-			Vista.timerPassaErrore = setTimeout(Vista.passaErrore, 1000);
+			Vista.timerFineRifiuto = setTimeout(Vista.fineRifiuto, 1000);
 			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di errore
 			setTimeout(function() {
-				document.addEventListener('keydown', Vista.passaErrore);
-				document.addEventListener('click', Vista.passaErrore);
+				document.addEventListener('keydown', Vista.fineRifiuto);
+				document.addEventListener('click', Vista.fineRifiuto);
 				}, 100);
 		} else {
 			e_inp.value = '? ';
@@ -1300,8 +1300,8 @@ function coloreScelte(col1, col2) {
 function coloreErrore(col) {
 	if (col) Vista.stile.coloreErrore = col;
 }
-function messaggiErrore(msg) {
-	Vista.messaggiErrore = msg.split('|');
+function messaggiRifiuto(msg) {
+	Vista.messaggiRifiuto = msg.split('|');
 }
 function carattereTesto(fnt, siz, all) {
 	if (fnt) Vista.stile.testoCarattere = fnt;
