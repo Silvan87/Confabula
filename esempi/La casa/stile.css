@@ -35,7 +35,7 @@ html {
 }
 body {
 	text-align: center;
-	margin: 8px 0 0 0;
+	margin: 8px 0 8px 0;
 	padding: 0;
 }
 p, input {
@@ -43,6 +43,10 @@ p, input {
 }
 p.br {
 	margin-top: -8px;
+}
+b {
+	font-weight: normal;
+	color:#dc7e7e;
 }
 a {
 	text-decoration: none;

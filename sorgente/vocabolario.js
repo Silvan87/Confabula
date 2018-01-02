@@ -1,5 +1,5 @@
 /* NOTA
- * I predicati equivalenti (sinonimi) vanno qui inseriti solo nella forma indicativo presente prima persona
+ * I predicati equivalenti (sinonimi) vanno inseriti qui solo nella forma indicativo presente prima persona
  */
 function vocabolario() {
 
@@ -16,7 +16,7 @@ Lingua.equivalenze([
 ["per|pel|perlo|perla|pei|pergli|perle|perl"],
 ["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 ["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
-["|esamino|x"], ["direzione|d"]
+["|esamino|x"], ["guardo|g|l"], ["direzione|d"]
 /* Equivalenze personalizzate valide in tutta le scene */
 
 ]);
