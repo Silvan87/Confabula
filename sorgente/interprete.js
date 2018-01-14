@@ -330,20 +330,21 @@ var Vista = {
 	cronoInput: [], // Cronologia degli input del giocatore
 	nCronoInput: 0, // Numero dell'input su cui ci si trova attualmente
 	caricamento: 0, // Indica se la vista è in preparazione ed il caricamento è concluso o meno
+	intermezzo: [], // Array di istruzioni "intermezzo" da eseguire prima della scena
+	istroInizioScena: [], // Array di istruzioni non condizionate da eseguire ad inizio scena
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
-	intermezzo: [], // Array di testi, anche html, presentati prima della scena
+	timerImmagini: 0, // ID dell'evento che controlla se le immagini sono state caricate
 	testo: '', // Testo, anche html, che descrive la scena
-	messaggiRifiuto: [], // Array di messaggi di rifiuto da mostrare casualmente
 	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
+	messaggiRifiuto: [], // Array di messaggi di rifiuto da mostrare casualmente
+	timerFineRifiuto: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Rifiuto input"
 	stile: {}, // Array che contiene proprietà e valori inerenti lo stile grafico
 	coloreTestoP: '', // Colore testo precedente
-	timerImmagini: 0, // ID dell'evento che controlla se le immagini sono state caricate
-	timerPremiTasto: 0, // ID dell'evento temporizzato che fa comparire la scritta "Premi un tasto"
-	timerFineRifiuto: 0, // ID dell'evento temporizzato che fa scomparire la scritta "Rifiuto input"
 	effetti: [], // Array che contiene oggetti e parametri degli effetti
 	nEffetti: 0, // Numeratore degli ID degli effetti
 	timerEffetto: null, // ID dell'evento temporizzato che fa avanzare un effetto
+	timerPremiTasto: 0, // ID dell'evento temporizzato che fa comparire la scritta "Premi un tasto"
 
 	preparaScena: function(n) {
 
@@ -356,14 +357,14 @@ var Vista = {
 			Vista.caricamento = 0;
 			G.nScena = 0; // La scena 0 indica che le istruzioni chiamate sono all'interno del blocco istruzioniGenerali
 			istruzioniGenerali(); // (funzione nel file 'scene.js')
-			G.nScena = 1; G.nScenaP = 1; G.nScenaPP = 1; // Reimposto la scena 1 che è quella appena chiamata
+			G.nScena = 1; G.nScenaP = 1; G.nScenaPP = 1; // Reimposta la scena 1 che è quella appena chiamata
 		};
 
 		// Segna i passaggi di scena
 		G.nScenaPP = G.nScenaP; G.nScenaP = G.nScena; G.nScena = n;
 
-		// In relazione alla scena di provenienza, segna il tipo di passaggio esplorato
-		// Questo tracciamento andrebbe ignorato quando si usa il comando 'direzioni'
+		// In relazione alla scena di provenienza, segna il passaggio ad una scena che risulterà esplorata
+		// Questo tracciamento andrebbe ignorato se il passaggio è dovuto al comando 'direzioni'
 		if (G.passaggiScena[G.nScenaP] === undefined) G.passaggiScena[G.nScenaP] = [];
 		if (G.nScena !== G.nScenaP && G.passaggiScena[G.nScenaP].indexOf(G.nScena) === -1) {
 			G.passaggiScena[G.nScenaP].push(G.nScena);
@@ -374,7 +375,6 @@ var Vista = {
 		Vista.svuotaScena();
 		Vista.attesaImmagini = 1;
 	},
-
 	svuotaScena: function() {
 
 		// Annulla tutti gli effetti in corso
@@ -385,7 +385,7 @@ var Vista = {
 
 		// Svuota i contenuti e nasconde gli elementi della scena
 		G.luoghiRagg.bloccati = 0;
-		Vista.intermezzo = [];
+		Vista.intermezzo = undefined;
 		Vista.testo = '';
 		Vista.uscite = '';
 		Vista.scelte = '';
@@ -416,48 +416,89 @@ var Vista = {
 		// Svuota le istruzioni della scena precedente
 		S.Istruzioni.scena = [];
 	},
-
 	mostra: function() {
 		var e_txt = document.getElementById('testo');
 
-		// Prima di mostrare la scena si devono mostrare tutti gli intermezzi
+		// Prepara le istruzioni di inizio scena con trattamento speciale per gli intermezzi
+		if (Vista.intermezzo === undefined) {
+			Vista.intermezzo = [];
+			Vista.istroInizioScena = [];
+			var livello = ['generali', 'scena'];
+			livello.forEach(function(L) { // L: Livello delle istruzioni
+				for (var iI = 0; iI < S.Istruzioni[L].length; iI++) { // iI: indice istruzione
+					if (S.Istruzioni[L][iI].soloInizioScena === 1) {
+						if (S.Istruzioni[L][iI].azione === 'intermezzo') {
+							if (I.controllaCondizioni(L, iI)) Vista.intermezzo.push(S.Istruzioni[L][iI]);
+						} else {
+							if (I.controllaCondizioni(L, iI)) Vista.istroInizioScena.push(S.Istruzioni[L][iI]);
+						}
+						// Una volta eseguita un'istro inizio scena, non servirà più
+						// Se è specificato autoElimina, l'istruzione va eliminata
+						if (L === 'scena' || S.Istruzioni[L][iI].autoElimina === 1) {
+							S.Istruzioni[L].splice(iI, 1); iI--;
+						}
+					}
+				}
+			});
+		}
+
+		// Prima di mostrare la scena si devono mostrare tutti gli intermezzi preparati
 		if (Vista.intermezzo.length > 0) {
-			// Controlla se c'è un audio associato all'intermezzo
-			var nCaratteriAudio; // Numero caratteri nome del file audio
-			nCaratteriAudio = Vista.intermezzo[0].search('&&&');
-			if (nCaratteriAudio !== -1) {
-				Vista.eseguiAudio(Vista.intermezzo[0].substr(0, nCaratteriAudio));
-				Vista.intermezzo[0] = Vista.intermezzo[0].substr(nCaratteriAudio + 3);
-			}
-			// Finché ci sono intermezzi vengono visualizzati al posto del testo
-			e_txt.innerHTML = '<p>'+Vista.intermezzo[0]+'</p>';
-			e_txt.style.visibility = 'visible';
+			// Ripulisce il testo da precedenti intermezzi
+			e_txt.innerHTML = '';
+			I.eseguiIstruzione(Vista.intermezzo[0]);
 			// Elimina il primo intermezzo inserito dall'autore, pop() darebbe un effetto inverso non desiderato
 			Vista.intermezzo.shift();
-			// Dopo 100 ms qualsiasi tasto che risulta premuto chiama passaIntermezzo()
-			setTimeout(function() {
-				document.addEventListener('keydown', Vista.passaIntermezzo);
-				document.addEventListener('click', Vista.passaIntermezzo);
-				}, 100);
-			// Dopo 5 sec compare la scritta "Premi un tasto" sotto il testo dell'intermezzo
-			Vista.timerPremiTasto = setTimeout(Vista.premiUnTasto, 5000);
 			// Interrompe mostra() che sarà richiamato da passaIntermezzo()
 			return;
 		} else {
 			e_txt.style.visibility = 'hidden';
 		}
 
-		// Attende il caricamento delle immagini
+		// Esegue tutte le azioni inizio scena ed attende il caricamento delle immagini
 		if (Vista.attesaImmagini === 1) {
-			// Aggiunge il testo con le immagini. Deve farlo ora, non solo dopo, perché il caricamento immagini va affrontato ora
+			// Si segna il titolo perché potrebbe essere sovrascritto da un contatore per l'attesa
+			Vista.stile.titolo = document.title;
+			// Ripulisce il testo da precedenti intermezzi
+			e_txt.innerHTML = '';
+			// Esegue istruzioni ed aggiunge le immagini così inizia a caricarle, mantenendo e_txt invisibile
+			for (var i = 0; i < Vista.istroInizioScena.length; i++) {
+				I.eseguiIstruzione(Vista.istroInizioScena[i]);
+			}
 			e_txt.innerHTML = Vista.testo;
-			// Considera che dopo tot. ms le immagini siano pronte
-			Vista.timerImmagini = setTimeout(Vista.mostra, 200);
-			// Interrompe Vista.mostra() che sarà richiamata appena passato il tempo necessario
+			// Passa alla fase 2 dell'attesa per le immagini
+			Vista.attesaImmagini = 2;
+			// Interrompe Vista.mostra che sarà richiamata ogni decimo di secondo
+			Vista.timerImmagini = setTimeout(Vista.mostra, 100); return;
+
+		// Controlla che le immagini siano caricate
+		} else if (Vista.attesaImmagini > 1) {
+			var ee_img = document.getElementsByTagName('img');
+			for (var i = 0; i < ee_img.length; i++) {
+				if (ee_img[i].naturalWidth === 0) {
+					// Continua con la fase 2 attesa per le immagini
+					Vista.timerImmagini = setTimeout(Vista.mostra, 100);
+					// Ritenta solo entro un certo tempo (15 s)
+					if (Vista.attesaImmagini > 31) {
+						// Dopo 3 s mostra sulla scheda il tempo di attesa rimasto
+						document.title = 'Attesa ' + (13 - Math.floor(Vista.attesaImmagini / 10));
+					}
+					if (Vista.attesaImmagini < 131) {
+						Vista.attesaImmagini++;
+						return;
+					} else {
+						// Rimuove l'immagine che non è stato possibile caricare
+						ee_img[i].parentNode.removeChild(ee_img[i]);
+					}
+				}
+			}
+			// Se tutte le immagini risultano caricate, termina l'attesa per le immagini
 			Vista.attesaImmagini = 0;
-			return;
-		} else {
 			clearTimeout(Vista.timerImmagini);
+			// Ripristina il titolo della storia ed elimina il contatore per l'attesa
+			document.title = Vista.stile.titolo;
+			delete Vista.stile.titolo;
+			Vista.testo = e_txt.innerHTML;
 		}
 
 		// Aggiunge le attuali uscite visibili in fondo al testo
@@ -539,56 +580,6 @@ var Vista = {
 		var e_aud = document.getElementById('audio');
 		e_aud.innerHTML = '<audio src="' + aud + '" autoplay="autoplay"></audio>';
 	},
-
-	cssAll: function(all) {
-		switch(all) {
-			case 'giustificato': case 'justify': all = ' style="text-align:justify;"'; break;
-			case 'centrato': case 'center': all = ' style="text-align:center;"'; break;
-			case 'destra': case 'right': all = ' style="text-align:right;"'; break;
-			case 'sinistra': case 'left': all = ' style="text-align:left;"'; break;
-			default: return '';
-		}
-		return all;
-	},
-
-	contenuto: function(nome) {
-		// nome: del contenitore di cui visualizzare il contenuto
-		if (S.oggetti[nome][0].length === 0) {
-			return 'niente';
-		} else {
-			if (I.istroLivello === 'scena') { // Contenitore del giocatore
-				return S.oggetti[nome][1].join(', ');
-			} else { // Contenitore dell'ambiente
-				return S.oggetti[nome][0].join(', ');
-			}
-		}
-	},
-
-	testoSpeciale: function(str) {
-		// str: stringa con testo speciale da riconoscere e risolvere
-
-		// Verifica la randomizzazione del testo
-		if (str[0] === '*' && str[1] === '*') {
-			str = str.split('**');
-			str.shift();
-			var n = Math.floor((Math.random() * str.length) + 1) - 1;
-			str = str[n];
-		}
-
-		// Verifica la presenza di contenitori: @nome contenitore@
-		var out = [];
-		out = str.split('@');
-		if (out.length < 3) return str;
-		for (var i = 1; i < out.length; i++) {
-			if (S.oggetti[out[i]] !== undefined) {
-				out[i] = Vista.contenuto(out[i]); i++;
-			} else {
-				out[i] = '@' + out[i];
-			}
-		}
-		return out.join('');
-	},
-
 	scorriCronoInput: function(n) {
 		// L'evento keydown disabilita input box per non vedere il cursore del testo (spiacevole perché andando all'indietro con la cronologia input, il cursore si colloca prima all'inizio e poi alla fine). L'unica soluzione valida è disabilitare input box e farlo tornare pronto dopo pochissimo tempo
 		setTimeout(G.pronto, 100);
@@ -608,9 +599,61 @@ var Vista = {
 		}
 	},
 
-	premiUnTasto: function() {
-		var e_txt = document.getElementById('testo');
-		e_txt.innerHTML += '<p>[Premi un tasto per continuare]</p>';
+	cssAll: function(all) {
+		switch(all) {
+			case 'giustificato': case 'justify': all = ' style="text-align:justify;"'; break;
+			case 'centrato': case 'center': all = ' style="text-align:center;"'; break;
+			case 'destra': case 'right': all = ' style="text-align:right;"'; break;
+			case 'sinistra': case 'left': all = ' style="text-align:left;"'; break;
+			default: return '';
+		}
+		return all;
+	},
+	testoSpeciale: function(str) {
+		// str: stringa con testo speciale da riconoscere e risolvere
+		var out = [];
+
+		// Verifica la randomizzazione di parti del testo
+		var x1 = str.indexOf('x(');
+		if (x1 !== -1) {
+			out.push(Vista.contenitori(str.substr(0, x1)));
+			var x2 = str.indexOf(')', x1 + 2);
+			var str_x = str.substr(x1 + 2, x2 - x1 - 2).split('|');
+			var n = Math.floor((Math.random() * str_x.length));
+			out.push(Vista.contenitori(str_x[n]));
+			out.push(Vista.contenitori(str.substr(x2 + 1, str.length - x2)));
+		} else {
+			out.push(Vista.contenitori(str));
+		}
+		// Restituisce il risultato finale
+		return out.join('');
+	},
+	contenitori: function(str) {
+		// str: stringa di cui verificare la presenza di contenitori: @nome contenitore@
+		var out = [];
+		out = str.split('@');
+		if (out.length < 3) return str;
+		for (var i = 1; i < out.length; i++) {
+			if (S.oggetti[out[i]] !== undefined) {
+				out[i] = Vista.contenuto(out[i]); i++;
+			} else {
+				out[i] = '@' + out[i];
+			}
+		}
+		// Restituisce il risultato finale
+		return out.join('');
+	},
+	contenuto: function(nome) {
+		// nome: del contenitore di cui visualizzare il contenuto
+		if (S.oggetti[nome][0].length === 0) {
+			return 'niente';
+		} else {
+			if (I.istroLivello === 'scena') {
+				return S.oggetti[nome][1].join(', '); // Contenitore del giocatore
+			} else {
+				return S.oggetti[nome][0].join(', '); // Contenitore dell'ambiente
+			}
+		}
 	},
 
 	fineRifiuto: function(event) {
@@ -631,29 +674,26 @@ var Vista = {
 			setTimeout(G.pronto, 100);
 		}
 	},
-
 	passaIntermezzo: function() {
 		document.removeEventListener('keydown', Vista.passaIntermezzo);
 		document.removeEventListener('click', Vista.passaIntermezzo);
 		clearTimeout(Vista.timerPremiTasto);
 		Vista.mostra();
 	},
-
+	premiUnTasto: function() {
+		var e_txt = document.getElementById('testo');
+		e_txt.innerHTML += '<p>[Premi un tasto per continuare]</p>';
+	},
 	prossimaScena: function() {
 		document.removeEventListener('keydown', Vista.prossimaScena);
 		document.removeEventListener('click', Vista.prossimaScena);
 		clearTimeout(Vista.timerPremiTasto);
 		istruzioniScena(G.nScenaPP);
 	},
-	
 	avanzaEffetto: function() {
 
-		// Se non ci sono più effetti in pila disattiva il timer
-		if (Vista.effetti.length === 0) {
-			clearTimeout(Vista.timerEffetto);
-			Vista.timerEffetto = null;
-			return;
-		}
+		// Se la scena è in corso di caricamento, rimanda inizio effetto
+		if (Vista.caricamento === 1) return;
 
 		// Recupera elemento su cui applicare l'effetto e se non esiste lo crea
 		var e_eff = document.getElementById(Vista.effetti[0].IDelem);
@@ -665,8 +705,8 @@ var Vista = {
 
 		// Porta avanti l'effetto corrente
 		switch (Vista.effetti[0].tipo) {
-			case 'caratteri':
-			case 'parole':
+			case 'testo-caratteri':
+			case 'testo-parole':
 				if (Vista.effetti[0].contatore === 0) {
 					e_eff.innerHTML = Vista.effetti[0].output[Vista.effetti[0].contatore];
 				} else {
@@ -674,15 +714,17 @@ var Vista = {
 				}
 				Vista.effetti[0].contatore++;
 				if (Vista.effetti[0].contatore >= Vista.effetti[0].output.length) {
+
+					// Giunto alla fine dell'effetto disattiva il timer
 					clearTimeout(Vista.timerEffetto);
 					Vista.timerEffetto = null;
+
+					// Elimina l'effetto concluso e prepara eventualmente il prossimo
 					Vista.effetti.shift();
 					if (Vista.effetti.length >= 1) {
 						Vista.timerEffetto = setInterval(Vista.avanzaEffetto, Vista.effetti[0].intervallo);
 					}
 				}
-			break;
-			case 'tuono':
 			break;
 		}
 	}
@@ -714,8 +756,7 @@ var I = {
 		// Normalizza l'input grezzo del giocatore
 		I.inputNorm = Lingua.normalizzaInput(I.inputGrezzo, 1);
 		var istro; // istro: istruzione
-		var condSoddisfatte; // condizioni soddisfatte
-		var azioneEseguita = 0;
+		var inputEseguito = 0;
 		var cambioScena = 0;
 
 		// Deve controllare se l'input soddisfa qualche istruzione corrente ed eseguirla //
@@ -729,7 +770,8 @@ var I = {
 			istro.azione = 'rispondi';
 			istro.output = 'Specificare il numero della posizione da 0 a 9 in cui salvare. Esempio: \'save 2\'. I salvataggi saranno disponibili solo sul browser in cui sono stati eseguiti. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
 			I.eseguiIstruzione(istro);
-			azioneEseguita = 1;
+			e_inp.value = '? ';
+			return;
 		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
 			istro.azione = 'rispondi';
 			// Salva tutte le variabili della partita nell'HTML5 storage
@@ -737,19 +779,19 @@ var I = {
 				try {
 					// Archivia tutte le info sulla partita in corso in un'unica stringa da infilare nell'HTML5 storage
 					localStorage.setItem(document.title+' '+I.inputNorm[1][0], [G.nScena, G.nScenaP, G.nScenaPP, JSON.stringify(G.passaggiScena), JSON.stringify(G.luoghiRagg), JSON.stringify(S.oggetti), JSON.stringify(S.variabili), JSON.stringify(S.Istruzioni.generali), JSON.stringify(S.Istruzioni.scena)].join('§§'));
-					// In ultima posizione viene salvato lo stato di tutte le istruzioni (generali e di scena), si potrebbe ottimizzare la memoria occupata salvando solo il n. di mosse trascorse e la presenza o meno delle azioni nMosse. Però, non è semplice gestire senza anomalie questa ottimizzazione. Ora che le istruzioni non vengono più eliminate è più semplice.
 					istro.output = 'Partita salvata in posizione ' + I.inputNorm[1][0];
 				} catch (err) {
 					// Chrome o Chromium possono avere i permessi di scrittura nell'HTML5 storage disabilitati
 					// Firefox ed Opera sono stati testati e risultano funzionanti (anche Chrome normalmente funziona)
-					istro.output = '<span class="coloreErrore">Impossibile salvare la partita.</span> Questo browser nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.';
+					istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> Questo browser nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.';
 				}
 			} else {
 				// HTML5 storage non supportato dal browser
-				istro.output = '<span class="coloreErrore">Impossibile salvare la partita.</span> Questo browser non supporta l\'HTML5 storage. Per salvare e caricare le partite si deve utilizzare un browser moderno che supporti questa funzionalità.';
+				istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> Questo browser non supporta l\'HTML5 storage. Per salvare e caricare le partite si deve utilizzare un browser moderno che supporti questa funzionalità.';
 			}
 			I.eseguiIstruzione(istro);
-			azioneEseguita = 1;
+			e_inp.value = '? ';
+			return;
 		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^reset$/.test(I.inputNorm[1][0])) {
 			for (var s = 0; s < 10; s++) {
 				localStorage.removeItem(document.title+' '+s);
@@ -757,45 +799,47 @@ var I = {
 			istro.azione = 'rispondi';
 			istro.output = 'Tutti i salvataggi per '+ document.title +' sono stati eliminati.';
 			I.eseguiIstruzione(istro);
-			azioneEseguita = 1;
+			e_inp.value = '? ';
+			return;
 		}
 
 		// Comando 'carica' per caricare una partita salvata
-		if (azioneEseguita === 0) {
-			istro = {};
-			if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
+		istro = {};
+		if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
+			istro.azione = 'rispondi';
+			istro.output = 'Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
+			I.eseguiIstruzione(istro);
+			e_inp.value = '? ';
+			return;
+		} else if (I.inputNorm.length === 2 && /^(load|carica|carico)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
+			var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
+			if (dati === null || dati === undefined) {
 				istro.azione = 'rispondi';
-				istro.output = 'Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
+				istro.output = 'Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.';
 				I.eseguiIstruzione(istro);
-				azioneEseguita = 1;
-			} else if (I.inputNorm.length === 2 && /^(load|carica|carico)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
-				var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
-				if (dati === null || dati === undefined) {
-					istro.azione = 'rispondi';
-					istro.output = 'Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.';
-					I.eseguiIstruzione(istro);
-					azioneEseguita = 1;
-				} else {
-					dati = dati.split('§§');
-					G.nScena = Number(dati[0]);
-					G.passaggiScena = JSON.parse(dati[3]);
-					G.luoghiRagg = JSON.parse(dati[4]);
-					S.oggetti = JSON.parse(dati[5]);
-					S.variabili = JSON.parse(dati[6]);
-					istruzioniScena(G.nScena);
-					// Dopo essersi collocato sulla giusta scena, sovrascrive le istruzioni con quelle salvate
-					S.Istruzioni.generali = JSON.parse(dati[7]);
-					S.Istruzioni.scena = JSON.parse(dati[8]);
-					// Anche il numero di scena precedente (P e PP) va sovrascritto alla fine
-					G.nScenaP = Number(dati[1]);
-					G.nScenaPP = Number(dati[2]);
-					return; // Inutile proseguire con altri controlli
-				}
+				e_inp.value = '? ';
+				return;
+			} else {
+				dati = dati.split('§§');
+				G.nScena = Number(dati[0]);
+				G.passaggiScena = JSON.parse(dati[3]);
+				G.luoghiRagg = JSON.parse(dati[4]);
+				S.oggetti = JSON.parse(dati[5]);
+				S.variabili = JSON.parse(dati[6]);
+				istruzioniScena(G.nScena);
+				// Dopo essersi collocato sulla giusta scena, sovrascrive le istruzioni con quelle salvate
+				S.Istruzioni.generali = JSON.parse(dati[7]);
+				S.Istruzioni.scena = JSON.parse(dati[8]);
+				// Anche il numero di scena precedente (P e PP) va sovrascritto alla fine
+				G.nScenaP = Number(dati[1]);
+				G.nScenaPP = Number(dati[2]);
+				e_inp.value = '? ';
+				return;
 			}
 		}
 
 		// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
-		if (azioneEseguita === 0) {
+		if (inputEseguito === 0) {
 			istro = {};
 			if (I.inputNorm.length === 1 && /^(direzioni|direzione|d)$/.test(I.inputNorm[0][0])) {
 				if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
@@ -812,141 +856,121 @@ var I = {
 					istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
 				}
 				I.eseguiIstruzione(istro);
-				azioneEseguita = 1;
+				inputEseguito = 1;
 
 			// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
 			} else if (I.inputNorm.length > 1 && /^(direzione|d)$/.test(I.inputNorm[0][0]) && G.luoghiRagg.bloccati === 1) {
 				istro.azione = 'rispondi';
 				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
 				I.eseguiIstruzione(istro);
-				azioneEseguita = 1;
+				inputEseguito = 1;
 			}
 		}
 
 		// Prima controlla le istruzioni di scena, poi quelle generali
 		var livello = ['scena', 'generali'];
-		var azioni = []; // Deve raccogliere tutte le istruzioni da eseguire, prima di eseguirle
+		var A = []; // A: azioni, qui vengono raccolte le coordinate delle istruzioni da eseguire, prima di eseguirle
 
 		livello.forEach(function(L) { // L: Livello delle istruzioni
-			for (var ii = 0; ii < S.Istruzioni[L].length; ii++) { // i: indice istruzione
+			for (var iI = 0; iI < S.Istruzioni[L].length; iI++) { // iI: indice istruzione
 
-				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro "nMosse" per farle avanzare
-				if (azioneEseguita === 1 && S.Istruzioni[L][ii].mossa === undefined) continue;
+				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro senza inputG (es. nMosse deve avanzare)
+				// Ricordarsi che 'save' e 'load' interrompono la funzione e quindi non sono contate come mosse
+				if (inputEseguito === 1 && S.Istruzioni[L][iI].input !== undefined) continue;
 
 				// Se è in fase di caricamento della scena non deve partire subito il contatore delle istro "nMosse", perché il giocatore deve avere il tempo di fare delle mosse nella nuova scena. Inoltre, andare ad una nuova scena è già contata come mossa.
-				if (Vista.caricamento === 1 && S.Istruzioni[L][ii].mossa !== undefined) continue;
+				if (Vista.caricamento === 1 && S.Istruzioni[L][iI].mossa !== undefined) continue;
 
-				// Copia l'istruzione, così si è liberi di rimuoverla qualora non servisse più
-				istro = S.Istruzioni[L][ii];
+				// Scarta le istruzioni generali eseguite solo ad inizio scena
+				if (L === 'generali' && S.Istruzioni[L][iI].soloInizioScena === 1) continue;
 
-				// Assume inizialmente che le condizioni siano soddisfatte
-				condSoddisfatte = 1;
-
-				// Se c'è un n. di mosse da raggiungere, ma il contatore è stato eliminato (undefined), considera l'istro non soddisfatta
-				if (istro.mosse !== undefined && istro.mossa === undefined) condSoddisfatte = 0;
-
-				// Verifica che le condizioni sugli oggetti e le variabili siano soddisfatte
-				if (condSoddisfatte && I.controllaOggVar(istro) === false) condSoddisfatte = 0;
-
-				// Se le condizioni non sono soddisfatte passa alla prossima istruzione ed eventualmente azzera nMosse
-				if (!condSoddisfatte) {
-					// La perdita delle condizioni idonee per un'istruzione nMosse fa azzerare le mosse
-					if (istro.mossa !== undefined) S.Istruzioni[L][ii].mossa = 0;
-					continue; // Prossima istruzione
+				// Verifica tutte le condizioni affinché l'istruzione sia raccolta per essere eseguita
+				// Il controllo si occupa di far avanzare anche il contatore nMosse
+				if (I.controllaCondizioni(L, iI)) {
+					// Se un'azione dovuta ad un inputG verrà eseguita, inutile cercarne altre
+					if (S.Istruzioni[L][iI].input !== undefined) inputEseguito = 1;
+					A.push([L, iI]);
 				}
-
-				// Verifica che ci sia un numero di mosse da raggiungere e che sia stato raggiunto
-				// Le mosse vengono contate solo se e fintantoché le condizioni su ogg e var sono soddisfatte. Se il conteggio delle mosse è iniziato e le condizioni su ogg e var vengono meno prima che scatti un'azione, allora il contatore delle mosse viene resettato.
-				if (condSoddisfatte && istro.mossa !== undefined) {
-					if (istro.mossa >= istro.mosse) {
-						// Valuta se reimpostare un nuovo n. di mosse da raggiungere in base alla ripetitività
-						if (istro.ripeti === 1) {
-							S.Istruzioni[L][ii].mossa = 0;
-						} else {
-							// Non si deve rimuovere un'istruzione nMosse, potrebbe tornare attiva per un caricamento di partita o altro
-							delete S.Istruzioni[L][ii].mossa; delete istro.mossa;
-						}
-					} else {
-						S.Istruzioni[L][ii].mossa++;
-						continue; // Prossima istruzione
-					}
-				}
-
-				// Verifica che l'input del giocatore (se richiesto) corrisponda a quello previsto dall'istruzione
-				if (istro['input'] && !Lingua.fraseInFrasiSemantiche(I.inputNorm, istro['input'])) continue; // Prossima istruzione
-
-				// Arrivato qui, tutte le condizioni sono soddisfatte, quindi l'istruzione che richiede un'azione va raccolta
-				if (L === 'scena') { istro.livello = 'scena'; } else { istro.livello = 'generali'; }
-				azioni.push(istro);
 			}
 		});
 
 		// Esegue le istruzioni raccolte, valutando l'ordine di esecuzione //
+		var aE = []; // aE: coordinate dell'azione eseguita e da auto eliminare
+		var aIG = 0; // aIG: azione input giocatore eseguita o meno
 
-		// Prima tutte quelle che non comportano un cambio di scena e non scattano dopo nMosse
-		for (var a = 0; a < azioni.length; a++) {
-			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse === undefined) {
-				I.eseguiIstruzione(azioni[a]);
-				// Eventuali rispondiVai contano come cambi di scena ed hanno la priorità
-				if (azioni[a].azione === 'rispondiVai') cambioScena = 1;
-				azioni.splice(a, 1); a--;
-				azioneEseguita = 1;
-				break;
-			}
-		}
-		// Poi quelle che comportano un cambio di scena legato a nMosseVai
-		if (cambioScena === 0) {
-			for (var a = 0; a < azioni.length; a++) {
-				if (azioni[a].azione === 'vaiA' && azioni[a].mosse !== undefined) {
-					// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
-					if (I.controllaOggVar(azioni[a]) === true) {
-						I.eseguiIstruzione(azioni[a]);
-						azioni.splice(a, 1); a--;
-						cambioScena = 1;
-						break;
-					}
+		for (var o = 0; o < 4; o++) { // o: ordine di esecuzione
+			for (var a = 0; a < A.length; a++) { // a: indice azione
+				switch (o) {
+					case 0: // Esegui eventuale istro dovuta all'input del giocatore
+						if (S.Istruzioni[A[a][0]][A[a][1]].input !== undefined) {
+							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
+							aIG = 1; // Indica che un'azione inputG è stata eseguita
+							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+							if (S.Istruzioni[A[a][0]][A[a][1]].azione === 'rispondiVai') cambioScena = 1;
+							A.splice(a, 1); a--; // Rimuove l'azione dalla pila;
+						}
+					break;
+					case 1: // Poi i cambi di scena legati a nMosse
+						if (S.Istruzioni[A[a][0]][A[a][1]].mosse !== undefined && S.Istruzioni[A[a][0]][A[a][1]].azione === 'vaiA') {
+							// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
+							if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
+								I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
+								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+								cambioScena = 1;
+							}
+						}
+					break;
+					case 2: // Poi i cambi di scena ordinari (senza nMosse)
+						if (S.Istruzioni[A[a][0]][A[a][1]].mosse === undefined && S.Istruzioni[A[a][0]][A[a][1]].azione === 'vaiA') {
+							// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
+							if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
+								I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
+								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+								cambioScena = 1;
+							}
+						}
+					break;
+					case 3: // Poi ogni altra azione non dovuta a inputG, né legata a nMosse
+						// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
+						if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
+							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
+							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+							A.splice(a, 1); a--; // Rimuove l'azione dalla pila
+						}
+					break;
 				}
-			}
-		}
-		// Poi i cambi di scena ordinari, se non ne è già avvenuto uno
-		if (cambioScena === 0) {
-			for (var a = 0; a < azioni.length; a++) {
-				if (azioni[a].azione === 'vaiA' && azioni[a].mosse === undefined) {
-					// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
-					if (I.controllaOggVar(azioni[a]) === true) {
-						I.eseguiIstruzione(azioni[a]);
-						azioni.splice(a, 1); a--;
-						cambioScena = 1;
-						break;
-					}
+
+				// Eventuale auto eliminazione di una istro, dopo la sua prima esecuzione
+				if (aE.length > 0) {
+					// aE[0]: livello generale o scena
+					// aE[1]: indice istruzione
+					// aE[2]: indice azione da eseguire raccolta
+					S.Istruzioni[aE[0]].splice(aE[1], 1);
+					for (var a2 = aE[2]; a2 < A.length; a2++) { if (aE[0] === A[a2][0]) A[a2][1]--; }
+					aE = [];
 				}
-			}
-		}
-		// Poi i messaggi dopo nMosse
-		// Ci si assicura che non sia un "vaiA" perché non vengono scartati tutti, solo il primo incontrato
-		for (var a = 0; a < azioni.length; a++) {
-			if (azioni[a].azione !== 'vaiA' && azioni[a].mosse !== undefined) {
-				// Deve ricontrollare le condizioni su oggetti e variabili, le azioni precedenti possono averle cambiate
-				if (I.controllaOggVar(azioni[a])) {
-					I.eseguiIstruzione(azioni[a]);
-					azioneEseguita = 1;
-				}
+
+				// Se è avvenuto un cambio di scena, conclude subito
+				if (cambioScena === 1) return;
+				
+				// Se un'azione inputG è stata eseguita, smette di cercarne altre
+				if (aIG === 1) { aIG = 0; break; }
 			}
 		}
 
-		// Se è avvenuto un cambio di scena, salta la parte finale che sarà superflua
-		if (cambioScena === 1) return;
+		// Svuota l'input grezzo che ormai non verrà più usato
+		I.inputGrezzo = '';
 
 		// Se nessuna azione è stata eseguita, invita a provare altro
-		if (azioneEseguita === 0) {
+		if (inputEseguito === 0) {
 			e_inp.readOnly = true;
 			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
-			if (Vista.stile.coloreErrore) { e_inp.style.color = Vista.stile.coloreErrore; } else { e_inp.className += ' coloreErrore'; }
+			if (Vista.stile.coloreRifiuto) { e_inp.style.color = Vista.stile.coloreRifiuto; } else { e_inp.className += ' coloreRifiuto'; }
 			e_inp.value = Vista.messaggiRifiuto[Math.floor((Math.random() * Vista.messaggiRifiuto.length))];
-			// Dopo 1 sec scompare il msg di errore
+			// Dopo 1 sec scompare il msg di rifiuto
 			Vista.timerFineRifiuto = setTimeout(Vista.fineRifiuto, 1000);
-			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di errore
+			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di rifiuto
 			setTimeout(function() {
 				document.addEventListener('keydown', Vista.fineRifiuto);
 				document.addEventListener('click', Vista.fineRifiuto);
@@ -964,34 +988,78 @@ var I = {
 		I.leggiInput();
 	},
 
-	controllaOggVar: function(cond) {
+	controllaCondizioni: function(L, iI, opz) {
+		// L: livello dell'istruzione (generali, di scena)
+		// iI: indice o ID dell'istruzione
+		// opz: opzione aggiuntiva
 
-		// Controlla le condizioni sugli oggetti
-		if (cond.seOggetti !== undefined) {
-			for (var i = 0; i < cond.seOggetti.length; i++) {
-				if (S.oggetti[cond.seOggetti[i].contenitore] === undefined ||
-					S.oggetti[cond.seOggetti[i].contenitore][0].indexOf(cond.seOggetti[i].nome) === -1) { // Oggetto assente
-					// L'oggetto dovrebbe essere presente
-					if (cond.seOggetti[i].presenza === 1) return false;
-				} else { // Oggetto presente
-					// L'oggetto dovrebbe essere assente
-					if (cond.seOggetti[i].presenza === 0) return false;
-				}
-			}
-		}
+		// Se non ci sono condizioni risponde subito vero, prima ancora di duplicare l'istruzione
+		if (S.Istruzioni[L][iI].seVariabili === undefined && S.Istruzioni[L][iI].seOggetti === undefined && S.Istruzioni[L][iI].mosse === undefined && S.Istruzioni[L][iI].input === undefined) return true;
+		var istro = S.Istruzioni[L][iI];
 
+		// Si devono eseguire prima i controlli più semplici e poi i più complessi
+		// All'inizio del controllo si lasciano le condizioni indefinite: valore scelto 2 (vero o falso)
+		// Se diventa 0 significa "non soddisfatte", se diventa 1 "soddisfatte"
+		var condSoddisfatte = 2;
+		
 		// Controlla le condizioni sulle variabili
-		if (cond.seVariabili !== undefined) {
-			for (var i = 0; i < cond.seVariabili.length; i++) {
-				if (S.variabili[cond.seVariabili[i].nome] === undefined) { // Variabile non esiste
+		if (istro.seVariabili !== undefined) {
+			for (var i = 0; i < istro.seVariabili.length; i++) {
+				if (S.variabili[istro.seVariabili[i].nome] === undefined) { // Variabile non esiste
 					// La variabile dovrebbe esistere
-					if (cond.seVariabili[i].presenza === 1) return false;
+					if (istro.seVariabili[i].presenza === 1) condSoddisfatte = 0;
 				} else { // Variabile esiste
 					// La variabile non dovrebbe esistere
-					if (cond.seVariabili[i].presenza === 0) return false;
+					if (istro.seVariabili[i].presenza === 0) condSoddisfatte = 0;
 				}
 			}
 		}
+
+		// Controlla le condizioni sugli oggetti
+		if (condSoddisfatte !== 0 && istro.seOggetti !== undefined) {
+			for (var i = 0; i < istro.seOggetti.length; i++) {
+				if (S.oggetti[istro.seOggetti[i].contenitore] === undefined ||
+					S.oggetti[istro.seOggetti[i].contenitore][0].indexOf(istro.seOggetti[i].nome) === -1) { // Oggetto assente
+					// L'oggetto dovrebbe essere presente
+					if (istro.seOggetti[i].presenza === 1) condSoddisfatte = 0;
+				} else { // Oggetto presente
+					// L'oggetto dovrebbe essere assente
+					if (istro.seOggetti[i].presenza === 0) condSoddisfatte = 0;
+				}
+			}
+		}
+
+		// Controlla la condizione sul n. di mosse
+		if (istro.mosse !== undefined && opz !== 'no!nMosse') {
+			// Se il contatore è stato eliminato (undefined), considera l'istro non soddisfatta
+			if (istro.mossa === undefined) {
+				condSoddisfatte = 0;
+			} else {
+				// Se le condizioni non sono soddisfatte, azzera il contatore
+				// Solo variabili od oggetti possono aver determinato una non soddisfazione a questo punto
+				if (condSoddisfatte === 0) {
+					S.Istruzioni[L][iI].mossa = 0;
+				} else {
+					// Verifica che ci sia un numero di mosse da raggiungere e che sia stato raggiunto
+					if (istro.mossa >= istro.mosse) {
+						// Azzera il contatore, se l'istro non verrà eliminata, si ripete di continuo
+						S.Istruzioni[L][iI].mossa = 0;
+					} else {
+						S.Istruzioni[L][iI].mossa++;
+						condSoddisfatte = 0;
+					}
+				}
+			}
+		}
+
+		// Controlla la corrispondenza con l'input del giocatore
+		if (condSoddisfatte !== 0 && istro.input !== undefined) {
+			if (!Lingua.fraseInFrasiSemantiche(I.inputNorm, istro.input)) condSoddisfatte = 0;
+		}
+
+		// Se le condizioni risultano non soddisfatte a questo punto, interrompi e rispondi falso
+		if (condSoddisfatte === 0) return false;
+		// altrimenti rispondi vero
 		return true;
 	},
 
@@ -1046,23 +1114,20 @@ var I = {
 	eseguiIstruzione: function(istro) {
 		// istro: istruzione da eseguire
 		I.istroLivello = istro.livello; // Segnala globalmente se il livello è di scena o generale
-
 		var e_txt = document.getElementById('testo');
 
-		// Controlla se ci sono funzioni _agganciate a quella principale
-		if (istro.immagine) {
-			e_txt.innerHTML += '<img src="" />';
-			nImm = e_txt.getElementsByTagName('img').length;
-			var e_imm = e_txt.getElementsByTagName('img')[nImm - 1];
-			e_imm.style.display = 'block';
-			if (istro.imgW !== undefined) e_imm.width = istro.imgW;
-			if (istro.imgH !== undefined) e_imm.height = istro.imgH;
-			e_imm.src = istro.immagine;
+		// Gestisci funzione immagine o l'agganciata __immagine
+		if (istro.azione === 'immagine' || istro.immagine) {
+			if (istro.w === undefined) { istro.w = ''; } else { istro.w = ' width="'+istro.w+'"'; }
+			if (istro.h === undefined) { istro.h = ''; } else { istro.h = ' height="'+istro.h+'"'; }
+			Vista.testo += '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.nome +'" />';
 		}
-		if (istro.oggetti) {
-			I.impostaOggVar(istro.oggetti);
-		}
+
+		// Gestisci funzioni agganciate __oggetti e __variabili
+		if (istro.oggetti) I.impostaOggVar(istro.oggetti);
 		if (istro.variabili) I.impostaOggVar(istro.variabili);
+
+		// Gestisci funzione agganciata __audio
 		if (istro.audio) eseguiAudio(istro.audio);
 
 		// Prepara alcuni aspetti dello stile
@@ -1075,8 +1140,133 @@ var I = {
 
 		// Esegue l'azione principale
 		switch (istro.azione) { // il tipo di azione dell'istruzione
-			case 'audio':
-				eseguiAudio(istro.audio);
+			case 'coloreSfondo':
+				Vista.stile.coloreSfondo = istro.colore;
+			break;
+			case 'coloreTesto':
+				Vista.stile.coloreTesto = istro.colore1;
+				if (istro.colore2) Vista.stile.coloreTestoInviato = istro.colore2;
+			break;
+			case 'coloreScelte':
+				Vista.stile.coloreScelta = istro.colore1;
+				if (istro.colore2) Vista.stile.coloreSceltaSelez = istro.colore2;
+			break;
+			case 'coloreRifiuto':
+				Vista.stile.coloreRifiuto = istro.colore;
+			break;
+			case 'impostaMsgRifiuto':
+				Vista.messaggiRifiuto = istro.messaggi.split('|');
+			break;
+			case 'carattereTesto':
+				if (istro.font) Vista.stile.testoCarattere = istro.font;
+				if (istro.size) Vista.stile.testoGrandezza = istro.size;
+				if (istro.align) Vista.stile.testoAllineamento = istro.align;
+			break;
+			case 'bloccaDirezioni':
+				G.luoghiRagg.bloccati = 1;
+			break;
+			case 'cancellaDirezione':
+				if (S.luoghiRagg[istro.nome] !== undefined) delete S.luoghiRagg[istro.nome];
+			break;
+			case 'intermezzo':
+				e_txt.innerHTML += '<p>'+Vista.testoSpeciale(istro.testo)+'</p>';
+				e_txt.style.visibility = 'visible';
+				// Dopo 100 ms qualsiasi tasto che risulta premuto chiama passaIntermezzo()
+				setTimeout(function() {
+					document.addEventListener('keydown', Vista.passaIntermezzo);
+					document.addEventListener('click', Vista.passaIntermezzo);
+				}, 100);
+				// Dopo 5 sec compare la scritta "Premi un tasto" sotto il testo dell'intermezzo
+				Vista.timerPremiTasto = setTimeout(Vista.premiUnTasto, 5000);
+			break;
+			case 'testo':
+				if (istro.align === 'no!p') {
+					Vista.testo += Vista.testoSpeciale(istro.testo);
+				} else {
+					if (istro.align) {
+						istro.align = Vista.cssAll(istro.align);
+					} else {
+						if (Vista.stile.testoAllineamento) {
+							istro.align = Vista.cssAll(Vista.stile.testoAllineamento);
+						} else {
+							istro.align = '';
+						}
+					}
+					Vista.testo += '<p'+istro.align+'>'+Vista.testoSpeciale(istro.testo)+'</p>';
+				}
+			break;
+			case 'creaContenitore':
+				// L'istruzione è impostata affinché sia eseguita 1 volta sola
+				S.oggetti[istro.nome] = [];
+				// I contenitori sono array che contengono 2 array:
+				// Primo array: oggetti con etichette art. det.; secondo array: oggetti con etichette art. indet.
+				if (istro.ogg === '' || istro.ogg === undefined) {
+					S.oggetti[istro.nome].push([]); // Etichette-ID con art. det.
+					S.oggetti[istro.nome].push([]); // Etichette con art. indet.
+				} else {
+					var ogg_il = []; // Etichette-ID con art. det.
+					var ogg_un = []; // Etichette con art. indet.
+					istro.ogg = istro.ogg.split('+');
+					for (var o = 0; o < istro.ogg.length; o++) { // o: indice oggetto
+						// Separa l'eventuale articolo indeterminativo dall'etichetta con art. det. (es. "un|l'amuleto")
+						istro.ogg[o] = istro.ogg[o].split('|');
+						switch (istro.ogg[o].length) {
+							case 1:
+								ogg_il.push(istro.ogg[o][0]);
+								ogg_un.push(istro.ogg[o][0]);
+								break;
+							case 2:
+								ogg_il.push(istro.ogg[o][1]); // Etichetta con art. det. già pronta
+								// Etichetta con art. indet. va costruita controllando come iniziano le etichette con art. det.
+								if (istro.ogg[o][1].startsWith('gli')) {
+									ogg_un.push(istro.ogg[o][0]+istro.ogg[o][1].substring(3));
+								} else if (istro.ogg[o][1].startsWith('gl\'')) {
+									// Se finisce con un apostrofo, attacca l'articolo alla parola, altrimenti ci mette uno spazio
+									if (istro.ogg[o][0].substring(istro.ogg[o][0].length - 1) === '\'') {
+										ogg_un.push(istro.ogg[o][0]+istro.ogg[o][1].substring(3));
+									} else {
+										ogg_un.push(istro.ogg[o][0]+' '+istro.ogg[o][1].substring(3));
+									}
+								} else if (istro.ogg[o][1].match(/^il|lo|la|le/)) {
+									ogg_un.push(istro.ogg[o][0]+istro.ogg[o][1].substring(2));
+								} else if (istro.ogg[o][1].startsWith('l\'')) {
+									// Se finisce con un apostrofo, attacca l'articolo alla parola, altrimenti ci mette uno spazio
+									if (istro.ogg[o][0].substring(istro.ogg[o][0].length - 1) === '\'') {
+										ogg_un.push(istro.ogg[o][0]+istro.ogg[o][1].substring(2));
+									} else {
+										ogg_un.push(istro.ogg[o][0]+' '+istro.ogg[o][1].substring(2));
+									}
+								} else if (istro.ogg[o][1].startsWith('i')) {
+									ogg_un.push(istro.ogg[o][0]+istro.ogg[o][1].substring(1));
+								}
+								break;
+							default:
+								alert('Un\'etichetta presenta più di un separatore ammesso per l\'articolo indeterminativo. Correggere la scena n. '+ G.nScena);
+								return;
+						}
+					}
+					S.oggetti[istro.nome].push(ogg_il); // Etichette-ID con art. det.
+					S.oggetti[istro.nome].push(ogg_un); // Etichette con art. indet.
+				}
+			break;
+			case 'scegliRispondi':
+				if (istro.al1 !== undefined) { istro.al1 = Vista.cssAll(istro.al1); } else { istro.al1 = ''; }
+				if (istro.output !== undefined && istro.output !== '') {
+					var iR = {}; // istruzione risposta
+					iR['azione'] = 'rispondi';
+					iR['input'] = istro.nome;
+					iR['output'] = istro.output.replace(/'/g, '"');
+					if (istro.al2 !== undefined) istro['allineamento'] = istro.al2;
+					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(iR).replace(/"/g, '\'')+');">'+ istro.nome +'</p>';
+				} else {
+					if (istro.al2 !== undefined) { istro.al2 = ', {\'outAli\':\''+istro.al2+'\'}'; } else { istro.al2 = ''; }
+					istro.nome = istro.nome.replace(/'/g, '"').replace(/"/g, '\'');
+					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.scriviInput(\''+istro.nome+'\''+istro.al2+');">'+ istro.nome +'</p>';
+				}
+			break;
+			case 'scegliVai':
+				if (istro.all !== undefined) { istro.all = Vista.cssAll(istro.all); } else { istro.all = ''; }
+				Vista.scelte += '<p class="scelta coloreScelta" '+ istro.all +' onclick="S.vaiA('+istro.nS+')">'+ istro.nome +'</p>';
 			break;
 			case 'rispondi':
 				if (istro.mossa === undefined) {
@@ -1091,30 +1281,6 @@ var I = {
 				}
 				e_txt.innerHTML += '<p'+all+'>' + Vista.testoSpeciale(istro.output) + '</p>';
 			break;
-			case 'effetto':
-				if (istro.colore !== undefined) {
-					cssCol = ' style="color:'+istro.colore+';"';
-				}
-				Vista.nEffetti++;
-				Vista.effetti.push({'IDelem':'ef'+Vista.nEffetti});
-				Vista.effetti[Vista.effetti.length - 1].stile = all + cssCol;
-				Vista.effetti[Vista.effetti.length - 1].tipo = istro.tipo;
-				Vista.effetti[Vista.effetti.length - 1].contatore = 0;
-				switch (istro.tipo) {
-					case 'caratteri':
-						Vista.effetti[Vista.effetti.length - 1].output = istro.output;
-					break;
-					case 'parole':
-						var parole = [];
-						parole = istro.output.split(/([^\s]+\s)/).filter(Boolean);
-						Vista.effetti[Vista.effetti.length - 1].output = parole;
-					break;
-					case 'tuono':
-					break;
-				}
-				Vista.effetti[Vista.effetti.length - 1].intervallo = istro.intervallo;
-				if (Vista.timerEffetto === null) Vista.timerEffetto = setInterval(Vista.avanzaEffetto, istro.intervallo);
-			break;
 			case 'vaiA':
 				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni "in corso di verifica" su leggiInput().
 				switch (istro.scena) {
@@ -1125,7 +1291,7 @@ var I = {
 				}
 			break;
 			case 'rispondiVai':
-				if (istro.mossa === undefined) {
+				if (istro.mossa === undefined || istro.mossa === 0) {
 					document.getElementById('input').style.display = 'none';
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
@@ -1148,9 +1314,29 @@ var I = {
 				// Dopo 5 sec compare la scritta "Premi un tasto" sotto il testo dell'intermezzo
 				Vista.timerPremiTasto = setTimeout(Vista.premiUnTasto, 5000);
 			break;
+			case 'effetto':
+				if (istro.colore !== undefined) {
+					cssCol = ' style="color:'+istro.colore+';"';
+				}
+				Vista.nEffetti++;
+				Vista.effetti.push({'IDelem':'ef'+Vista.nEffetti});
+				Vista.effetti[Vista.effetti.length - 1].stile = istro.all + cssCol;
+				Vista.effetti[Vista.effetti.length - 1].tipo = istro.tipo;
+				Vista.effetti[Vista.effetti.length - 1].contatore = 0;
+				switch (istro.tipo) {
+					case 'testo-caratteri':
+						Vista.effetti[Vista.effetti.length - 1].output = istro.output;
+					break;
+					case 'testo-parole':
+						var parole = [];
+						parole = istro.output.split(/([^\s]+\s)/).filter(Boolean);
+						Vista.effetti[Vista.effetti.length - 1].output = parole;
+					break;
+				}
+				Vista.effetti[Vista.effetti.length - 1].intervallo = istro.intervallo;
+				if (Vista.timerEffetto === null) Vista.timerEffetto = setInterval(Vista.avanzaEffetto, istro.intervallo);
+			break;
 		}
-		Vista.testo = e_txt.innerHTML; // Devo tener aggiornato il testo nell'oggetto Vista
-		I.inputGrezzo = ''; // Devo svuotare l'inputGrezzo
 	}
 }
 
@@ -1204,6 +1390,7 @@ var S = {
 		G.nuovaPartita();
 		S.oggetti = {}; // Cancella tutti i contenitori con gli oggetti
 		S.variabili = {}; // Cancella tutte le variabili
+		S.Istruzioni.generali = []; // Svuota le istruzioni generali (non devono duplicarsi ed i contatori nMosse devono azzerarsi)
 	},
 
 	vaiA: function(nS) {
@@ -1216,14 +1403,12 @@ var S = {
 	},
 
 	Istruzioni: {
-
 		generali: [],
 		scena: [],
 
 		crea: function() {
-			if (G.nScena === 0) { S.Istruzioni.generali.push({}); } else { S.Istruzioni.scena.push({}); };
+			if (G.nScena === 0) { S.Istruzioni.generali.push({}); } else { S.Istruzioni.scena.push({}); }
 		},
-
 		valore: function(p, v) { // p: proprietà, v: valore
 			if (G.nScena === 0) {
 				S.Istruzioni.generali[S.Istruzioni.generali.length - 1][p] = v;
@@ -1231,7 +1416,6 @@ var S = {
 				S.Istruzioni.scena[S.Istruzioni.scena.length - 1][p] = v;
 			}
 		},
-
 		valoreArray: function(a, v) { // a: nome array, v: valore
 			var ultima;
 			if (G.nScena === 0) {
@@ -1244,13 +1428,29 @@ var S = {
 				S.Istruzioni.scena[ultima][a].push(v);
 			}
 		},
-
 		leggiValore: function(p) { // p: proprietà
 			if (G.nScena === 0) {
 				return S.Istruzioni.generali[S.Istruzioni.generali.length - 1][p];
 			} else {
 				return S.Istruzioni.scena[S.Istruzioni.scena.length - 1][p];
 			}
+		},
+		aggiungiCondizioni: function() {
+			var L; // Livello delle istruzioni (generali o di scena)
+			if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; }
+			// Aggiungi condizioni correnti
+			var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
+			if (Condizioni.righeCoinvolte[iUB] > 0) {
+				var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
+				S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
+				S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
+				if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
+			}
+		},
+		annullaCondizioni: function() {
+			// Solo nel caso in cui le condizioni si applicano ad 1 riga e l'istruzione viene annullata, allora l'attuale blocco condizioni va rimosso (altrimenti si applicherebbe alla prossima istruzione non annullata)
+			var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
+			if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
 		}
 	}
 }
@@ -1277,281 +1477,24 @@ var Condizioni = {
 	}
 }
 
-//==================================//
-// Istruzioni per definire le scene //
-//==================================//
+// ============================== //
+// Istruzioni per creare le scene //
+// ============================== //
 
-// Istruzioni per le impostazioni iniziali delle scene //
+// Istruzioni eseguite ad inizio scena
+// (non condizionabili e non estendibili) //
 
-function titolo(str) {
+function nomeStoria(str) {
+	// str: titolo della storia che comparirà sulla scheda della pagina Web
 	document.title = str;
-}
-function coloreSfondo(col) {
-	if (col) Vista.stile.coloreSfondo = col;
-}
-function coloreTesto(col1, col2) {
-	if (col1) Vista.stile.coloreTesto = col1;
-	if (col2) Vista.stile.coloreTestoInviato = col2;
-}
-function coloreScelte(col1, col2) {
-	if (col1) Vista.stile.coloreScelta = col1;
-	if (col2) Vista.stile.coloreSceltaSelez = col2;
-}
-function coloreErrore(col) {
-	if (col) Vista.stile.coloreErrore = col;
-}
-function messaggiRifiuto(msg) {
-	Vista.messaggiRifiuto = msg.split('|');
-}
-function carattereTesto(fnt, siz, all) {
-	if (fnt) Vista.stile.testoCarattere = fnt;
-	if (siz) Vista.stile.testoGrandezza = siz;
-	if (all) Vista.stile.testoAllineamento = all;
-}
-function intermezzo(txt, aud) {
-	// txt: testo da visualizzare, anche html
-	// aud: audio da eseguire alla comparsa del testo
-
-	if (G.nScena === 0) { alert('L\'istruzione "intermezzo()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
-	if (aud !== undefined) { aud = aud + '&&&'; } else { aud = ''; }
-	
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-
-	if (esegui === 1) Vista.intermezzo.push(aud + txt);
-}
-function testo(txt, all) {
-	// txt: testo da visualizzare, anche html
-	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
-
-	if (G.nScena === 0) { alert('L\'istruzione "testo()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
-	
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-	
-	if (esegui === 1) {
-		if (all) { all = Vista.cssAll(all); } else { all = ''; }
-		if (Vista.stile.testoAllineamento) all = Vista.cssAll(Vista.stile.testoAllineamento);
-		Vista.testo += '<p'+all+'>' + txt + '</p>';
-	}
-}
-function effetto(txt, op0, op1, op2, op3, op4) {
-	// txt: testo da visualizzare, anche html
-	// op1: (facoltativo) allineamento testo (valori: "giustificato", "centrato", "destra", "sinistra")
-	// op2: ritardo effetto
-	// op3: nome effetto da applicare
-	// op4: (facoltativo) colore testo
-	// op5: ulteriore parametro per l'effetto
-	var opz = [op0, op1, op2, op3, op4]; var i = 0; // indice opzioni
-	var rit = 0;
-	
-	if (G.nScena === 0) { alert('L\'istruzione "effetto()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
-	
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-	
-	if (esegui === 1) {
-		var istro = {};
-		istro.azione = 'effetto';
-		istro.output = txt;
-		if (/^(giustificato|centrato|destra|sinistra|justify|center|right|left)$/.test(opz[0])) {
-			istro.allineamento = Vista.cssAll(opz[0]); i++;
-		} else if (Vista.stile.testoAllineamento) {
-			istro.allineamento = Vista.cssAll(Vista.stile.testoAllineamento);
-		}
-		rit = Number(opz[i]); i++; // ritardo effetto
-		istro.tipo = opz[i]; i++;
-		if (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(opz[i])) {
-			istro.colore = opz[i]; i++; // colore testo
-		}
-		switch (istro.tipo) {
-			case 'caratteri':
-			case 'parole':
-				istro.intervallo = Number(opz[i]);
-			break;
-		}
-		setTimeout(function() { I.eseguiIstruzione(istro); }, rit);
-	}
-}
-function immagine(img, w, h) {
-	// img: nome dell'immagine da posizionare nella stessa cartella di 'INIZIA.html'
-	// w, h: larghezza e altezza da impostare forzatamente
-
-	if (img === undefined || img === '') return;
-
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-
-	if (esegui === 1) {
-		var e_txt = document.getElementById('testo');
-		if (w === undefined) { w = ''; } else { w = ' width="'+w+'"'; }
-		if (h === undefined) { h = ''; } else { h = ' height="'+h+'"'; }
-		Vista.testo += '<img style="display:block;" '+ w + h +' src="'+ img +'" />';
-	}
-}
-function audio(aud) {
-	if (G.nScena === 0) { alert('L\'istruzione "audio()" non può essere usata nelle istruzioni generali. Eliminarla.'); return; }
-	
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1; // iUB: indice Ultimo Blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-	
-	if (esegui === 1) document.getElementById('audio').innerHTML = '<audio id="fileAudio" src="' + aud + '"></audio>';
-}
-function contenitore(cont, ogg) {
-	// cont: nome del contenitore che fa da chiave nell'array dei contenitori di oggetti: S.oggetti
-	// ogg: oggetti contenuti separati con +, scrivere sempre l'articolo determinativo, faranno da etichette e da ID
-	//   è possibile indicare l'articolo indeterminativo prima dell'etichetta oggetto servendosi di una barra '|'
-	//   Es. "un|l'amuleto+dello|lo zucchero+il Martello di Tor+un'|l'albicocca" - Notare che può non venir usata la barra, in tal caso viene sempre presentata l'etichetta con articolo determinativo (o comunque quello che scriviamo), utile per oggetti unici (es. "martello"). L'articolo viene considerato comprensivo di apostrofo quindi con l' (l apostrofo) viene tolto anche apostrofo. Se l'oggetto è maschile o femminile, è lo scrittore che deve specificare o meno l'apostrofo nell'articolo indeterminativo, si veda l'esempio "amuleto" e "albicocca". L'eventuale spazio dopo l'articolo è automaticamente gestito (quindi non va mai messo).
-	
-	// Il contenitore va creato solo la prima volta che si incontra questa istruzione
-	if (S.oggetti[cont] !== undefined) return;
-	S.oggetti[cont] = [];
-
-	// I contenitori sono array che contengono 2 array:
-	// Primo array: oggetti con etichette art. det.; secondo array: oggetti con etichette art. indet.
-	
-	if (ogg === '' || ogg === undefined) {
-		S.oggetti[cont].push([]); // Etichette-ID con art. det.
-		S.oggetti[cont].push([]); // Etichette con art. indet.
-	} else {
-		var ogg_il = []; // Etichette-ID con art. det.
-		var ogg_un = []; // Etichette con art. indet.
-		ogg = ogg.split('+');
-		for (var o = 0; o < ogg.length; o++) { // o: indice oggetto
-			// Separa l'eventuale articolo indeterminativo dall'etichetta con art. det. (es. "un|l'amuleto")
-			ogg[o] = ogg[o].split('|');
-			switch (ogg[o].length) {
-				case 1:
-					ogg_il.push(ogg[o][0]);
-					ogg_un.push(ogg[o][0]);
-					break;
-				case 2:
-					ogg_il.push(ogg[o][1]); // Etichetta con art. det. già pronta
-					// Etichetta con art. indet. va costruita controllando come iniziano le etichette con art. det.
-					if (ogg[o][1].startsWith('gli')) {
-						ogg_un.push(ogg[o][0]+ogg[o][1].substring(3));
-					} else if (ogg[o][1].startsWith('gl\'')) {
-						// Se finisce con un apostrofo, attacca l'articolo alla parola, altrimenti ci mette uno spazio
-						if (ogg[o][0].substring(ogg[o][0].length - 1) === '\'') {
-							ogg_un.push(ogg[o][0]+ogg[o][1].substring(3));
-						} else {
-							ogg_un.push(ogg[o][0]+' '+ogg[o][1].substring(3));
-						}
-					} else if (ogg[o][1].match(/^il|lo|la|le/)) {
-						ogg_un.push(ogg[o][0]+ogg[o][1].substring(2));
-					} else if (ogg[o][1].startsWith('l\'')) {
-						// Se finisce con un apostrofo, attacca l'articolo alla parola, altrimenti ci mette uno spazio
-						if (ogg[o][0].substring(ogg[o][0].length - 1) === '\'') {
-							ogg_un.push(ogg[o][0]+ogg[o][1].substring(2));
-						} else {
-							ogg_un.push(ogg[o][0]+' '+ogg[o][1].substring(2));
-						}
-					} else if (ogg[o][1].startsWith('i')) {
-						ogg_un.push(ogg[o][0]+ogg[o][1].substring(1));
-					}
-					break;
-				default:
-					alert('Un\'etichetta presenta più di un separatore ammesso per l\'articolo indeterminativo. Correggere la scena n. '+ G.nScena);
-					return;
-			}
-		}
-		S.oggetti[cont].push(ogg_il); // Etichette-ID con art. det.
-		S.oggetti[cont].push(ogg_un); // Etichette con art. indet.
-	}
-}
-function oggetti(oo) {
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-	
-	if (esegui === 1) I.impostaOggVar(oo);
-}
-function variabili(vv) {
-	// Gestione dell'ultimo blocco condizionato in relazione alle righe di istruzioni coinvolte
-	var esegui = 0; var iUB = Condizioni.blocchi.length - 1;
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		if (I.controllaOggVar(Condizioni.somma) === true) esegui = 1;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	} else { esegui = 1; }
-	
-	if (esegui === 1) I.impostaOggVar(vv);
-}
-
-// Istruzioni per il comportamento delle scene //
-
-function condizioni(cond, istro) {
-	// cond: stringa per specificare quali oggetti devono essere in certi contenitori e quali variabili si richiedono
-	// formato stringa condizioni: [no!]l'oggetto@contenitore+[no!]nome variabile
-	// istro(): è la funzione per eseguire tutte le istruzioni condizionate
-	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
-
-	var lastID = Condizioni.blocchi.length;
-	Condizioni.blocchi.push({'seOggetti': [], 'seVariabili': []});
-
-	var presenza;
-	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
-	for (var i = 0; i < cond.length; i++) {
-		// Stabilire se si tratta di un oggetto o una variabile
-		if (cond[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto
-			if (cond[i].substr(0, 3) === 'no!') {
-				presenza = 0;
-				cond[i] = cond[i].substr(3);
-			} else {
-				presenza = 1;
-			}
-			cond[i] = cond[i].split('@'); // Scomposizione oggetto@contenitore
-			Condizioni.blocchi[lastID].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
-		} else { // Se non contiene una chiocciola è una variabile
-			if (cond[i].substr(0, 3) === 'no!') {
-				presenza = 0;
-				cond[i] = cond[i].substr(3);
-			} else {
-				presenza = 1;
-			}
-			Condizioni.blocchi[lastID].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
-		}
-	}
-	// Ogni volta che vengono aggiunte le condizioni per blocchi, aggiornare la somma delle condizioni
-	Condizioni.creaSomma();
-	// Se è stato definito un blocco di istruzioni condizionate, vanno eseguite, altrimenti è coinvolta solo la singola riga successiva
-	if (istro !== undefined) {
-		Condizioni.righeCoinvolte.push(2);
-		istro();
-		Condizioni.popBlocco();
-	} else {
-		// L'esecuzione dell'istruzione successiva dovrà svuotare le condizioni ed eliminare il tracciamento delle righe coinvolte
-		Condizioni.righeCoinvolte.push(1);
-	}
 }
 function nomeLuogo(nome) {
 	// nome: del luogo da visualizzare dopo i punti cardinali
-	if (G.nScena === 0) { alert('È vietato usare l\'istruzione "nomeLuogo()" nelle istruzioni generali. Eliminarla.'); return; }
+	// Arbitrariamente un gruppo di scene può far parte di uno stesso luogo, però affinché il comando 'direzioni' possa essere usato per raggiungere rapidamente un luogo, occorre ricorrere ad un nome di luogo univoco. Di un insieme di scene, che possono far parte di uno stesso luogo, una deve essere scelta come preferita o idonea per "teletrasportarsi" (raggiungere subito) quel luogo e dunque solo quella riceverà un "nome luogo".
+	if (G.nScena === 0) { alert('L\'istruzione "nomeLuogo()" nelle istruzioni generali non ha senso. Eliminarla.'); return; }
 
-	// Arbitrariamente un gruppo di scene può far parte di uno stesso luogo, però affinché il comando 'direzioni' possa essere usato per raggiungere rapidamente un luogo, occorre assegnare dei nomi ai luoghi. Di un insieme di scene, una deve essere scelta come preferita o idonea per "teletrasportarsi" (raggiungere subito) un luogo.
 	nome = nome.split('|');
+	// Se la scena corrente non è stata già mappata, allora esegui questa istruzione
 	if (!G.luoghiRagg.coppie[G.nScena] || !G.luoghiRagg.coppie[nome[0]]) {
 		G.luoghiRagg.nomi.push(nome[0]);
 		G.luoghiRagg.coppie[G.nScena] = nome[0];
@@ -1568,13 +1511,131 @@ function nomeLuogo(nome) {
 		G.nScena = nS;
 	}
 }
-function bloccaDirezioni() {
-	// Indica che per questa scena le direzioni veloci sono bloccate
-	G.luoghiRagg.bloccati = 1;
+
+// Istruzione speciale per porre condizioni su oggetti e variabili //
+// (condizionabile, dunque nidificabile; non estendibile)
+
+function condizioni(cond, istro) {
+	// cond: stringa per specificare quali oggetti devono essere in certi contenitori e quali variabili si richiedono
+	// formato stringa condizioni: [no!]l'oggetto@contenitore+[no!]nome variabile
+	// istro(): è la funzione per eseguire tutte le istruzioni condizionate
+	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
+
+	var UB = Condizioni.blocchi.length; // Ultimo blocco
+	Condizioni.blocchi.push({'seOggetti': [], 'seVariabili': []});
+
+	var presenza;
+	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
+	for (var i = 0; i < cond.length; i++) {
+		// Stabilire se si tratta di un oggetto o una variabile
+		if (cond[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto
+			if (cond[i].substr(0, 3) === 'no!') {
+				presenza = 0;
+				cond[i] = cond[i].substr(3);
+			} else {
+				presenza = 1;
+			}
+			cond[i] = cond[i].split('@'); // Scomposizione oggetto@contenitore
+			Condizioni.blocchi[UB].seOggetti.push({'presenza': presenza, 'nome': cond[i][0], 'contenitore': cond[i][1]});
+		// Se non contiene una chiocciola è una variabile
+		} else {
+			if (cond[i].substr(0, 3) === 'no!') {
+				presenza = 0;
+				cond[i] = cond[i].substr(3);
+			} else {
+				presenza = 1;
+			}
+			Condizioni.blocchi[UB].seVariabili.push({'presenza': presenza, 'nome': cond[i]});
+		}
+	}
+	// Ogni volta che vengono aggiunte condizioni a blocchi, aggiornare la somma delle condizioni
+	Condizioni.creaSomma();
+	// Se è stato definito un blocco di istruzioni condizionate, vanno eseguite, altrimenti è coinvolta solo la singola riga successiva
+	if (istro !== undefined) {
+		Condizioni.righeCoinvolte.push(2);
+		istro();
+		Condizioni.popBlocco();
+	} else {
+		// L'esecuzione dell'istruzione successiva dovrà svuotare le condizioni ed eliminare il tracciamento delle righe coinvolte
+		Condizioni.righeCoinvolte.push(1);
+	}
 }
-function cancellaDirezione(nome) {
-	// nome: del luogo raggiungibile da cancellare
-	if (S.luoghiRagg[nome] !== undefined) delete S.luoghiRagg[nome];
+
+// Istruzioni eseguite ad inizio scena //
+// (condizionabili ed estendibili)
+
+function carattereTesto(fnt, siz, all) {
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'carattereTesto');
+	if (fnt) S.Istruzioni.valore('font', fnt);
+	if (siz) S.Istruzioni.valore('size', siz);
+	if (all) S.Istruzioni.valore('align', all);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function coloreSfondo(col) {
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'coloreSfondo');
+	S.Istruzioni.valore('colore', col);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function coloreTesto(col1, col2) {
+	// col1: colore testo
+	// col2: colore testo inviato
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'coloreTesto');
+	if (col1) S.Istruzioni.valore('colore1', col1);
+	if (col2) S.Istruzioni.valore('colore2', col2);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function coloreScelte(col1, col2) {
+	// col1: colore scelta
+	// col2: colore scelta selezionata
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'coloreScelte');
+	if (col1) S.Istruzioni.valore('colore1', col1);
+	if (col2) S.Istruzioni.valore('colore2', col2);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function coloreRifiuto(col) {
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'coloreRifiuto');
+	S.Istruzioni.valore('colore', col);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function messaggiRifiuto(msg) {
+	// msg: messaggi di rifiuto separati da una barra |
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'impostaMsgRifiuto');
+	S.Istruzioni.valore('messaggi', msg);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function intermezzo(txt) {
+	// txt: testo da visualizzare, anche html
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'intermezzo');
+	S.Istruzioni.valore('testo', txt);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function testo(txt, all) {
+	// txt: testo da visualizzare, anche html
+	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	// all: può avere valore 'no!p' che annulla l'allineamento ed anche l'elemento <p></p>
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'testo');
+	S.Istruzioni.valore('testo', txt);
+	S.Istruzioni.valore('align', all);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function immagine(img, w, h) {
+	// img: nome dell'immagine da posizionare nella stessa cartella di 'INIZIA.html'
+	// w, h: larghezza e altezza da impostare forzatamente
+	if (img === undefined || img === '') { S.Istruzioni.annullaCondizioni(); return; }
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'immagine');
+	S.Istruzioni.valore('nome', img);
+	S.Istruzioni.valore('w', w);
+	S.Istruzioni.valore('h', h);
+	S.Istruzioni.aggiungiCondizioni();
 }
 function uscita(txt_in, nS, vis, nomeDest) {
 	// txt_in: input dell'utente
@@ -1622,18 +1683,63 @@ function uscita(txt_in, nS, vis, nomeDest) {
 	// Trasforma le frasi articolate scritte dallo scrittore in frasi semantiche
 	txt_in = Lingua.normalizzaInput(txt_in, 2);
 	S.Istruzioni.valore('input', txt_in);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function contenitore(cont, ogg) {
+	// cont: nome del contenitore che fa da chiave nell'array dei contenitori di oggetti: S.oggetti
+	// ogg: oggetti contenuti separati con +, scrivere sempre l'articolo determinativo, faranno da etichette e da ID
+	//   è possibile indicare l'articolo indeterminativo prima dell'etichetta oggetto servendosi di una barra '|'
+	//   Es. "un|l'amuleto+dello|lo zucchero+il Martello di Tor+un'|l'albicocca" - Notare che può non venir usata la barra, in tal caso viene sempre presentata l'etichetta con articolo determinativo (o comunque l'etichetta così come la scriviamo), utile per oggetti unici (es. "il Martello di Tor"). L'articolo viene considerato comprensivo di apostrofo quindi con l' (l apostrofo) viene tolto anche l'apostrofo. Se l'oggetto è maschile o femminile, è lo scrittore che deve specificare o meno l'apostrofo nell'articolo indeterminativo, si veda il confronto degli esempi "amuleto" e "albicocca". L'eventuale spazio dopo l'articolo è automaticamente gestito (quindi non va mai messo).
+	
+	// Il contenitore va creato solo la prima volta che si incontra tale istruzione
+	if (S.oggetti[cont] !== undefined) { S.Istruzioni.annullaCondizioni(); return; }
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('autoElimina', 1);
+	S.Istruzioni.valore('azione', 'creaContenitore');
+	S.Istruzioni.valore('nome', cont);
+	S.Istruzioni.valore('ogg', ogg);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function scegliRispondi(txt, txt_out, al1, al2) {
+	// txt: testo della scelta selezionabile (se txt_out = "" allora txt verrà trattato come un input dell'utente)
+	// txt_out: testo stampato dopo aver cliccato sulla scelta
+	// al1: allineamento scelta selezionabile (valori: "giustificato", "centrato", "destra", "sinistra")
+	// al2: allineamento risposta stampata
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'scegliRispondi');
+	S.Istruzioni.valore('nome', txt);
+	S.Istruzioni.valore('output', txt_out);
+	S.Istruzioni.valore('al1', al1);
+	S.Istruzioni.valore('al2', al2);
+	S.Istruzioni.aggiungiCondizioni();
+}
+function scegliVai(txt, nS, all) {
+	// txt: testo della scelta selezionabile
+	// nS: numero della scena verso cui andare
+	// all: allineamento del testo della scelta selezionabile (valori: "giustificato", "centrato", "destra", "sinistra")
+	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
+	S.Istruzioni.valore('azione', 'scegliVai');
+	S.Istruzioni.valore('nome', txt);
+	S.Istruzioni.valore('nS', nS);
+	S.Istruzioni.valore('all', all);
+	S.Istruzioni.aggiungiCondizioni();
+}
 
-	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
+// Istruzioni che permangono nel corso della scena
+// (condizionabili ed estendibili)
 
-	// Aggiungi condizioni correnti
-	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	}
+function bloccaDirezioni() {
+	// Indica che per questa scena le direzioni veloci sono bloccate
+	S.Istruzioni.crea();
+	S.Istruzioni.valore('azione', 'bloccaDirezioni');
+	S.Istruzioni.aggiungiCondizioni();	
+}
+function cancellaDirezione(nome) {
+	// nome: del luogo raggiungibile da cancellare
+	S.Istruzioni.crea();
+	S.Istruzioni.valore('azione', 'cancellaDirezione');
+	S.Istruzioni.valore('nome', nome);
+	S.Istruzioni.aggiungiCondizioni();	
 }
 function rispondi(txt_in, txt_out) {
 	// txt_in: input dell'utente
@@ -1646,18 +1752,8 @@ function rispondi(txt_in, txt_out) {
 	S.Istruzioni.valore('azione', 'rispondi');
 	S.Istruzioni.valore('input', txt_in);
 	S.Istruzioni.valore('output', txt_out);
-
-	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
-
-	// Aggiungi condizioni correnti
-	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	}
+	S.Istruzioni.aggiungiCondizioni();
+	Vista.stile.inputBox = 1;
 }
 function rispondiVai(txt_in, txt_out, nS) {
 	// txt_in: input dell'utente
@@ -1673,115 +1769,101 @@ function rispondiVai(txt_in, txt_out, nS) {
 	S.Istruzioni.valore('input', txt_in);
 	S.Istruzioni.valore('output', txt_out);
 	S.Istruzioni.valore('scena', nS);
-
-	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
-
-	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	}
+	S.Istruzioni.aggiungiCondizioni();
+	Vista.stile.inputBox = 1;
 }
-function nMosseVai(mosse, nS, rip) {
-	// mosse: numero mosse del giocatore per far scattare l'evento
-	// nS: numero della scena verso cui andare
-	// rip: se non specificato sarà 0, ovvero scattato l'evento non si ripete, 'ripeti' per ripeterlo
-
-	S.Istruzioni.crea();
-	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
-	S.Istruzioni.valore('mossa', 0);
-	S.Istruzioni.valore('azione', 'vaiA');
-	S.Istruzioni.valore('scena', nS);
-	if (rip === undefined) rip = 0; // nMosse non viene ripetuto da impostazione predefinita
-	if (rip === 'ripeti') rip = 1;
-	S.Istruzioni.valore('ripeti', rip);
-
-	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
-
-	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	}
-}
-function nMosseRispondi(mosse, txt_out, rip) {
+function nMosseRispondi(mosse, txt_out) {
 	// mosse: numero mosse del giocatore per far scattare l'evento
 	// txt_out: testo che deve comparire dopo n mosse
-	// rip: se non specificato sarà 0, ovvero scattato l'evento non si ripete, 'ripeti' per ripeterlo
 
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
 	S.Istruzioni.valore('mossa', 0);
 	S.Istruzioni.valore('azione', 'rispondi');
 	S.Istruzioni.valore('output', txt_out);
-	if (rip === undefined) rip = 0; // nMosse non viene ripetuto da impostazione predefinita
-	if (rip === 'ripeti') rip = 1;
-	S.Istruzioni.valore('ripeti', rip);
-
-	var L; // Livello delle istruzioni (generali o di scena)
-	if (G.nScena === 0) { L = 'generali'; } else { L = 'scena'; Vista.stile.inputBox = 1; }
-
-	var iUB = Condizioni.blocchi.length - 1; // iUB: indice ultimo blocco
-	if (Condizioni.righeCoinvolte[iUB] > 0) {
-		var iUA = S.Istruzioni[L].length - 1; // iUA: indice ultima azione
-		S.Istruzioni[L][iUA]['seOggetti'] = Condizioni.somma.seOggetti;
-		S.Istruzioni[L][iUA]['seVariabili'] = Condizioni.somma.seVariabili;
-		if (Condizioni.righeCoinvolte[iUB] === 1) Condizioni.popBlocco();
-	}
+	S.Istruzioni.aggiungiCondizioni();
+	Vista.stile.inputBox = 1;
 }
-function scegliVai(txt, nS, all) {
-	// txt: testo della scelta selezionabile
+function nMosseVai(mosse, nS, txt_out) {
+	// mosse: numero mosse del giocatore per far scattare l'evento
 	// nS: numero della scena verso cui andare
-	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
+	// txt_out: testo facoltativo da mostrare prima di cambiare scena
 
-	if (all !== undefined) { all = Vista.cssAll(all); } else { all = ''; }
-	Vista.scelte += '<p class="scelta coloreScelta" '+ all +' onclick="S.vaiA('+nS+')">' + txt + '</p>';
-}
-function scegliRispondi(txt, txt_out, al1, al2) {
-	// txt: testo della scelta selezionabile (se txt_out = "" allora txt verrà trattato come un input dell'utente)
-	// txt_out: testo stampato dopo aver cliccato sulla scelta
-	// al1: allineamento del testo della scelta selezionabile
-	// al2: allineamento del testo stampato in risposta
-
-	if (al1 !== undefined) { al1 = Vista.cssAll(al1); } else { al1 = ''; }
-	if (txt_out !== undefined && txt_out !== '') {
-		var istro = {}; // istro: istruzione
-		istro['azione'] = 'rispondi';
-		istro['input'] = txt;
-		istro['output'] = txt_out.replace(/'/g, '"');
-		if (al2 !== undefined) istro['allineamento'] = al2;
-		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(istro).replace(/"/g, '\'')+');">' + txt + '</p>';
+	S.Istruzioni.crea();
+	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
+	S.Istruzioni.valore('mossa', 0);
+	if (txt_out === undefined) {
+		S.Istruzioni.valore('azione', 'vaiA');
 	} else {
-		if (al2 !== undefined) { al2 = ', {\'outAli\':\''+al2+'\'}'; } else { al2 = ''; }
-		txt = txt.replace(/'/g, '"').replace(/"/g, '\'');
-		Vista.scelte += '<p class="scelta coloreScelta" ' + al1 + ' onclick="this.style.display = \'none\'; I.scriviInput(\''+txt+'\''+al2+');">' + txt + '</p>';
+		S.Istruzioni.valore('azione', 'rispondiVai');
+		S.Istruzioni.valore('output', txt_out);
 	}
+	S.Istruzioni.valore('scena', nS);
+	S.Istruzioni.aggiungiCondizioni();
+	Vista.stile.inputBox = 1;
+}
+function effetto(tipo, op0, op1, op2, op3, op4, op5) {
+	// Effetto è una funzione molto versatile, il primo argomento "tipo" determina come verranno interpretati gli altri argomenti. Se alcuni argomenti restano non compilati verranno semplicemente ignorati.
+	var opz = [op0, op1, op2, op3, op4, op5];
+	S.Istruzioni.crea();
+	S.Istruzioni.valore('azione', 'effetto');
+	S.Istruzioni.valore('tipo', tipo);
+	switch (tipo) {
+		case 'testo-caratteri':
+		case 'testo-parole':
+		// op0: testo semplice da visualizzare (no html)
+		// op1: (facoltativo) allineamento testo (valori: "giustificato", "centrato", "destra", "sinistra")
+		// op3: (facoltativo) colore testo
+		// op4: intervallo di attesa per prossimo carattere o parola
+		var i = 0; // indice opzioni
+		S.Istruzioni.valore('output', opz[0]); i++;
+		if (/^(giustificato|centrato|destra|sinistra|justify|center|right|left)$/.test(opz[i])) {
+			S.Istruzioni.valore('all', opz[i]); i++; // allineamento se specificato
+		}
+		if (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(opz[i])) {
+			S.Istruzioni.valore('colore', opz[i]); i++; // colore se specificato
+		}
+		S.Istruzioni.valore('intervallo', Number(opz[i]));
+		break;
+	}
+	S.Istruzioni.aggiungiCondizioni();
 }
 
-// Funzioni per ampliare le possibilità delle istruzioni precedenti //
+// Funzioni per estendere le istruzioni precedenti
+// (condizionabili sono indirettamente; estensioni multiple ammesse) //
 
-function _oggetti(oo) {
-	if (oo !== undefined) S.Istruzioni.valore('oggetti', Lingua.normalizzaDiacritici(oo.toLowerCase()));
+function __oggetti(oo) {
+	S.Istruzioni.valore('oggetti', Lingua.normalizzaDiacritici(oo.toLowerCase()));
 }
-function _variabili(vv) {
+function __variabili(vv) {
 	S.Istruzioni.valore('variabili', Lingua.normalizzaDiacritici(vv.toLowerCase()));
 }
-function _audio(aud) {
+function __audio(aud) {
 	S.Istruzioni.valore('audio', aud);
 }
-function _immagine(img, w, h) {
+function __immagine(img, w, h) {
 	S.Istruzioni.valore('immagine', img);
 	if (w !== undefined) S.Istruzioni.valore('imgW', w);
 	if (h !== undefined) S.Istruzioni.valore('imgH', h);
 }
+function __inizioScena(v) {
+	// v: valore vero (predefinito) o falso
+	if (v === 0 || v === false) {
+		S.Istruzioni.valore('soloInizioScena', 0);
+	} else {
+		S.Istruzioni.valore('soloInizioScena', 1);
+	}
+}
+function __autoElimina(v) {
+	// v: valore vero (predefinito) o falso
+	if (v === 0 || v === false) {
+		S.Istruzioni.valore('autoElimina', 0);
+	} else {
+		S.Istruzioni.valore('autoElimina', 1);
+	}
+}
 function x(str) {
 	var ee = str.split('|');
-	var n = Math.floor((Math.random() * ee.length) + 1) - 1;
+	var n = Math.floor((Math.random() * ee.length));
 	if (isNaN(ee[n])) { return ee[n]; } else { return Number(ee[n]); }
 }

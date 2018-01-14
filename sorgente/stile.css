@@ -9,7 +9,7 @@
 .testoAllineamento { text-align: left; }
 .coloreScelta { color: #9C8159; }
 .coloreScelta:hover /*colore scelta selezionata*/ { color: #cc0; }
-.coloreErrore { color: #c60 !important; }
+.coloreRifiuto { color: #c60 !important; }
 a { /*colore link*/ color: #7E45B0; }
 a:hover { /*colore link selezionato*/ color: #9F57DE; }
 .larghezzaMaxStoria { max-width: 800px; }

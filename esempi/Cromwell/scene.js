@@ -1,7 +1,7 @@
 // Istruzioni che valgono in tutte le scene
 function istruzioniGenerali() {
-	titolo("Cromwell");
-	messaggiRifiuto("Prova qualcos'altro...|No, questo no...|Non ci siamo...|Mmmmmm...");
+	nomeStoria("Cromwell");
+	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
 	rispondi("quit|exit", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
 	rispondiVai("restart!", "Ok! Ricarico tutto...", 1);
@@ -23,7 +23,7 @@ function istruzioniGenerali() {
 			rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.");
 			rispondi("apro il [ampolla|tappo|tappo di sughero]", "Togli il tappo dell'ampolla. Da questa fuoriescono dei vapori azzurrognoli e un tanfo pestilenziale pervade l'aria.");
 			rispondi("bevo [|l'ampolla|dall'ampolla|il liquido|il liquido azzurrognolo|il liquido azzurro|lo strano liquido]", "Porti alle labbra la piccola bottiglia e ne bevi il contenuto. Dopo pochi istanti ti senti strano... provi un senso di nausea, ma passa presto. Senti rinsaldarsi in te un legame con un potere sovrannaturale. Le parole che pensi e pronunci è come se avessero una carica prima sconosciuta...");
-			_variabili("ampolla bevuta");
+			__variabili("ampolla bevuta");
 		});
 		condizioni("ampolla bevuta");
 			rispondi("esamino l'ampolla", "L'ampolla di vetro, ben richiusa con il suo tappo di sughero, è ora vuota.");
@@ -39,10 +39,10 @@ function istruzioniGenerali() {
 			nMosseVai(2, 23);
 		condizioni("drekann2");
 			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
-			_variabili("no!drekann2+drekann3");
+			__variabili("no!drekann2+drekann3");
 		condizioni("drekann");
-			nMosseRispondi(2, "Avverti un boato cupo e lontano.", "ripeti");
-			_variabili("no!drekann+drekann2");
+			nMosseRispondi(2, "Avverti un boato cupo e lontano.");
+			__variabili("no!drekann+drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
 		rispondi("esamino il cuore [|di Cromwell|dell'abate]", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
@@ -73,13 +73,13 @@ function istruzioniScena(n) {
 		testo("<span style=\"color:#0a0;\">L'abate e il drago della palude</span><br /><br />", "centrato");
 		scegliVai("Inizia", 2, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
-		scegliRispondi("Principi etici", "Principi derivanti dalla <a href=\"http://ifarchive.smallwhitehouse.org/if-archive/info/Craft.Of.Adventure.pdf\" target=\"_blank\">Carta dei diritti del giocatore</a> di Graham Nelson ed ulteriormente rielaborati:</p><ol><li><b>Dichiarare i principi etici.</b> Ogni storia interattiva dovrebbe dichiarare i principi che adotta affinché il giocatore sappia quale trattamento attendersi.</li><li><b>Fornire le istruzioni.</b> All'inizio del gioco vanno sempre offerte le istruzioni complete.</li><li><b>Giocabilità prioritaria sul realismo.</b> Funzionalità e scorrevolezza della storia devono essere soddisfatte, anche con espedienti irreali o comandi scorciatoia, piuttosto che rispettare un rigido realismo che guasta la giocabilità con procedure pedanti o altrimenti fastidiose.</li><li><b>Tempo che scorre con le mosse.</b> Il tempo reale può condizionare messaggi scenici o effetti grafici, ma non deve far scorrere la storia. Questa avanza solo con le mosse del giocatore.</li><li><b>Mappa automatica o navigazione comoda.</b> La mappa dei luoghi non deve gravare sulla memoria del giocatore. Essa può essere generata automaticamente, o risultare superflua, od altri espedienti devono consentire una comoda navigazione tra i tanti luoghi.</li><li><b>Supporto dei comandi tradizionali.</b> Supporto degli imperativi e dei comandi: esamina, x (examine); guarda, g, l (look); nord, n; sud, s; ovest, o, w (west); est, e; load; save; quit, exit. </li><li><b>Superamento del vocabolario.</b> Il gioco può offrire alcuni predicati d'esempio per stimolare i nuovi giocatori, ma deve comunque supportare molti sinonimi e gestire tutte le azioni ragionevoli ed interessanti che si possono compiere coerentemente con la storia.</li><li><b>Testi concisi e molto curati.</b> Una storia interattiva richiede che si ripercorra più volte uno stesso testo, fatta eccezione per l'introduzione, speciali fasi intermedie ed il finale, i testi devono essere brevi, e sempre stilisticamente molto curati.</li><li><b>Interazione con luoghi ed oggetti nominati.</b> I testi delle scene presentano luoghi ed oggetti. Se essi vengono nominati si devono poter almeno osservare o esaminare.</li><li><b>Minimizzare le risposte superflue.</b> Inutile gestire azioni banali per offrire risposte banali, tanto vale lasciare la risposta generica di rifiuto, oppure offrire una risposta ben curata che crei atmosfera.</li><li><b>Evitare morti improvvise.</b> Gli eventi pericolosi, in particolare una morte improvvisa, devono essere segnalati da un ragionevole indizio. In caso di morte od altra interruzione della storia, un sistema di caricamento comodo della partita deve minimizzare gli aspetti noiosi.</li><li><b>Evitare indizi incomprensibili.</b> Gli indizi non possono essere esageratamente indiretti e quindi incomprensibili, è apprezzabile discostarsi dall'ovvietà, ma occorre farlo nella giusta misura.</li><li><b>Dare tutte le informazioni.</b> Un ostacolo che si presenta per la prima volta deve essere accompagnato da tutte le informazioni necessarie al suo superamento. I fallimenti che interrompono la storia non possono far parte delle informazioni necessarie per la sua soluzione.</li><li><b>Mai rimaner bloccati senza saperlo.</b> Finché è possibile compiere azioni, si deve poter arrivare ad un finale apprezzabile. Non si può rimanere impossibilitati a proseguire (ora o in futuro) senza avvertimento. Se ciò accade, la storia deve terminare.</li><li><b>Non richiedere azioni improbabili.</b> Una combinazione accidentale ed improbabile di mosse non deve determinare l'ottenimento di qualcosa di necessario al proseguimento del gioco. Il rischio è rendere molto probabile una situazione di blocco di fatto.</li><li><b>Azioni coerenti con lo scopo della storia.</b> Azioni inutili o stupide o fuori luogo è impossibile gestirle tutte. Ci si deve attenere ad uno o massimo due approcci (serio, comico, realistico, fantastico, ecc.). Se il giocatore vede certe azioni rifiutate non deve insistere, ma deve agire in modo coerente o cambiare storia interattiva.</li><li><b>Offrire variazioni ed alternative.</b> Sono auspicabili, seppure non necessarie e a discrezione dell'autore, scelte di personaggi, biforcazioni della trama, alternative al superamento di ostacoli, messaggi variabili, eventi casuali, finali multipli, ecc.</li><li><b>Ricerche circoscritte o chiari obiettivi.</b> Un oggetto da trovare tra tantissimi luoghi visitabili diventa una lunga e noiosa ricerca. Il contesto deve essere ristretto, oppure un compito esplicito va comunicato al giocatore affinché abbia un chiaro obiettivo in un ampio contesto.</li><li><b>Evitare depistaggi senza chiarimenti.</b> Oggetti e luoghi sono scelti con un fine (scenico, funzionale, umoristico, ecc.). Oggetti inutili o depistanti vanno evitati, o comunque non possono essere troppo appariscenti o con varie possibilità di interazione, senza poter capire che sono depistaggi e dunque abbandonarli.</li><li><b>Indicatori di completamento.</b> Almeno un indicatore di completamento deve segnalare quanto manca alla conclusione della storia interattiva.</li></ol>", "centrato");
+		scegliRispondi("Stile di gioco", "Lo stile di gioco è basato sui principi derivanti dalla <a href=\"http://ifarchive.smallwhitehouse.org/if-archive/info/Craft.Of.Adventure.pdf\" target=\"_blank\">Carta dei diritti del giocatore</a> di Graham Nelson ed ulteriormente rielaborati:</p><ol><li><b>Dichiarare lo stile adottato.</b> Ogni storia interattiva dovrebbe dichiarare i principi che adotta affinché il giocatore sappia quale stile di gioco lo attende.</li><li><b>Fornire le istruzioni.</b> Le istruzioni complete vanno sempre offerte all'inizio del gioco.</li><li><b>Giocabilità prioritaria sul realismo.</b> Funzionalità e scorrevolezza della storia devono essere soddisfatte, anche con espedienti irreali o comandi scorciatoia, piuttosto che rispettare un rigido realismo che guasta la giocabilità con procedure pedanti o altrimenti fastidiose.</li><li><b>Tempo che scorre con le mosse.</b> Il tempo reale può condizionare messaggi scenici o effetti grafici, ma non deve far scorrere la storia. Questa avanza solo con le mosse del giocatore.</li><li><b>Mappa automatica o navigazione comoda.</b> La mappa dei luoghi non deve gravare sulla memoria del giocatore. Essa può essere generata automaticamente, o risultare superflua, od altri espedienti devono consentire una comoda navigazione tra i tanti luoghi.</li><li><b>Supporto dei comandi tradizionali.</b> Supporto degli imperativi e dei comandi tradizionali: esamina, x (examine); guarda, g, l (look); nord, n; sud, s; ovest, o, w (west); est, e; load; save; quit, exit. </li><li><b>Superamento del vocabolario.</b> Il gioco può offrire alcuni predicati d'esempio per stimolare i nuovi giocatori, ma deve comunque supportare molti sinonimi e gestire tutte le azioni ragionevoli ed interessanti che si possono compiere coerentemente con la storia.</li><li><b>Testi concisi e molto curati.</b> Una storia interattiva richiede che si ripercorra più volte uno stesso testo, fatta eccezione per l'introduzione, speciali fasi intermedie ed il finale, i testi devono essere brevi, e sempre stilisticamente molto curati.</li><li><b>Interazione con luoghi ed oggetti nominati.</b> I testi delle scene presentano luoghi ed oggetti. Se essi vengono nominati si devono poter almeno osservare o esaminare.</li><li><b>Minimizzare le risposte superflue.</b> Inutile gestire azioni banali per offrire risposte banali, tanto vale lasciare la risposta generica di rifiuto, oppure offrire una risposta ben curata che crei atmosfera.</li><li><b>Evitare morti improvvise.</b> Gli eventi pericolosi, in particolare una morte improvvisa, devono essere segnalati da un ragionevole indizio. In caso di morte od altra interruzione della storia, un sistema di caricamento comodo della partita deve minimizzare gli aspetti noiosi.</li><li><b>Evitare indizi incomprensibili.</b> Gli indizi non possono essere esageratamente indiretti e quindi incomprensibili, è apprezzabile discostarsi dall'ovvietà, ma occorre farlo nella giusta misura.</li><li><b>Dare tutte le informazioni.</b> Un ostacolo che si presenta per la prima volta deve essere accompagnato da tutte le informazioni necessarie al suo superamento. I fallimenti che interrompono la storia non possono far parte delle informazioni necessarie per la sua soluzione.</li><li><b>Mai rimaner bloccati senza saperlo.</b> Finché è possibile compiere azioni, si deve poter arrivare ad un finale apprezzabile. Non si può rimanere impossibilitati a proseguire (ora o in futuro) senza avvertimento. Se ciò accade, la storia deve terminare.</li><li><b>Non richiedere azioni improbabili.</b> Una combinazione accidentale ed improbabile di mosse non deve determinare l'ottenimento di qualcosa di necessario al proseguimento del gioco. Il rischio è rendere molto probabile una situazione di blocco di fatto.</li><li><b>Azioni coerenti con lo scopo della storia.</b> Azioni inutili o stupide o fuori luogo è impossibile gestirle tutte. Ci si deve attenere ad uno o massimo due approcci (serio, comico, realistico, fantastico, ecc.). Se il giocatore vede certe azioni rifiutate non deve insistere, ma deve agire in modo coerente o cambiare storia interattiva.</li><li><b>Offrire variazioni ed alternative.</b> Sono auspicabili, seppure non necessarie e a discrezione dell'autore, scelte di personaggi, biforcazioni della trama, alternative al superamento di ostacoli, messaggi variabili, eventi casuali, finali multipli, ecc.</li><li><b>Ricerche circoscritte o chiari obiettivi.</b> Un oggetto da trovare tra tantissimi luoghi visitabili diventa una lunga e noiosa ricerca. Il contesto deve essere ristretto, oppure un compito esplicito va comunicato al giocatore affinché abbia un chiaro obiettivo in un ampio contesto.</li><li><b>Evitare depistaggi senza chiarimenti.</b> Oggetti e luoghi sono scelti con un fine (scenico, funzionale, umoristico, ecc.). Oggetti inutili o depistanti vanno evitati, o comunque non possono essere troppo appariscenti o con varie possibilità di interazione, senza poter capire che sono depistaggi e infine abbandonarli.</li><li><b>Indicatori di completamento.</b> Almeno un indicatore di completamento deve segnalare quanto manca alla conclusione della storia interattiva.</li></ol>", "centrato");
 		scegliRispondi("Licenza", "CROMWELL © MMXVI è una rivisitazione dell'avventura testuale EXCALIBUR © MCMLXXXVIII pubblicata sulla rivista Amiga Byte n.8 come opera di pubblico dominio, liberamente copiabile e distribuibile senza scopo di lucro. <a href=\"https://github.com/Druido87/Confabula\" target=\"_blank\">Confabula</a> è l'interprete JavaScript per creare ed eseguire avventure testuali, rilasciato da <a href=\"https://github.com/Druido87\" target=\"_blank\">Druido87</a> con licenza <a href=\"https://github.com/Druido87/Confabula/blob/master/LICENSE\" target=\"_blank\">GNU L-GPL</a>. La storia rivisitata è un esempio di utilizzo di Confabula.", "centrato");
 		break;
 	case 2:
-		variabili("inizio");
 		immagine("bosco.png");
 		testo("Secoli trascorsi nell'oblio e la regione di Pietranera è stata inghiottita da una folta vegetazione. Si racconta che Cromwell, un abate di origini britanniche, avesse eredidato antiche conoscenze celtiche e se ne fosse servito per sfuggire alla morte. Visse a lungo nell'abbazia eppure venne il giorno della sua sepoltura. In seguito, queste terre divennero lentamente piú silenziose, molte creature morivano o si spostavano altrove. La gente abbandonò del tutto il reggimento, un terribile potere crebbe, rafforzato dalla paura. Pochi audaci avventurieri hanno esplorato questi luoghi senza far ritorno. Un nuovo esploratore è giunto...");
+		__variabili("inizio");
 		scegliVai("Esplora", 3, "centrato");
 		break;
 	case 3:
@@ -88,7 +88,7 @@ function istruzioniScena(n) {
 		testo("Sei nel bosco di Pietranera. Una fitta vegetazione ti circonda.<br />Puoi vedere: alti fusti e fitti cespugli.");
 		condizioni("inizio", per => {
 			testo("Hai portato con te un pugnale.");
-			variabili("no!inizio");
+			__variabili("no!inizio");
 		});
 		condizioni("no!dentro cespugli", per => {
 			uscita("ovest", 7);
@@ -96,16 +96,16 @@ function istruzioniScena(n) {
 			condizioni("sentiero visto");
 				uscita("est", 10, 'esplorabile');
 			rispondi("entro nei cespugli", "Intimorito ti acquatti in mezzo a due grandi cespugli. Hai la sensazione di essere osservato, ma forse è solo la tua immaginazione.");
-			_variabili("dentro cespugli");
+			__variabili("dentro cespugli");
 		});
 		condizioni("dentro cespugli", per => {
 			rispondi("ovest|nord|est|sud|giú|su", "Devi uscire dai cespugli se vuoi proseguire.");
 			rispondi("esco [|dai cespugli]", "Sei venuto qui per sconfiggere l'oscurità, non è il caso di nasconderti. Esci dai cespugli e riprendi la tua ricerca.");
-			_variabili("no!dentro cespugli");
+			__variabili("no!dentro cespugli");
 		});
 		rispondi("[esamino|osservo] i [|alti] fusti", "Sono alberi secolari molto alti.");
 		rispondi("esamino i [|fitti] cespugli", "Tra essi intravvedi un sentiero che va verso est.");
-		_variabili("sentiero visto");
+		__variabili("sentiero visto");
 		condizioni("sentiero visto");
 			rispondi("esamino il sentiero", "Per conoscere un sentiero devi percorrerlo...");
 		rispondi("strappo i cespugli", "Ci vorrebbe una giornata intera per strappare tutti i cespugli che vedi... Non è il caso di farlo.");
@@ -133,7 +133,7 @@ function istruzioniScena(n) {
 				rispondi("infilo la gamba [|di sedia|di legno] nel [|piccolo] foro", "Non succede nulla e dopo poco sfili la gamba della sedia.");
 			condizioni("il bastone@i");
 				rispondi("infilo il bastone nel [|piccolo] foro", "Azioni un elementare meccanismo che scopre una cavità all'interno del monolite dentro la quale trovi una ampolla di vetro.");
-				_variabili("monolite aperto");
+				__variabili("monolite aperto");
 		});
 		condizioni("monolite aperto", per => {
 			rispondi("esamino il [|piccolo] foro|infilo il dito nel [|piccolo] foro", "È un foro realizzato con precisione, dopo averci infilato il bastone di un druido, si è aperta una piccola cavità.");
@@ -141,7 +141,7 @@ function istruzioniScena(n) {
 				rispondi("esamino la cavità", "È una piccola cavità che contiene unicamente un'ampolla.");
 				rispondi("bevo [|l'ampolla|dall'ampolla|il liquido|il liquido azzurrognolo|il liquido azzurro|lo strano liquido]", "Prima devi prendere l'ampolla.");
 				rispondi("prendo l'ampolla [|di vetro]", "Hai preso la bottiglietta.");
-				_oggetti("l'ampolla@i");
+				__oggetti("l'ampolla@i");
 				rispondi("esamino l'ampolla", "L'ampolla di vetro, ricoperta di polvere, risulta essere ben chiusa da un tappo di sughero. All'interno vi è uno strano liquido di colore azzurro.");
 				rispondi("esamino il tappo [|di sughero]", "Il tappo sigilla perfettamente l'ampolla.");
 			});
@@ -156,10 +156,10 @@ function istruzioniScena(n) {
 		bloccaDirezioni();
 		condizioni("ampolla bevuta");
 			rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea...", 4);
-			_variabili("parole magiche+abate morto+drekann");
+			__variabili("parole magiche+abate morto+drekann");
 		condizioni("no!ampolla bevuta");
 			rispondi("yggwyrd", "YGGWYRD");
-			_variabili("parole magiche");
+			__variabili("parole magiche");
 		condizioni("no!abate morto");
 			nMosseVai(1, 6);
 		break;
@@ -168,7 +168,7 @@ function istruzioniScena(n) {
 		condizioni("parole magiche+no!ampolla bevuta");
 			testo("L'espressione dell'abate è tesa e si paralizza qualche istante.");
 		testo("\"Stolto! Non oserai mai piú sfidare il mio potere con le tue parole!\" esclama l'abate mentre dalle sue mani, protese verso di te, un fascio di luce ti investe e ti folgora all'istante!");
-		variabili("no!parole magiche");
+		__variabili("no!parole magiche");
 		scegliVai("Risorgi", 4);
 		break;
 	case 7:
@@ -203,18 +203,18 @@ function istruzioniScena(n) {
 	case 23:
 		immagine("drago.png");
 		testo("Improvvisamente ti raggiunge un enorme drago, furioso per la morte dell'abate, che ti si avventa contro digrignando le formidabili zanne. Hai pochi istanti per reagire.");
+		__variabili("no!drekann3");
 		bloccaDirezioni();
-		variabili("no!drekann3");
 		condizioni("il cuore di cromwell@i");
 			rispondiVai("[infilo|lancio] il cuore [|di Cromwell|dell'abate] [nelle fauci|nella bocca|nella bocca del drago]", "Lanci il cuore di Cromwell verso la faccia del drago...", 25);
-			_variabili("drago morto");
+			__variabili("drago morto");
 		condizioni("no!drago morto");
 			nMosseVai(1, 24);
 		break;
 	case 24:
 		immagine("drago.png");
 		testo("Le zanne del drago ti si avventano contro e ti dilaniano orribilmente.");
-		variabili("drekann");
+		__variabili("drekann");
 		scegliVai("Risorgi", -2);
 		break;
 	case 25:
@@ -231,7 +231,7 @@ function istruzioniScena(n) {
 		condizioni("sentiero visto 2");
 			uscita("est", 11, "esplorabile");
 		rispondi("esamino le [|alte|vecchie] conifere", "Tra gli alberi vedi che il sentiero prosegue verso est.");
-		_variabili("sentiero visto 2");
+		__variabili("sentiero visto 2");
 		break;
 	case 11:
 		nomeLuogo("radura");
@@ -273,7 +273,7 @@ function istruzioniScena(n) {
 		rispondi("esamino la porta", "È una porta massiccia e ben lavorata, anche volendo non avresti i mezzi per sfondarla.");
 		condizioni("la chiave@i");
 			rispondi("apro la [porta|capanna] con la chiave|introduco la chiave nella serratura", "Introduci la chiave nella serratura e la giri ripetutamente. Con due scatti metallici la porta si apre facendo cigolare i cardini.");
-			_variabili("capanna aperta");
+			__variabili("capanna aperta");
 		condizioni("il pugnale@i");
 			rispondi("apro la porta con il pugnale", "Potresti giusto arrecargli qualche graffio, ma non c'è modo di aprirla cosí...");
 		break;
@@ -290,7 +290,7 @@ function istruzioniScena(n) {
 		rispondi("bevo il liquido [|rosso]|bevo dalla [brocca|terracotta|brocca di terracotta]", "A causa della forte viscosità del liquido a stento cola lungo una parete. Con la lingua riesci giusto ad assaggiarlo: è dolciastro, ma lascia l'amaro dopo il dolce. Forse è stato fatto con delle bacche. Non sembra accaderti nulla.");
 		condizioni("no!sedia rotta");
 			rispondi("esamino la sedia", "Ti siedi e stramazzi a terra. La sedia stava in piedi per miracolo.");
-			_variabili("sedia rotta");
+			__variabili("sedia rotta");
 		condizioni("sedia rotta", per => {
 			rispondi("[esamino|osservo] la sedia", "La sedia è rotta in tre pezzi.");
 			condizioni("no!gamba sedia presa");
@@ -303,8 +303,8 @@ function istruzioniScena(n) {
 		rispondi("esamino lo [schienale|seduta|gamba|gamba di sedia]", "È legno fragile e un po' scheggiato.");
 		condizioni("no!gamba sedia presa");
 			rispondi("prendo la gamba [|di sedia]", "Hai preso la gamba della sedia.");		
-			_oggetti("la gamba di sedia@i");
-			_variabili("gamba sedia presa");
+			__oggetti("la gamba di sedia@i");
+			__variabili("gamba sedia presa");
 		condizioni("il bastone@i");
 			rispondi("esamino il giaciglio", "È un modesto giaciglio di paglia. Pare che non venga usato da molto tempo.");
 		condizioni("no!il bastone@i", per => {
@@ -312,7 +312,7 @@ function istruzioniScena(n) {
 			rispondi("esamino il bastone", "È un bastone di prestigio con intarsi metallici che formano rune, forse apparteneva al cadavere da cui hai recuperato la chiave.");
 			rispondi("[esamino|leggo] le [rune|intarsi]", "Non riesci a comprendere le rune...");
 			rispondi("prendo il bastone", "Hai preso il bastone.");
-			_oggetti("il bastone@i");
+			__oggetti("il bastone@i");
 		});
 		rispondi("esamino la scodella [|di legno]", "La ciotola è vuota.");
 		rispondi("prendo la scodella [|di legno]", "È solo una ciotola vuota... la lasci dov'è.");
@@ -346,7 +346,7 @@ function istruzioniScena(n) {
 		condizioni("no!la chiave@i", per => {
 			rispondi("esamino il cadavere", "Tra le spoglie del cadavere trovi una chiave.");
 			rispondi("prendo la chiave", "Hai preso la chiave.");
-			_oggetti("la chiave@i");
+			__oggetti("la chiave@i");
 			rispondi("esamino la chiave", "È una chiave di bronzo con qualche semplice ricamo.");
 		});
 		uscita("ovest", 15);
@@ -372,22 +372,22 @@ function istruzioniScena(n) {
 		condizioni("no!rampicanti eliminati", per => {
 			rispondi("esamino le lapidi", "Le lapidi, ricoperte di rampicanti, non si riescono a leggere.");
 			rispondi("strappo i rampicanti", "Elimini le erbacce e leggi le iscrizioni sulle pietre. Su una di esse vi è scritto: 'Qui giace J. T. Cromwell'. La lapide è posta in terra sconsacrata.");
-			_variabili("rampicanti eliminati");
+			__variabili("rampicanti eliminati");
 		});
 		condizioni("rampicanti eliminati", per => {
 			rispondi("esamino le lapidi", "Tra le lapidi hai trovato la tomba dell'abate Cromwell.");
 			condizioni("no!tomba aperta", per => {
 				rispondi("esamino la tomba [|di Cromwell|dell'abate]", "La lapide è posta in terra sconsacrata e la sepoltura potrebbe essere stata la parte di un rito.");
 				rispondi("apro la tomba [|di Cromwell|dell'abate]", "Una lastra orizzontale di pietra chiude la tomba, con un notevole sforzo fisico sollevi la lastra da un lato e la fai scorrere via. La tomba è aperta.");
-				_variabili("tomba aperta");
+				__variabili("tomba aperta");
 			});
 			condizioni("tomba aperta", per => {
 				rispondi("chiudo la tomba [|di Cromwell|dell'abate]", "Ti senti un po' spossato per ripetere lo sforzo precedente. Lasci la tomba aperta.");
 				condizioni("no!cuore preso", per => {
 					rispondi("esamino la tomba [|di Cromwell|dell'abate]", "Dentro la tomba non trovi il corpo dell'abate, ma solo un cuore essiccato e rigido.");
 					rispondi("prendo il cuore [|di Cromwell|dell'abate]", "Hai preso il cuore dell'abate.");
-					_variabili("cuore preso");
-					_oggetti("il cuore di Cromwell@i");
+					__variabili("cuore preso");
+					__oggetti("il cuore di Cromwell@i");
 					rispondi("esamino il cuore [|di Cromwell|dell'abate]", "Il cuore risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
 				});
 				condizioni("cuore preso");
