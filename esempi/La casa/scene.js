@@ -2,7 +2,7 @@
 function istruzioniGenerali() {
 	nomeStoria("La casa");
 	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
-	contenitore("i", "la bottiglietta d'alcol");
+	contenitore("i", "");
 	uscita("guardo", 0, "invisibile");
 	rispondi("quit|exit|esci dal [gioco|storia|avventura]", "Per uscire chiudi la scheda del browser. Se desideri ricominciare daccapo puoi aggiornare la pagina del browser o scrivere 'restart'.");
 	rispondi("restart", "Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi 'restart!' con il punto esclamativo.");
@@ -55,7 +55,7 @@ function istruzioniScena(n) {
 		testo("Un'insaziabile creatura attende nel buio...<br />", "centrato");
 		scegliVai("Entra", 5, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
-		scegliRispondi("Stile di gioco", "Lo stile di gioco è basato sui principi derivanti dalla <a href=\"http://ifarchive.smallwhitehouse.org/if-archive/info/Craft.Of.Adventure.pdf\" target=\"_blank\">Carta dei diritti del giocatore</a> di Graham Nelson ed ulteriormente rielaborati:</p><ol><li><b>Dichiarare lo stile adottato.</b> Ogni storia interattiva dovrebbe dichiarare i principi che adotta affinché il giocatore sappia quale stile di gioco lo attende.</li><li><b>Fornire le istruzioni.</b> Le istruzioni complete vanno sempre offerte all'inizio del gioco.</li><li><b>Giocabilità prioritaria sul realismo.</b> Funzionalità e scorrevolezza della storia devono essere soddisfatte, anche con espedienti irreali o comandi scorciatoia, piuttosto che rispettare un rigido realismo che guasta la giocabilità con procedure pedanti o altrimenti fastidiose.</li><li><b>Tempo che scorre con le mosse.</b> Il tempo reale può condizionare messaggi scenici o effetti grafici, ma non deve far scorrere la storia. Questa avanza solo con le mosse del giocatore.</li><li><b>Mappa automatica o navigazione comoda.</b> La mappa dei luoghi non deve gravare sulla memoria del giocatore. Essa può essere generata automaticamente, o risultare superflua, od altri espedienti devono consentire una comoda navigazione tra i tanti luoghi.</li><li><b>Supporto dei comandi tradizionali.</b> Supporto degli imperativi e dei comandi tradizionali: esamina, x (examine); guarda, g, l (look); nord, n; sud, s; ovest, o, w (west); est, e; load; save; quit, exit. </li><li><b>Superamento del vocabolario.</b> Il gioco può offrire alcuni predicati d'esempio per stimolare i nuovi giocatori, ma deve comunque supportare molti sinonimi e gestire tutte le azioni ragionevoli ed interessanti che si possono compiere coerentemente con la storia.</li><li><b>Testi concisi e molto curati.</b> Una storia interattiva richiede che si ripercorra più volte uno stesso testo, fatta eccezione per l'introduzione, speciali fasi intermedie ed il finale, i testi devono essere brevi, e sempre stilisticamente molto curati.</li><li><b>Interazione con luoghi ed oggetti nominati.</b> I testi delle scene presentano luoghi ed oggetti. Se essi vengono nominati si devono poter almeno osservare o esaminare.</li><li><b>Minimizzare le risposte superflue.</b> Inutile gestire azioni banali per offrire risposte banali, tanto vale lasciare la risposta generica di rifiuto, oppure offrire una risposta ben curata che crei atmosfera.</li><li><b>Evitare morti improvvise.</b> Gli eventi pericolosi, in particolare una morte improvvisa, devono essere segnalati da un ragionevole indizio. In caso di morte od altra interruzione della storia, un sistema di caricamento comodo della partita deve minimizzare gli aspetti noiosi.</li><li><b>Evitare indizi incomprensibili.</b> Gli indizi non possono essere esageratamente indiretti e quindi incomprensibili, è apprezzabile discostarsi dall'ovvietà, ma occorre farlo nella giusta misura.</li><li><b>Dare tutte le informazioni.</b> Un ostacolo che si presenta per la prima volta deve essere accompagnato da tutte le informazioni necessarie al suo superamento. I fallimenti che interrompono la storia non possono far parte delle informazioni necessarie per la sua soluzione.</li><li><b>Mai rimaner bloccati senza saperlo.</b> Finché è possibile compiere azioni, si deve poter arrivare ad un finale apprezzabile. Non si può rimanere impossibilitati a proseguire (ora o in futuro) senza avvertimento. Se ciò accade, la storia deve terminare.</li><li><b>Non richiedere azioni improbabili.</b> Una combinazione accidentale ed improbabile di mosse non deve determinare l'ottenimento di qualcosa di necessario al proseguimento del gioco. Il rischio è rendere molto probabile una situazione di blocco di fatto.</li><li><b>Azioni coerenti con lo scopo della storia.</b> Azioni inutili o stupide o fuori luogo è impossibile gestirle tutte. Ci si deve attenere ad uno o massimo due approcci (serio, comico, realistico, fantastico, ecc.). Se il giocatore vede certe azioni rifiutate non deve insistere, ma deve agire in modo coerente o cambiare storia interattiva.</li><li><b>Offrire variazioni ed alternative.</b> Sono auspicabili, seppure non necessarie e a discrezione dell'autore, scelte di personaggi, biforcazioni della trama, alternative al superamento di ostacoli, messaggi variabili, eventi casuali, finali multipli, ecc.</li><li><b>Ricerche circoscritte o chiari obiettivi.</b> Un oggetto da trovare tra tantissimi luoghi visitabili diventa una lunga e noiosa ricerca. Il contesto deve essere ristretto, oppure un compito esplicito va comunicato al giocatore affinché abbia un chiaro obiettivo in un ampio contesto.</li><li><b>Evitare depistaggi senza chiarimenti.</b> Oggetti e luoghi sono scelti con un fine (scenico, funzionale, umoristico, ecc.). Oggetti inutili o depistanti vanno evitati, o comunque non possono essere troppo appariscenti o con varie possibilità di interazione, senza poter capire che sono depistaggi e infine abbandonarli.</li><li><b>Indicatori di completamento.</b> Almeno un indicatore di completamento deve segnalare quanto manca alla conclusione della storia interattiva.</li></ol>", "centrato");
+		scegliRispondi("Stile di gioco", "Lo stile di gioco è basato sui principi derivanti dalla <a href=\"http://ifarchive.smallwhitehouse.org/if-archive/info/Craft.Of.Adventure.pdf\" target=\"_blank\">Carta dei diritti del giocatore</a> di Graham Nelson ed ulteriormente rielaborati:</p><ol><li><b>Dichiarare i principi adottati.</b> Ogni storia interattiva dovrebbe dichiarare i principi che adotta affinché il giocatore sappia quale stile di gioco lo attende.</li><li><b>Fornire le istruzioni.</b> Le istruzioni complete vanno sempre offerte all'inizio del gioco.</li><li><b>Giocabilità prioritaria sul realismo.</b> Funzionalità e scorrevolezza della storia devono essere soddisfatte, anche con espedienti irreali o comandi scorciatoia, piuttosto che rispettare un rigido realismo che guasta la giocabilità con procedure pedanti o altrimenti fastidiose.</li><li><b>Tempo che scorre con le mosse.</b> Il tempo reale può condizionare messaggi scenici o effetti grafici, ma non deve far scorrere la storia. Questa avanza solo con le mosse del giocatore.</li><li><b>Mappa automatica o navigazione comoda.</b> La mappa dei luoghi non deve gravare sulla memoria del giocatore. Essa può essere generata automaticamente, o risultare superflua, od altri espedienti devono consentire una comoda navigazione tra i tanti luoghi.</li><li><b>Supporto dei comandi tradizionali.</b> Supporto degli imperativi e dei comandi tradizionali: esamina, x (examine); guarda, g, l (look); nord, n; sud, s; ovest, o, w (west); est, e; load; save; quit, exit. </li><li><b>Superamento del vocabolario.</b> Il gioco può offrire alcuni predicati d'esempio per stimolare i nuovi giocatori, ma deve comunque supportare molti sinonimi e gestire tutte le azioni ragionevoli ed interessanti che si possono compiere coerentemente con la storia.</li><li><b>Testi concisi e molto curati.</b> Una storia interattiva richiede che si ripercorra più volte uno stesso testo, fatta eccezione per l'introduzione, speciali fasi intermedie ed il finale, i testi devono essere brevi, e sempre stilisticamente molto curati.</li><li><b>Interazione con luoghi ed oggetti nominati.</b> I testi delle scene presentano luoghi ed oggetti. Se essi vengono nominati si devono poter almeno osservare o esaminare.</li><li><b>Minimizzare le risposte superflue.</b> Inutile gestire azioni banali per offrire risposte banali, tanto vale lasciare la risposta generica di rifiuto, oppure offrire una risposta ben curata che crei atmosfera.</li><li><b>Evitare morti improvvise.</b> Gli eventi pericolosi, in particolare una morte improvvisa, devono essere segnalati da un ragionevole indizio. In caso di morte od altra interruzione della storia, un sistema di caricamento comodo della partita deve minimizzare gli aspetti noiosi.</li><li><b>Evitare indizi incomprensibili.</b> Gli indizi non possono essere esageratamente indiretti e quindi incomprensibili, è apprezzabile discostarsi dall'ovvietà, ma occorre farlo nella giusta misura.</li><li><b>Dare tutte le informazioni.</b> Un ostacolo che si presenta per la prima volta deve essere accompagnato da tutte le informazioni necessarie al suo superamento. I fallimenti che interrompono la storia non possono far parte delle informazioni necessarie per la sua soluzione.</li><li><b>Mai rimaner bloccati senza saperlo.</b> Finché è possibile compiere azioni, si deve poter arrivare ad un finale apprezzabile. Non si può rimanere impossibilitati a proseguire (ora o in futuro) senza avvertimento. Se ciò accade, la storia deve terminare.</li><li><b>Non richiedere azioni improbabili.</b> Una combinazione accidentale ed improbabile di mosse non deve determinare l'ottenimento di qualcosa di necessario al proseguimento del gioco. Il rischio è rendere molto probabile una situazione di blocco di fatto.</li><li><b>Azioni coerenti con lo scopo della storia.</b> Azioni inutili o stupide o fuori luogo è impossibile gestirle tutte. Ci si deve attenere ad uno o massimo due approcci (serio, comico, realistico, fantastico, ecc.). Se il giocatore vede certe azioni rifiutate non deve insistere, ma deve agire in modo coerente o cambiare storia interattiva.</li><li><b>Offrire variazioni ed alternative.</b> Sono auspicabili, seppure non necessarie e a discrezione dell'autore, scelte di personaggi, biforcazioni della trama, alternative al superamento di ostacoli, messaggi variabili, eventi casuali, finali multipli, ecc.</li><li><b>Ricerche circoscritte o chiari obiettivi.</b> Un oggetto da trovare tra tantissimi luoghi visitabili diventa una lunga e noiosa ricerca. Il contesto deve essere ristretto, oppure un compito esplicito va comunicato al giocatore affinché abbia un chiaro obiettivo in un ampio contesto.</li><li><b>Evitare depistaggi senza chiarimenti.</b> Oggetti e luoghi sono scelti con un fine (scenico, funzionale, umoristico, ecc.). Oggetti inutili o depistanti vanno evitati, o comunque non possono essere troppo appariscenti o con varie possibilità di interazione, senza poter capire che sono depistaggi e infine abbandonarli.</li><li><b>Indicatori di completamento.</b> Almeno un indicatore di completamento deve segnalare quanto manca alla conclusione della storia interattiva.</li></ol>", "centrato");
 		scegliRispondi("Licenza", "LA CASA © MMXVII è una rivisitazione dell'avventura testuale LA CASA © MCMLXXXVIII pubblicata sulla rivista Amiga Byte n.7 come opera di pubblico dominio, liberamente copiabile e distribuibile senza scopo di lucro. <a href=\"https://github.com/Druido87/Confabula\" target=\"_blank\">Confabula</a> è l'interprete JavaScript per creare ed eseguire avventure testuali, rilasciato da <a href=\"https://github.com/Druido87\" target=\"_blank\">Druido87</a> con licenza <a href=\"https://github.com/Druido87/Confabula/blob/master/LICENSE\" target=\"_blank\">GNU L-GPL</a>. La storia rivisitata è un esempio di utilizzo di Confabula.", "centrato");
 		break;
 	case 2:
@@ -69,7 +69,7 @@ function istruzioniScena(n) {
 		uscita("sud", 4);
 		rispondi("esamino il divano", "Si tratta di un divano con disegni a fiori. Il tessuto è logoro e strappato in piú punti.");
 		rispondi("esamino il tappeto", "Il tappeto è ricoperto di polvere; in un angolo vi è una macchia scura.");
-		rispondi("sollevo il tappeto", "Sotto il tappeto c'è una botola.");
+		rispondi("[sollevo|sposto|muovo] il tappeto", "Sotto il tappeto c'è una botola.");
 		rispondi("esamino il tavolo", "Vedi una bottiglia e dei giornali.");
 		rispondi("esamino la bottiglia", "La bottiglia è scura e contiene una sostanza oleosa.");
 		rispondi("[bevo|prendo] la bottiglia", "Assetato bevi avidamente. Corri al bagno, ma è troppo tardi... la bottiglia conteneva olio di ricino avariato.");
@@ -121,11 +121,13 @@ function istruzioniScena(n) {
 			__oggetti("il libro@i+no!il libro@sotto armadio");
 		rispondiVai("[esamino|guardo sotto] il letto", "Ti chini per guardare sotto il letto; là sotto qualcosa si muove...", 3);
 		contenitore("comodino", "una|la candela");
-		condizioni("la candela@comodino");
+		condizioni("la candela@comodino", per => {
 			rispondi("esamino il comodino", "All'interno del comodino trovi una candela.");
-		condizioni("la candela@comodino");
 			rispondi("prendo la candela", "Hai preso la candela.");
 			__oggetti("la candela@i+no!la candela@comodino");
+		});
+		condizioni("no!la candela@comodino");
+			rispondi("esamino il comodino", "L'interno del comodino è vuoto.");
 		rispondi("esamino la sedia", "È una sedia di legno in stile Luigi XIV.");
 		break;
 	case 5:
@@ -142,12 +144,13 @@ function istruzioniScena(n) {
 		});
 		condizioni("no!la chiave@i");
 			rispondi("apro la porta con la chiave", "Purtroppo, le chiavi di questa casa non sono con te...");
-		rispondi("osservo la cucina", "I segni del tempo su questa casa creano un'atmosfera surreale. Ragnatele annerite pendono dal soffitto.");
+		rispondi("osservo la [cucina|ambiente]", "I segni del tempo su questa casa creano un'atmosfera surreale. Ragnatele annerite pendono dal soffitto.");
 		rispondi("osservo le ragnatele", "Curiosamente non scorgi alcun ragno...");
 		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato.");
 		rispondi("[sfondo|rompo|scasso] la porta", "È davvero massiccia e resistente, insistendo potresti giusto romperti una spalla.");
 		rispondi("[busso|picchio|calcio] [alla|la] porta", "Nessuno potrà sentirti, questa casa è piuttosto isolata.");
 		rispondi("esamino la credenza", "Gli sportelli a vetro riflettono una pallida figura umana e non comprendi se sei tu o qualcos'altro.");
+		rispondi("osservo la credenza", "Guardi attentamente la credenza da lontano e provi uno strano giramento di testa.");
 		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli|[busso|picchio|sfondo|rompo|scasso] [alla|la] [sportelli|credenza]", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
 		rispondi("esamino la madia", "Senti odore di muffa vicino alla madia. Sopra appoggiata c'è una bottiglia.");
 		rispondi("esamino la bottiglia", "È una bottiglia vuota e l'odore lascia intuire che contenesse aceto.");
@@ -246,7 +249,7 @@ function istruzioniScena(n) {
 		scegliVai("Ricomincia", 1);
 		break;
 	case 9:
-		immagine("zombie.png");
+		immagine("cavita.png");
 		testo("Sei nella cavità dietro le assi che rivestivano il bagno. Nell'aria c'è una puzza insopportabile.<br />Puoi vedere: un cadavere in avanzato stato di decomposizione, una nicchia.");
 		nomeLuogo("cavità segreta|cavità|buia cavità");
 		condizioni("no!zombie morto");
@@ -255,11 +258,13 @@ function istruzioniScena(n) {
 			uscita("est", 6);
 		condizioni("la scure@i");
 			rispondi("uccido lo zombie con la scure", "Col cranio fracassato, il mostro crolla al suolo.");
+			__immagine("cavita.png", 468, 282, "sostituisci");
 			__variabili("zombie morto");
 		condizioni("no!la scure@i");
 			rispondi("uccido lo zombie con la scure", "Non hai una scure con te...");
 		condizioni("no!zombie morto");
 			nMosseRispondi(1, "Il corpo decomposto si muove! Hai davanti uno zombie!!! Devi agire subito...");
+			__immagine("zombie.png", 468, 282, "sostituisci");
 			__autoElimina();
 		condizioni("no!zombie morto");
 			nMosseVai(2, 11); __autoElimina();
@@ -283,7 +288,7 @@ function istruzioniScena(n) {
 		break;
 	case 12:
 		immagine("casa.png");
-		testo("Apri la porta con la chiave e ti precipiti fuori. Dalle fiamme che avvolgono la casa provengono urla disumane. Dopo alcuni minuti è tutto finito. Sei riuscito ad uscirne vivo, ma la casa non è stata distrutta dalle fiamme, è ancora lí e ti aspetta...");
+		testo("Apri la porta con la chiave e ti precipiti fuori. Dalle fiamme che avvolgono la casa provengono urla disumane. Dopo alcuni minuti è tutto finito. Sei riuscito ad uscirne vivo e a spezzare la maledizione, ma ci sarà sempre una casa abitata da presenze oscure che brama la tua anima...");
 		break;
 	case 13:
 		immagine("casa.png");

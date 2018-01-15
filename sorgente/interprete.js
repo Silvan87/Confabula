@@ -434,7 +434,7 @@ var Vista = {
 						}
 						// Una volta eseguita un'istro inizio scena, non servirà più
 						// Se è specificato autoElimina, l'istruzione va eliminata
-						if (L === 'scena' || S.Istruzioni[L][iI].autoElimina === 1) {
+						if (L === 'scena' || S.Istruzioni[L][iI].autoElimina) {
 							S.Istruzioni[L].splice(iI, 1); iI--;
 						}
 					}
@@ -905,7 +905,7 @@ var I = {
 						if (S.Istruzioni[A[a][0]][A[a][1]].input !== undefined) {
 							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
 							aIG = 1; // Indica che un'azione inputG è stata eseguita
-							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
 							if (S.Istruzioni[A[a][0]][A[a][1]].azione === 'rispondiVai') cambioScena = 1;
 							A.splice(a, 1); a--; // Rimuove l'azione dalla pila;
 						}
@@ -915,7 +915,10 @@ var I = {
 							// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
 							if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
 								I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
-								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+								// Se c'è stato un cambio di scena, le istro "di scena" vengono azzerate, quindi deve terminare subito
+								// Se però si tratta di istro "generali" queste non vengono azzerate e si deve proseguire
+								if (A[a][0] === 'scena') return;
+								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
 								cambioScena = 1;
 							}
 						}
@@ -925,7 +928,10 @@ var I = {
 							// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
 							if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
 								I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
-								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+								// Se c'è stato un cambio di scena, le istro "di scena" vengono azzerate, quindi deve terminare subito
+								// Se però si tratta di istro "generali" queste non vengono azzerate e si deve proseguire
+								if (A[a][0] === 'scena') return;
+								if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
 								cambioScena = 1;
 							}
 						}
@@ -934,7 +940,7 @@ var I = {
 						// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
 						if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
 							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
-							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina === 1) aE = [A[a][0], A[a][1], a];
+							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
 							A.splice(a, 1); a--; // Rimuove l'azione dalla pila
 						}
 					break;
@@ -954,7 +960,7 @@ var I = {
 				if (cambioScena === 1) return;
 				
 				// Se un'azione inputG è stata eseguita, smette di cercarne altre
-				if (aIG === 1) { aIG = 0; break; }
+				if (aIG === 1) break;
 			}
 		}
 
@@ -1117,10 +1123,16 @@ var I = {
 		var e_txt = document.getElementById('testo');
 
 		// Gestisci funzione immagine o l'agganciata __immagine
-		if (istro.azione === 'immagine' || istro.immagine) {
+		if (istro.immagine) {
 			if (istro.w === undefined) { istro.w = ''; } else { istro.w = ' width="'+istro.w+'"'; }
 			if (istro.h === undefined) { istro.h = ''; } else { istro.h = ' height="'+istro.h+'"'; }
-			Vista.testo += '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.nome +'" />';
+			if (istro.sostituisci === 1) {
+				var ee_img = document.getElementsByTagName('img');
+				ee_img[ee_img.length - 1].outerHTML = '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.immagine +'" />';
+				Vista.testo = e_txt.innerHTML;
+			} else {
+				Vista.testo += '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.immagine +'" />';
+			}
 		}
 
 		// Gestisci funzioni agganciate __oggetti e __variabili
@@ -1632,7 +1644,7 @@ function immagine(img, w, h) {
 	if (img === undefined || img === '') { S.Istruzioni.annullaCondizioni(); return; }
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'immagine');
-	S.Istruzioni.valore('nome', img);
+	S.Istruzioni.valore('immagine', img);
 	S.Istruzioni.valore('w', w);
 	S.Istruzioni.valore('h', h);
 	S.Istruzioni.aggiungiCondizioni();
@@ -1841,10 +1853,12 @@ function __variabili(vv) {
 function __audio(aud) {
 	S.Istruzioni.valore('audio', aud);
 }
-function __immagine(img, w, h) {
+function __immagine(img, w, h, opz) {
 	S.Istruzioni.valore('immagine', img);
-	if (w !== undefined) S.Istruzioni.valore('imgW', w);
-	if (h !== undefined) S.Istruzioni.valore('imgH', h);
+	if (w !== undefined) S.Istruzioni.valore('w', w);
+	if (h !== undefined) S.Istruzioni.valore('h', h);
+	// Se c'è una sostituzione è doveroso specificare w ed h per evitare salti fastidiosi del testo
+	if (opz === 'sostituisci') S.Istruzioni.valore('sostituisci', 1);
 }
 function __inizioScena(v) {
 	// v: valore vero (predefinito) o falso
