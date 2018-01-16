@@ -899,10 +899,11 @@ var I = {
 		var aIG = 0; // aIG: azione input giocatore eseguita o meno
 
 		for (var o = 0; o < 4; o++) { // o: ordine di esecuzione
+			if (A.length === 0) break;
 			for (var a = 0; a < A.length; a++) { // a: indice azione
 				switch (o) {
 					case 0: // Esegui eventuale istro dovuta all'input del giocatore
-						if (S.Istruzioni[A[a][0]][A[a][1]].input !== undefined) {
+						if (aIG === 0 && S.Istruzioni[A[a][0]][A[a][1]].input !== undefined) {
 							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
 							aIG = 1; // Indica che un'azione inputG è stata eseguita
 							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
@@ -911,7 +912,7 @@ var I = {
 						}
 					break;
 					case 1: // Poi i cambi di scena legati a nMosse
-						if (S.Istruzioni[A[a][0]][A[a][1]].mosse !== undefined && S.Istruzioni[A[a][0]][A[a][1]].azione === 'vaiA') {
+						if (S.Istruzioni[A[a][0]][A[a][1]].mosse !== undefined && (S.Istruzioni[A[a][0]][A[a][1]].azione === 'vaiA' || S.Istruzioni[A[a][0]][A[a][1]].azione === 'rispondiVai')) {
 							// Occorre ricontrollare le condizioni per le istro, ma senza far avanzare nMosse
 							if (I.controllaCondizioni(A[a][0], A[a][1], 'no!nMosse')) {
 								I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
@@ -958,9 +959,6 @@ var I = {
 
 				// Se è avvenuto un cambio di scena, conclude subito
 				if (cambioScena === 1) return;
-				
-				// Se un'azione inputG è stata eseguita, smette di cercarne altre
-				if (aIG === 1) break;
 			}
 		}
 
