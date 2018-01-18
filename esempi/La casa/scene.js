@@ -135,9 +135,11 @@ function istruzioniScena(n) {
 		nomeLuogo("cucina");
 		immagine("cucina.png");
 		testo("Ti trovi nella cucina. L'ambiente è piuttosto freddo e dà la sensazione che qui sia accaduto qualcosa di sinistro. Affianco alla porta di ingresso trovi il contatore generale. Un antiquato arredamento ti circonda con credenza, madia, lavabo, cucinino ed un forno a legna. Al centro della stanza un tavolo.");
-		condizioni("no!trappola");
-			effetto("testo-parole", "Un rumore di serratura alle tue spalle ed ora sei chiuso dentro.", 300);
-			__variabili("trappola"); __inizioScena();
+		condizioni("no!trappola", per => {
+			nMosseEffetto(1, "testo-parole", "Un rumore di serratura alle tue spalle ed ora sei chiuso dentro.", 300);
+			__variabili("trappola"); __autoElimina();
+			rispondi("apro la porta|esco", "Non fai in tempo a voltarti...");
+		});
 		uscita("ovest", 2);
 		condizioni("trappola", per => {
 			testo("Qualcosa ha chiuso la porta a chiave.");

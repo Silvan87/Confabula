@@ -1838,6 +1838,13 @@ function effetto(tipo, op0, op1, op2, op3, op4, op5) {
 	}
 	S.Istruzioni.aggiungiCondizioni();
 }
+function nMosseEffetto(mosse, tipo, op0, op1, op2, op3, op4, op5) {
+	// Effetto è una funzione molto versatile, il primo argomento "tipo" determina come verranno interpretati gli altri argomenti. Se alcuni argomenti restano non compilati verranno semplicemente ignorat
+	// Questa funzione aggiunge la condizione del n. di mosse da aspettare alla funzione "effetto"
+	effetto(tipo, op0, op1, op2, op3, op4, op5);
+	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
+	S.Istruzioni.valore('mossa', 0);
+}
 
 // Funzioni per estendere le istruzioni precedenti
 // (condizionabili sono indirettamente; estensioni multiple ammesse) //
