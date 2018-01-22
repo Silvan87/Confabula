@@ -413,8 +413,9 @@ var Vista = {
 		e_cor.style.textAlign = null;
 		e_inp.style.textAlign = null;
 
-		// Svuota le istruzioni della scena precedente
+		// Svuota le istruzioni e l'input grezzo della scena precedente
 		S.Istruzioni.scena = [];
+		I.inputGrezzo = '';
 	},
 	mostra: function() {
 		var e_txt = document.getElementById('testo');
