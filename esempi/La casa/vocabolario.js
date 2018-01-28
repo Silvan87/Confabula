@@ -18,7 +18,7 @@ Lingua.equivalenze([
 ["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
 ["|esamino|x"], ["direzione|d"], ["guardo|g|l"],
 /* Equivalenze personalizzate valide in tutta le scene */
-["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"], ["bottiglia|bottiglietta"], ["tavolo|tavola|tavolino"], ["picchio|batto|percuoto|colpisco"], ["sportello|sportelli"], ["ragnatela|ragnatele"], ["zombie|zombi"]
+["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"], ["bottiglia|bottiglietta"], ["tavolo|tavola|tavolino"], ["picchio|batto|percuoto|colpisco"], ["sportello|sportelli"], ["ragnatela|ragnatele"], ["zombie|zombi"], ["urlo|grido|strillo|sbraito|piango"]
 ]);
 
 }

@@ -334,6 +334,7 @@ var Vista = {
 	istroInizioScena: [], // Array di istruzioni non condizionate da eseguire ad inizio scena
 	attesaImmagini: 0, // Indica se si è in attesa delle immagini o meno
 	timerImmagini: 0, // ID dell'evento che controlla se le immagini sono state caricate
+	hTestoP: 0, // Conserva l'altezza del testo precedente
 	testo: '', // Testo, anche html, che descrive la scena
 	uscite: '', // Elenco di uscite (link), separate da virgola e spazio
 	scelte: '', // Elenco di scelte (link), separate con un ritorno a capo o altri metodi
@@ -576,6 +577,35 @@ var Vista = {
 		// Passa il focus alla casella di input
 		G.pronto();
 	},
+	misuraHTesto: function() {
+		// Recupera l'altezza del testo (sono esclusi input e scelte)
+		return document.getElementById('testo').offsetHeight + document.getElementById('testo').offsetTop;
+	},
+	misuraHContenuto: function() {
+		// Recupera l'altezza del contenuto (testo, input e scelte)
+		var hContenuto = Vista.misuraHTesto();
+		if (document.getElementById('scelte').style.visibility === 'visible') {
+			hContenuto = document.getElementById('scelte').offsetTop + document.getElementById('scelte').offsetHeight;
+		} else if (document.getElementById('input').style.display === 'block') {
+			hContenuto = document.getElementById('input').offsetTop + document.getElementById('input').offsetHeight;
+		}
+		return hContenuto;
+	},
+	fondoPagina: function() {
+		// Misura l'altezza del testo
+		var hTesto = Vista.misuraHTesto();
+		// Misura l'altezza del contenuto (testo, input e scelte)
+		var hContenuto = Vista.misuraHContenuto();
+		// Scorre fino ad arrivare a fondo pagina, ma fermandosi prima per non saltare mai del contenuto non letto
+		var ay = hContenuto - window.innerHeight; // ay: avanzo y assoluto
+		if (ay > 0) {
+			if (ay - window.pageYOffset < window.innerHeight) {
+				window.scroll(0, ay + 8);
+			} else {
+				window.scroll(0, Vista.hTestoP);
+			}
+		}
+	},
 
 	eseguiAudio: function(aud) {
 		var e_aud = document.getElementById('audio');
@@ -728,6 +758,7 @@ var Vista = {
 				}
 			break;
 		}
+		Vista.fondoPagina();
 	}
 }
 
@@ -769,12 +800,14 @@ var I = {
 		istro = {};
 		if (I.inputNorm.length === 1 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0])) {
 			istro.azione = 'rispondi';
+			istro.input = I.inputGrezzo;
 			istro.output = 'Specificare il numero della posizione da 0 a 9 in cui salvare. Esempio: \'save 2\'. I salvataggi saranno disponibili solo sul browser in cui sono stati eseguiti. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
 			I.eseguiIstruzione(istro);
 			e_inp.value = '? ';
 			return;
 		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
 			istro.azione = 'rispondi';
+			istro.input = I.inputGrezzo;
 			// Salva tutte le variabili della partita nell'HTML5 storage
 			if (typeof(Storage) !== "undefined") {
 				try {
@@ -798,6 +831,7 @@ var I = {
 				localStorage.removeItem(document.title+' '+s);
 			}
 			istro.azione = 'rispondi';
+			istro.input = I.inputGrezzo;
 			istro.output = 'Tutti i salvataggi per '+ document.title +' sono stati eliminati.';
 			I.eseguiIstruzione(istro);
 			e_inp.value = '? ';
@@ -808,6 +842,7 @@ var I = {
 		istro = {};
 		if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
 			istro.azione = 'rispondi';
+			istro.input = I.inputGrezzo;
 			istro.output = 'Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
 			I.eseguiIstruzione(istro);
 			e_inp.value = '? ';
@@ -816,8 +851,10 @@ var I = {
 			var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
 			if (dati === null || dati === undefined) {
 				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
 				istro.output = 'Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.';
 				I.eseguiIstruzione(istro);
+				I.inputGrezzo = inputGrezzoTmp;
 				e_inp.value = '? ';
 				return;
 			} else {
@@ -843,17 +880,14 @@ var I = {
 		if (inputEseguito === 0) {
 			istro = {};
 			if (I.inputNorm.length === 1 && /^(direzioni|direzione|d)$/.test(I.inputNorm[0][0])) {
+				if (I.inputGrezzo === 'd') I.inputGrezzo = 'direzioni';
+				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
 				if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
-					I.inputGrezzo = 'direzioni';
-					istro.azione = 'rispondi';
 					istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
 				} else if (G.luoghiRagg.nomi.length === 0 || (G.luoghiRagg.nomi.length === 1 && G.luoghiRagg.coppie[G.nScena] !== undefined)) {
-					I.inputGrezzo = 'direzioni';
-					istro.azione = 'rispondi';
 					istro.output = 'Ancora non puoi dirigerti velocemente in nessun luogo.';
 				} else {
-					I.inputGrezzo = 'direzioni';
-					istro.azione = 'rispondi';
 					istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
 				}
 				I.eseguiIstruzione(istro);
@@ -862,6 +896,7 @@ var I = {
 			// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
 			} else if (I.inputNorm.length > 1 && /^(direzione|d)$/.test(I.inputNorm[0][0]) && G.luoghiRagg.bloccati === 1) {
 				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
 				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
 				I.eseguiIstruzione(istro);
 				inputEseguito = 1;
@@ -908,7 +943,7 @@ var I = {
 							I.eseguiIstruzione(S.Istruzioni[A[a][0]][A[a][1]]);
 							aIG = 1; // Indica che un'azione inputG è stata eseguita
 							if (S.Istruzioni[A[a][0]][A[a][1]].autoElimina) aE = [A[a][0], A[a][1], a];
-							if (S.Istruzioni[A[a][0]][A[a][1]].azione === 'rispondiVai') cambioScena = 1;
+							if (S.Istruzioni[A[a][0]][A[a][1]].azione === 'vaiA' || S.Istruzioni[A[a][0]][A[a][1]].azione === 'rispondiVai') cambioScena = 1;
 							A.splice(a, 1); a--; // Rimuove l'azione dalla pila;
 						}
 					break;
@@ -983,9 +1018,7 @@ var I = {
 		} else {
 			e_inp.value = '? ';
 		}
-
-		// Scorri il contenuto fino ad arrivare a fondo pagina
-		window.scroll(0, window.innerHeight + window.pageYOffset);
+		Vista.fondoPagina();
 	},
 
 	scriviInput: function(inp) {
@@ -1120,6 +1153,9 @@ var I = {
 		// istro: istruzione da eseguire
 		I.istroLivello = istro.livello; // Segnala globalmente se il livello è di scena o generale
 		var e_txt = document.getElementById('testo');
+
+		// Segna l'altezza del testo precedente (prima di eventualmente modificarlo)
+		Vista.hTestoP = Vista.misuraHTesto();
 
 		// Gestisci funzione immagine o l'agganciata __immagine
 		if (istro.immagine) {
@@ -1268,7 +1304,7 @@ var I = {
 					iR['input'] = istro.nome;
 					iR['output'] = istro.output.replace(/'/g, '"');
 					if (istro.al2 !== undefined) istro['allineamento'] = istro.al2;
-					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(iR).replace(/"/g, '\'')+');">'+ istro.nome +'</p>';
+					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(iR).replace(/"/g, '\'')+'); Vista.fondoPagina();">'+ istro.nome +'</p>';
 				} else {
 					if (istro.al2 !== undefined) { istro.al2 = ', {\'outAli\':\''+istro.al2+'\'}'; } else { istro.al2 = ''; }
 					istro.nome = istro.nome.replace(/'/g, '"').replace(/"/g, '\'');
@@ -1280,7 +1316,7 @@ var I = {
 				Vista.scelte += '<p class="scelta coloreScelta" '+ istro.all +' onclick="S.vaiA('+istro.nS+')">'+ istro.nome +'</p>';
 			break;
 			case 'rispondi':
-				if (istro.mossa === undefined) {
+				if (istro.input !== undefined) {
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
 						cssCol = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
@@ -1291,6 +1327,8 @@ var I = {
 					e_txt.innerHTML += '<p'+ all + cssCol + classi +'>? '+ I.inputGrezzo +'</p>';
 				}
 				e_txt.innerHTML += '<p'+all+'>' + Vista.testoSpeciale(istro.output) + '</p>';
+				// Una volta risposto, l'input grezzo non serve più ed è necessario svuotarlo
+				I.inputGrezzo = '';
 			break;
 			case 'vaiA':
 				// Passa immediatamente ad una nuova scena che svuoterà le istruzioni "in corso di verifica" su leggiInput().
@@ -1302,8 +1340,8 @@ var I = {
 				}
 			break;
 			case 'rispondiVai':
-				if (istro.mossa === undefined || istro.mossa === 0) {
-					document.getElementById('input').style.display = 'none';
+				document.getElementById('input').style.display = 'none';
+				if (istro.input !== undefined) {
 					classi = ' class="inviato';
 					if (Vista.stile.coloreTestoInviato) {
 						cssCol = ' style="color:'+Vista.stile.coloreTestoInviato+';"';
@@ -1348,6 +1386,7 @@ var I = {
 				if (Vista.timerEffetto === null) Vista.timerEffetto = setInterval(Vista.avanzaEffetto, istro.intervallo);
 			break;
 		}
+		Vista.fondoPagina();
 	}
 }
 
