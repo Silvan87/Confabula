@@ -769,21 +769,27 @@ var I = {
 	inputNorm: [],
 	istroLivello: '', // livello istruzioni attualmente processato (di scena, generali)
 
-	leggiInput: function() {
+	leggiInput: function(riprovaCon) {
+		// Se la variabile riprovaCon è impostata, la rilettura non viene contata come mossa del giocatore. La variabile impostata avrà una stringa che dovrà essere usata come input grezzo alternativo.
 
-		// Salva l'input grezzo, così come inserito dall'utente, ma senza spazi in testa o in coda
 		var e_inp = document.getElementById('input');
-		I.inputGrezzo = e_inp.value.trim();
-		if (I.inputGrezzo.charAt(0) === '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
 
-		// Rifiuta un input vuoto e reimposta la casella di input
-		if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
+		if (riprovaCon === undefined) {
+			// Salva l'input grezzo, così come inserito dall'utente, ma senza spazi in testa o in coda
+			I.inputGrezzo = e_inp.value.trim();
+			if (I.inputGrezzo.charAt(0) === '?') I.inputGrezzo = I.inputGrezzo.substr(1).trim();
 
-		// Salva l'input nella cronologia degli input con limite 20 elementi
-		// Se l'input precedente è uguale a quello attuale, non lo aggiunge
-		if (I.inputGrezzo !== Vista.cronoInput[Vista.cronoInput.length - 1]) Vista.cronoInput.push(I.inputGrezzo);
-		if (Vista.cronoInput.length === 21) Vista.cronoInput.shift();
-		Vista.nCronoInput = Vista.cronoInput.length;
+			// Rifiuta un input vuoto e reimposta la casella di input
+			if (I.inputGrezzo === '') { e_inp.value = '? '; G.pronto(); return; }
+
+			// Salva l'input nella cronologia degli input con limite 20 elementi
+			// Se l'input precedente è uguale a quello attuale, non lo aggiunge
+			if (I.inputGrezzo !== Vista.cronoInput[Vista.cronoInput.length - 1]) Vista.cronoInput.push(I.inputGrezzo);
+			if (Vista.cronoInput.length === 21) Vista.cronoInput.shift();
+			Vista.nCronoInput = Vista.cronoInput.length;
+		} else {
+			I.inputGrezzo = riprovaCon;
+		}
 
 		// Normalizza l'input grezzo del giocatore
 		I.inputNorm = Lingua.normalizzaInput(I.inputGrezzo, 1);
@@ -795,117 +801,168 @@ var I = {
 		// Leggere (e comprendere) qui significa stabilire quale azione eseguire dopo la lettura
 
 		// Istruzioni speciali integrate in Confabula //
+		if (riprovaCon === undefined) {
 
-		// Comando 'salva' per salvare la partita in corso
-		istro = {};
-		if (I.inputNorm.length === 1 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0])) {
-			istro.azione = 'rispondi';
-			istro.input = I.inputGrezzo;
-			istro.output = 'Specificare il numero della posizione da 0 a 9 in cui salvare. Esempio: \'save 2\'. I salvataggi saranno disponibili solo sul browser in cui sono stati eseguiti. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
-			I.eseguiIstruzione(istro);
-			e_inp.value = '? ';
-			return;
-		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
-			istro.azione = 'rispondi';
-			istro.input = I.inputGrezzo;
-			// Salva tutte le variabili della partita nell'HTML5 storage
-			if (typeof(Storage) !== "undefined") {
-				try {
-					// Archivia tutte le info sulla partita in corso in un'unica stringa da infilare nell'HTML5 storage
-					localStorage.setItem(document.title+' '+I.inputNorm[1][0], [G.nScena, G.nScenaP, G.nScenaPP, JSON.stringify(G.passaggiScena), JSON.stringify(G.luoghiRagg), JSON.stringify(S.oggetti), JSON.stringify(S.variabili), JSON.stringify(S.Istruzioni.generali), JSON.stringify(S.Istruzioni.scena)].join('§§'));
-					istro.output = 'Partita salvata in posizione ' + I.inputNorm[1][0];
-				} catch (err) {
-					// Chrome o Chromium possono avere i permessi di scrittura nell'HTML5 storage disabilitati
-					// Firefox ed Opera sono stati testati e risultano funzionanti (anche Chrome normalmente funziona)
-					istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> Questo browser nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.';
-				}
-			} else {
-				// HTML5 storage non supportato dal browser
-				istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> Questo browser non supporta l\'HTML5 storage. Per salvare e caricare le partite si deve utilizzare un browser moderno che supporti questa funzionalità.';
-			}
-			I.eseguiIstruzione(istro);
-			e_inp.value = '? ';
-			return;
-		} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^reset$/.test(I.inputNorm[1][0])) {
-			for (var s = 0; s < 10; s++) {
-				localStorage.removeItem(document.title+' '+s);
-			}
-			istro.azione = 'rispondi';
-			istro.input = I.inputGrezzo;
-			istro.output = 'Tutti i salvataggi per '+ document.title +' sono stati eliminati.';
-			I.eseguiIstruzione(istro);
-			e_inp.value = '? ';
-			return;
-		}
-
-		// Comando 'carica' per caricare una partita salvata
-		istro = {};
-		if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
-			istro.azione = 'rispondi';
-			istro.input = I.inputGrezzo;
-			istro.output = 'Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.';
-			I.eseguiIstruzione(istro);
-			e_inp.value = '? ';
-			return;
-		} else if (I.inputNorm.length === 2 && /^(load|carica|carico)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
-			var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
-			if (dati === null || dati === undefined) {
-				istro.azione = 'rispondi';
-				istro.input = I.inputGrezzo;
-				istro.output = 'Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.';
-				I.eseguiIstruzione(istro);
-				I.inputGrezzo = inputGrezzoTmp;
-				e_inp.value = '? ';
-				return;
-			} else {
-				dati = dati.split('§§');
-				G.nScena = Number(dati[0]);
-				G.passaggiScena = JSON.parse(dati[3]);
-				G.luoghiRagg = JSON.parse(dati[4]);
-				S.oggetti = JSON.parse(dati[5]);
-				S.variabili = JSON.parse(dati[6]);
-				istruzioniScena(G.nScena);
-				// Dopo essersi collocato sulla giusta scena, sovrascrive le istruzioni con quelle salvate
-				S.Istruzioni.generali = JSON.parse(dati[7]);
-				S.Istruzioni.scena = JSON.parse(dati[8]);
-				// Anche il numero di scena precedente (P e PP) va sovrascritto alla fine
-				G.nScenaP = Number(dati[1]);
-				G.nScenaPP = Number(dati[2]);
-				e_inp.value = '? ';
-				return;
-			}
-		}
-
-		// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
-		if (inputEseguito === 0) {
+			// Comando 'chiudi' per uscire dall'applicazione
 			istro = {};
-			if (I.inputNorm.length === 1 && /^(direzioni|direzione|d)$/.test(I.inputNorm[0][0])) {
-				if (I.inputGrezzo === 'd') I.inputGrezzo = 'direzioni';
+			if (/^(quit|exit|esco|esci)$/.test(I.inputNorm[0][0])) {
+				istro.frasi = Lingua.normalizzaInput("[quit|exit]|esco da [gioco|storia|partita|avventura|avventura testuale]", 2);
+				if (Lingua.fraseInFrasiSemantiche(I.inputNorm, istro.frasi)) {
+					istro.azione = 'rispondi';
+					istro.input = I.inputGrezzo;
+					istro.output = '<span class="coloreTestoInviato">Per uscire chiudi la scheda del navigatore Web. Se desideri ricominciare daccapo puoi aggiornare la pagina del navigatore o scrivere \'restart\'.</span>';
+					I.eseguiIstruzione(istro);
+					e_inp.value = '? ';
+					return;
+				}
+			}
+
+			// Comando 'riavvia' per riavviare la partita (solo avviso)
+			istro = {};
+			if (/^(restart|riavvio|riavvia|ricomincio|ricomincia)$/.test(I.inputNorm[0][0])) {
+				istro.frasi = Lingua.normalizzaInput("restart|[riavvio|ricomincio] il [gioco|storia|partita|avventura|avventura testuale]", 2);
+				if (Lingua.fraseInFrasiSemantiche(I.inputNorm, istro.frasi)) {
+					istro.azione = 'rispondi';
+					istro.input = I.inputGrezzo;
+					istro.output = '<span class="coloreTestoInviato">Ricaricare tutto comporterà la perdita delle informazioni sulla partita in corso. Per confermare scrivi \'restart!\' o \'riavvia!\' o \'ricomincio!\' con il punto esclamativo.</span>';
+					I.eseguiIstruzione(istro);
+					e_inp.value = '? ';
+					return;
+				}
+			}
+
+			// Comando 'riavvia!' per riavviare la partita (azione effettiva)
+			istro = {};
+			if (I.inputNorm.length === 2 && /^(restart|riavvio|riavvia|ricomincio|ricomincia)$/.test(I.inputNorm[0][0]) && /^!$/.test(I.inputNorm[1][0])) {
+				istro.azione = 'rispondiVai';
+				istro.input = I.inputGrezzo;
+				istro.output = '<span class="coloreTestoInviato">Ricarico tutto dall\'inizio...</span>';
+				istro.scena = 1;
+				I.eseguiIstruzione(istro);
+				e_inp.value = '? ';
+				return;
+			}
+
+			// Comando 'istruzioni' per poterle leggere ogni momento
+			istro = {};
+			if (I.inputNorm.length === 1 && /^istruzioni$/.test(I.inputNorm[0][0])) {
 				istro.azione = 'rispondi';
 				istro.input = I.inputGrezzo;
-				if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
-					istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
-				} else if (G.luoghiRagg.nomi.length === 0 || (G.luoghiRagg.nomi.length === 1 && G.luoghiRagg.coppie[G.nScena] !== undefined)) {
-					istro.output = 'Ancora non puoi dirigerti velocemente in nessun luogo.';
+				istro.output = '<span class="coloreTestoInviato">' + G.istruzioni + '</span>';
+				I.eseguiIstruzione(istro);
+				e_inp.value = '? ';
+				return;
+			}
+
+			// Comando 'salva' per salvare la partita in corso
+			istro = {};
+			if (I.inputNorm.length === 1 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0])) {
+				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
+				istro.output = '<span class="coloreTestoInviato">Specificare il numero della posizione da 0 a 9 in cui salvare. Esempio: \'save 2\'. I salvataggi saranno disponibili solo sul navigatore Web in cui sono stati registrati. Per eliminare tutti i salvataggi scrivere \'save reset\'.</span>';
+				I.eseguiIstruzione(istro);
+				e_inp.value = '? ';
+				return;
+			} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
+				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
+				// Salva tutte le variabili della partita nell'HTML5 storage
+				if (typeof(Storage) !== "undefined") {
+					try {
+						// Archivia tutte le info sulla partita in corso in un'unica stringa da infilare nell'HTML5 storage
+						localStorage.setItem(document.title+' '+I.inputNorm[1][0], [G.nScena, G.nScenaP, G.nScenaPP, JSON.stringify(G.passaggiScena), JSON.stringify(G.luoghiRagg), JSON.stringify(S.oggetti), JSON.stringify(S.variabili), JSON.stringify(S.Istruzioni.generali), JSON.stringify(S.Istruzioni.scena)].join('§§'));
+						istro.output = '<span class="coloreTestoInviato">Partita salvata in posizione ' + I.inputNorm[1][0] + '</span>';
+					} catch (err) {
+						// Chrome o Chromium possono avere i permessi di scrittura nell'HTML5 storage disabilitati
+						// Firefox ed Opera sono stati testati e risultano funzionanti (anche Chrome normalmente funziona)
+						istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> <span class="coloreTestoInviato">Questo navitagore Web nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.</span>';
+					}
 				} else {
-					istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
+					// HTML5 storage non supportato dal navigatore Web
+					istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> <span class="coloreTestoInviato">Questo navigatore Web non supporta l\'HTML5 storage. Per salvare e caricare le partite si deve utilizzare un navigatore Web moderno che supporti questa funzionalità.</span>';
 				}
 				I.eseguiIstruzione(istro);
-				inputEseguito = 1;
-
-			// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
-			} else if (I.inputNorm.length > 1 && /^(direzione|d)$/.test(I.inputNorm[0][0]) && G.luoghiRagg.bloccati === 1) {
+				e_inp.value = '? ';
+				return;
+			} else if (I.inputNorm.length === 2 && /^(save|salva|salvo)$/.test(I.inputNorm[0][0]) && /^reset$/.test(I.inputNorm[1][0])) {
+				for (var s = 0; s < 10; s++) {
+					localStorage.removeItem(document.title+' '+s);
+				}
 				istro.azione = 'rispondi';
 				istro.input = I.inputGrezzo;
-				istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+				istro.output = '<span class="coloreTestoInviato">Tutti i salvataggi per '+ document.title +' sono stati eliminati.</span>';
 				I.eseguiIstruzione(istro);
-				inputEseguito = 1;
+				e_inp.value = '? ';
+				return;
+			}
+
+			// Comando 'carica' per caricare una partita salvata
+			istro = {};
+			if (I.inputNorm.length === 1 && /^(load|carica|carico)$/.test(I.inputNorm[0][0])) {
+				istro.azione = 'rispondi';
+				istro.input = I.inputGrezzo;
+				istro.output = '<span class="coloreTestoInviato">Specificare il numero della posizione da 0 a 9 da cui caricare. Esempio: \'load 2\'. Per eliminare tutti i salvataggi scrivere \'save reset\'.</span>';
+				I.eseguiIstruzione(istro);
+				e_inp.value = '? ';
+				return;
+			} else if (I.inputNorm.length === 2 && /^(load|carica|carico)$/.test(I.inputNorm[0][0]) && /^[0-9]{1}$/.test(I.inputNorm[1][0])) {
+				var dati = localStorage.getItem(document.title+' '+I.inputNorm[1][0]);
+				if (dati === null || dati === undefined) {
+					istro.azione = 'rispondi';
+					istro.input = I.inputGrezzo;
+					istro.output = '<span class="coloreTestoInviato">Nella posizione '+I.inputNorm[1][0]+' non risulta alcun salvataggio.</span>';
+					I.eseguiIstruzione(istro);
+					e_inp.value = '? ';
+				} else {
+					dati = dati.split('§§');
+					G.nScena = Number(dati[0]);
+					G.passaggiScena = JSON.parse(dati[3]);
+					G.luoghiRagg = JSON.parse(dati[4]);
+					S.oggetti = JSON.parse(dati[5]);
+					S.variabili = JSON.parse(dati[6]);
+					istruzioniScena(G.nScena);
+					// Dopo essersi collocato sulla giusta scena, sovrascrive le istruzioni con quelle salvate
+					S.Istruzioni.generali = JSON.parse(dati[7]);
+					S.Istruzioni.scena = JSON.parse(dati[8]);
+					// Anche il numero di scena precedente (P e PP) va sovrascritto alla fine
+					G.nScenaP = Number(dati[1]);
+					G.nScenaPP = Number(dati[2]);
+					e_inp.value = '? ';
+				}
+				return;
+			}
+
+			// Comando 'direzioni', per ricevere l'elenco dei luoghi visitabili
+			if (inputEseguito === 0) {
+				istro = {};
+				if (I.inputNorm.length === 1 && /^(direzioni|direzione|d)$/.test(I.inputNorm[0][0])) {
+					if (I.inputGrezzo === 'd') I.inputGrezzo = 'direzioni';
+					istro.azione = 'rispondi';
+					istro.input = I.inputGrezzo;
+					if (Vista.uscite === '' || G.luoghiRagg.bloccati === 1) {
+						istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+					} else if (G.luoghiRagg.nomi.length === 0 || (G.luoghiRagg.nomi.length === 1 && G.luoghiRagg.coppie[G.nScena] !== undefined)) {
+						istro.output = 'Ancora non puoi dirigerti velocemente in nessun luogo.';
+					} else {
+						istro.output = 'Luoghi raggiungibili: ' + G.luoghiRagg.nomi.join(', ') + '.';
+					}
+					I.eseguiIstruzione(istro);
+					inputEseguito = 1;
+
+				// Intercetta la prima parola del comando 'direzione', se i luoghi sono bloccati, lo annulla
+				} else if (I.inputNorm.length > 1 && /^(direzione|d)$/.test(I.inputNorm[0][0]) && G.luoghiRagg.bloccati === 1) {
+					istro.azione = 'rispondi';
+					istro.input = I.inputGrezzo;
+					istro.output = 'Ora non puoi dirigerti velocemente in nessun luogo.';
+					I.eseguiIstruzione(istro);
+					inputEseguito = 1;
+				}
 			}
 		}
 
 		// Prima controlla le istruzioni di scena, poi quelle generali
 		var livello = ['scena', 'generali'];
-		var A = []; // A: azioni, qui vengono raccolte le coordinate delle istruzioni da eseguire, prima di eseguirle
+		var A = []; // A: azioni, qui vengono raccolti gli indici delle istruzioni da eseguire, prima di eseguirle
 
 		livello.forEach(function(L) { // L: Livello delle istruzioni
 			for (var iI = 0; iI < S.Istruzioni[L].length; iI++) { // iI: indice istruzione
@@ -913,6 +970,9 @@ var I = {
 				// Se è stata già eseguita un'azione (quelle integrate), verifica solo le istro senza inputG (es. nMosse deve avanzare)
 				// Ricordarsi che 'save' e 'load' interrompono la funzione e quindi non sono contate come mosse
 				if (inputEseguito === 1 && S.Istruzioni[L][iI].input !== undefined) continue;
+
+				// Se è in atto un secondo tentativo di input, le nMosse non devono avanzare
+				if (riprovaCon !== undefined && S.Istruzioni[L][iI].mossa !== undefined) continue;
 
 				// Se è in fase di caricamento della scena non deve partire subito il contatore delle istro "nMosse", perché il giocatore deve avere il tempo di fare delle mosse nella nuova scena. Inoltre, andare ad una nuova scena è già contata come mossa.
 				if (Vista.caricamento === 1 && S.Istruzioni[L][iI].mossa !== undefined) continue;
@@ -998,10 +1058,17 @@ var I = {
 			}
 		}
 
+		// Se nessuna azione è stata eseguita ed il giocatore non ha scritto 'esamino' o 'osservo', allora prova ad aggiungere 'osservo'
+		// Se è già un secondo tentativo, non provare più
+		if (inputEseguito === 0 && riprovaCon === undefined && !/^(esamino|esamina|x|osservo|osserva)$/.test(I.inputNorm[0][1])) {
+			I.leggiInput('osserva ' + I.inputGrezzo);
+			return;
+		}
+
 		// Svuota l'input grezzo che ormai non verrà più usato
 		I.inputGrezzo = '';
 
-		// Se nessuna azione è stata eseguita, invita a provare altro
+		// Se ancora nessuna azione è stata eseguita, invita a provare altro
 		if (inputEseguito === 0) {
 			e_inp.readOnly = true;
 			e_inp.className = 'coloreSfondo testoCarattere testoGrandezza larghezzaMaxStoria';
@@ -1402,6 +1469,7 @@ var G = {
 		nomi: [], // Nomi di luoghi verso cui dirigersi con il comando 'direzioni'
 		coppie: {} // Sono coppie chiave-valore per avere il nScena di un luogo o il nome di un luogo dato un nScena
 	},
+	istruzioni: '', // Istruzioni per il giocatore
 
 	nuovaPartita: function() {
 		G.passaggiScena = {};
@@ -1410,7 +1478,6 @@ var G = {
 		G.luoghiRagg.nomi = [];
 		G.luoghiRagg.coppie = {};
 	},
-
 	pronto: function() {
 		var e_inp = document.getElementById('input');
 		e_inp.disabled = false;
@@ -1560,6 +1627,9 @@ function nomeLuogo(nome) {
 		S.Istruzioni.valore('input', txt_in);
 		G.nScena = nS;
 	}
+}
+function istruzioni(txt) {
+	G.istruzioni = txt;
 }
 
 // Istruzione speciale per porre condizioni su oggetti e variabili //
