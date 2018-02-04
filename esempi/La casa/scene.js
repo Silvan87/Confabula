@@ -2,7 +2,7 @@
 function istruzioniGenerali() {
 	nomeStoria("La casa");
 	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
-	istruzioni("Scrivi in prima persona o usa l'imperativo. Puoi omettere gli articoli ed i predicati 'esamino' ed 'osservo'. Tutti gli oggetti e i luoghi possono essere esaminati o almeno osservati, se non si specifica il predicato, 'esamino' ha la precedenza rispetto ad 'osservo'. Scrivi 'vocabolario' o 'v' per leggere alcuni predicati d'esempio; 'guardo' o 'g' per ripresentare una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' per rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali. È possibile salvare una partita con 'save' o caricarla con 'load'. I comandi speciali istruzioni, save, load, restart, quit, non sono contati come mosse del giocatore, ciò è segnalato dal colore diverso della risposta.");
+	istruzioni("Per interagire inizia sempre con un predicato. Puoi usare la prima persona o l'imperativo. Puoi omettere gli articoli ed i predicati 'esamino' ed 'osservo'. Tutti gli oggetti e i luoghi possono essere esaminati od osservati. Se non si specifica il predicato, prima di 'osservo' viene provato 'esamino'. Scrivi 'guardo' o 'g' per ripresentare una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' per rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali. È possibile salvare una partita con 'save' o caricarla con 'load'. I comandi speciali: istruzioni, save (salva), load (carica), restart (riavvia), quit (exit), non sono contati come mosse del giocatore, dunque non fanno scorrere il tempo e ciò è segnalato dal diverso colore della risposta.");
 	uscita("guardo", 0, "invisibile");
 	rispondi("vocabolario|v", "accendo, aiuto, apro, aspetto, bevo, entro, esamino, esco, forzo, guardo, inventario, leggo, mangio, osservo, prendo, rompo, scendo, sfondo, sollevo, spengo, uccido, verso");
 	contenitore("i", "");
@@ -40,7 +40,7 @@ function istruzioniGenerali() {
 		nMosseVai(4, 10, "Il fuoco non lascia più spazio ai tuoi movimenti..."); __autoElimina();
 	});
 	condizioni("no!zombie morto");
-		nMosseRispondi(10, "x(Senti un grido strozzato provenire dall'altra stanza...|Dietro le pareti crepitii si spostano intervallati da lunghi silenzi...|Un solo colpo, forte e deciso, proviene da sotto il pavimento.)");
+		nMosseRispondi(10, "x(Senti un debole lamento provenire da qualche parte indefinita...|Dietro le pareti crepitii si spostano intervallati da lunghi silenzi...|Un solo colpo, forte e deciso, proviene da sotto il pavimento.|Passi le mani sul volto perché senti qualche filo di ragnatela addosso.|Un'improvvisa folata di vento agita le foglie fuori dalla casa. Poi, tutto tace.|Hai la strana sensazione che gli oggetti ti guardino, come se avessero volti.|Spaventato, chini le spalle e guardi sopra di te. Forti scricchiolii, come se qualcosa fosse sul punto di rompersi, ma nulla vedi a cui attribuirli.|Sbadigli. Un sonno innaturale ti appesantisce, ma dopo pochi minuti ti lascia e torni vigile.)");
 }
 // Istruzioni specifiche per ciascuna scena
 function istruzioniScena(n) {
@@ -48,7 +48,7 @@ function istruzioniScena(n) {
 	switch (n) {
 	case 1:
 		testo("<br /><span style=\"color:#d7d7d7;font-size:22px;\">LA CASA © MMXVII</span>", "centrato");
-		immagine("casa.png", 468, 280);
+		immagine("casa.png");
 		testo("Un'insaziabile creatura attende nel buio...<br />", "centrato");
 		scegliVai("Entra", 14, "centrato");
 		scegliRispondi("Istruzioni", "", "centrato");
@@ -67,7 +67,7 @@ function istruzioniScena(n) {
 		uscita("sud", 4);
 		rispondi("esamino il divano", "Si tratta di un divano con disegni a fiori. Il tessuto è logoro e strappato in piú punti.");
 		rispondi("esamino il tappeto", "Il tappeto è ricoperto di polvere; in un angolo vi è una macchia scura.");
-		rispondi("[sollevo|sposto|muovo] il tappeto", "Sotto il tappeto c'è una botola.");
+		rispondi("[sollevo|sposto] il tappeto", "Sotto il tappeto c'è una botola.");
 		rispondi("esamino il tavolo", "Vedi una bottiglia e dei giornali.");
 		rispondi("esamino la bottiglia", "La bottiglia è scura e contiene una sostanza oleosa.");
 		rispondi("[bevo|prendo] la bottiglia", "Assetato bevi avidamente. Corri al bagno, ma è troppo tardi... la bottiglia conteneva olio di ricino avariato.");
@@ -148,11 +148,11 @@ function istruzioniScena(n) {
 		rispondi("osservo le ragnatele", "Curiosamente non scorgi alcun ragno...");
 		rispondi("osservo l'arredamento", "Ritieni che l'arredamento risalga a cinquanta o sessanta anni fa...");
 		rispondi("esamino la porta", "È la massiccia porta di rovere dalla quale sei entrato.");
-		rispondi("[sfondo|rompo|scasso|spacco] la porta", "È davvero massiccia e resistente, insistendo potresti giusto romperti una spalla.");
-		rispondi("[busso|picchio|calcio] [alla|la] porta|urlo", "Nessuno potrà sentirti, questa casa è piuttosto isolata.");
+		rispondi("sfondo la porta", "È davvero massiccia e resistente, insistendo potresti giusto romperti una spalla.");
+		rispondi("[busso|calcio] [alla|la] porta|urlo|piango", "Nessuno potrà sentirti, questa casa è piuttosto isolata.");
 		rispondi("esamino la credenza", "Gli sportelli a vetro riflettono una pallida figura umana e non comprendi se sei tu o qualcos'altro.");
 		rispondi("osservo la credenza", "Guardi attentamente la credenza da lontano e provi uno strano giramento di testa.");
-		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli|[busso|picchio|sfondo|rompo|scasso] [alla|la] [sportelli|credenza]", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
+		rispondiVai("apro la [credenza|sportelli]|esamino gli sportelli|[busso|rompo] [alla|la] [sportelli|credenza]", "Avvicini il volto alla credenza. D'un tratto i vetri si infrangono, dall'interno del mobile due braccia ti afferrano...", 3);
 		rispondi("esamino la madia", "Senti odore di muffa vicino alla madia. Sopra appoggiata c'è una bottiglia.");
 		rispondi("esamino la bottiglia", "È una bottiglia vuota e l'odore lascia intuire che contenesse aceto.");
 		rispondi("prendo la bottiglia", "Non pensi che una bottiglia vuota possa servirti...");

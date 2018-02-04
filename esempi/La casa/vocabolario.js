@@ -2,8 +2,8 @@
  * I predicati equivalenti (sinonimi) vanno inseriti qui solo nella forma indicativo presente prima persona
  */
 function vocabolario() {
-
 Lingua.equivalenze([
+
 /* Equivalenze fondamentali raccomandate */
 ["ovest|o|w"], ["nord|n"], ["est|e"], ["sud|s"],
 ["|il|lo|la|i|gli|le|l|gl"], ["|un|uno|una"],
@@ -17,8 +17,8 @@ Lingua.equivalenze([
 ["tra|tral|trallo|tralla|trai|tragli|tralle|tral"],
 ["fra|fral|frallo|fralla|frai|fragli|fralle|fral"],
 ["|esamino|x"], ["direzione|d"], ["guardo|g|l"],
-/* Equivalenze personalizzate valide in tutta le scene */
-["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"], ["bottiglia|bottiglietta"], ["tavolo|tavola|tavolino"], ["picchio|batto|percuoto|colpisco"], ["sportello|sportelli"], ["ragnatela|ragnatele"], ["zombie|zombi"], ["urlo|grido|strillo|sbraito|piango"]
-]);
 
+/* Equivalenze personalizzate valide in tutta le scene */
+["chiave|chiavi"], ["ombra|ombre"], ["alcol|alcool"], ["bottiglia|bottiglietta"], ["tavolo|tavola|tavolino"], ["picchio|busso|batto|percuoto|colpisco"], ["sportello|sportelli"], ["ragnatela|ragnatele"], ["zombie|zombi|mostro"], ["urlo|grido|strillo|sbraito"], ["sfondo|rompo|scasso|spacco|demolisco|distruggo"], ["sposto|muovo|scorro|trascino"], ["uccido|ammazzo|abbatto"]
+]);
 }
