@@ -36,10 +36,10 @@ function istruzioniGenerali() {
 			nMosseVai(2, 23);
 		condizioni("drekann2");
 			nMosseRispondi(2, "Il rumore si avvicina, distingui dei colpi ritmici, come ali che sbattono...");
-			__variabili("no!drekann2+drekann3");
+			__variabili("no!drekann2  drekann3");
 		condizioni("drekann");
 			nMosseRispondi(2, "Avverti un boato cupo e lontano.");
-			__variabili("no!drekann+drekann2");
+			__variabili("no!drekann  drekann2");
 	});
 	condizioni("il cuore di cromwell@i", per => {
 		rispondi("esamino il cuore [|di Cromwell|dell'abate]", "Il cuore dell'abate risulta fatto essiccare, è rigido e probabilmente è servito per un rituale.");
@@ -153,19 +153,15 @@ function istruzioniScena(n) {
 		bloccaDirezioni();
 		condizioni("ampolla bevuta");
 			rispondiVai("yggwyrd", "La parola sospende gli arcani poteri dell'abate, che tra disumane urla di dolore esclama: \"Drekann!!\" e si dissolve in una nube sulfurea...", 4);
-			__variabili("parole magiche+abate morto+drekann");
+			__variabili("parole magiche  abate morto  drekann");
 		condizioni("no!ampolla bevuta");
-			rispondi("yggwyrd", "YGGWYRD");
-			__variabili("parole magiche");
+			rispondiVai("yggwyrd", "L'espressione dell'abate è tesa e si paralizza qualche istante...", 6);
 		condizioni("no!abate morto");
 			nMosseVai(1, 6);
 		break;
 	case 6:
 		immagine("abate.png");
-		condizioni("parole magiche+no!ampolla bevuta");
-			testo("L'espressione dell'abate è tesa e si paralizza qualche istante.");
 		testo("\"Stolto! Non oserai mai piú sfidare il mio potere con le tue parole!\" esclama l'abate mentre dalle sue mani, protese verso di te, un fascio di luce ti investe e ti folgora all'istante!");
-		__variabili("no!parole magiche");
 		scegliVai("Risorgi", 4);
 		break;
 	case 7:

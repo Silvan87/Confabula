@@ -1091,9 +1091,9 @@ var I = {
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
 			if (Vista.stile.coloreRifiuto) { e_inp.style.color = Vista.stile.coloreRifiuto; } else { e_inp.className += ' coloreRifiuto'; }
 			e_inp.value = Vista.messaggiRifiuto[Math.floor((Math.random() * Vista.messaggiRifiuto.length))];
-			// Dopo 1 sec scompare il msg di rifiuto
+			// Dopo 1 sec scompare il msg di rifiuto e torna l'ordinaria casella di inserimento degli input del giocatore
 			Vista.timerFineRifiuto = setTimeout(Vista.fineRifiuto, 1000);
-			// Dopo 100 ms qualsiasi tasto che risulta premuto conclude il msg di rifiuto
+			// Dopo 100 ms qualsiasi tasto risulta premuto conclude il msg di rifiuto e la lettera premuta inizia a scrivere un nuovo input
 			setTimeout(function() {
 				document.addEventListener('keydown', Vista.fineRifiuto);
 				document.addEventListener('click', Vista.fineRifiuto);
@@ -1191,7 +1191,7 @@ var I = {
 		//   la presenza della @ indica che si tratta di un oggetto e deve seguire il nome di un contenitore
 		//   iniziare la stringa con "no!" significa che quell'oggetto o variabile va eliminato
 
-		elementi = elementi.split('+');
+		elementi = elementi.split('  ');
 		var presenza; var nome; var contenitore;
 		for (var i = 0; i < elementi.length; i++) {
 			// Se presente il "no!" l'oggetto o la variabile vanno cancellati
@@ -1661,7 +1661,7 @@ function condizioni(cond, istro) {
 	Condizioni.blocchi.push({'seOggetti': [], 'seVariabili': []});
 
 	var presenza;
-	cond = cond.split('+'); // Elenco delle condizioni su oggetti e variabili
+	cond = cond.split('  '); // Elenco delle condizioni su oggetti e variabili
 	for (var i = 0; i < cond.length; i++) {
 		// Stabilire se si tratta di un oggetto o una variabile
 		if (cond[i].indexOf('@') !== -1) { // Se contiene una chiocciola è un oggetto

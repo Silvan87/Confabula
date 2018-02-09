@@ -12,9 +12,9 @@ function istruzioniGenerali() {
 	rispondi("nord|sud|ovest|est|su|giù", "Non è possibile procedere in quella direzione.");
 	condizioni("il libro@i");
 		rispondi("[leggo|esamino] il libro", "Il libro è il diario dell'ultimo inquilino della casa. Mancano diverse pagine, ciononostante comprendi che sulla casa incombe un'antica maledizione a causa di atroci delitti lí perpetrati. Solo la Fiamma Purificatrice potrà estinguere la catena di morte.");
-	condizioni("la candela@i+i fiammiferi@i");
+	condizioni("la candela@i  i fiammiferi@i");
 		rispondi("accendo la candela con i fiammiferi", "Hai acceso la candela.");
-		__oggetti("la candela accesa@i+no!la candela@i");
+		__oggetti("la candela accesa@i  no!la candela@i");
 	condizioni("la candela@i");
 		rispondi("accendo la candela", "Devi servirti di qualcosa per accenderla.");
 	condizioni("no!la candela@i");
@@ -23,7 +23,7 @@ function istruzioniGenerali() {
 		rispondi("accendo la candela con i fiammiferi", "Non hai dei fiammiferi...");
 	condizioni("la candela accesa@i");
 		rispondi("spengo la candela [|accesa]", "Soffi sulla candela e la spegni.");
-		__oggetti("la candela@i+no!la candela accesa@i");
+		__oggetti("la candela@i  no!la candela accesa@i");
 	condizioni("il cacciavite@i");
 		rispondi("esamino il cacciavite", "È un cacciavite con la punta piatta per viti grandi.");
 	condizioni("i medicinali@i");
@@ -40,7 +40,7 @@ function istruzioniGenerali() {
 		nMosseVai(4, 10, "Il fuoco non lascia più spazio ai tuoi movimenti..."); __autoElimina();
 	});
 	condizioni("no!zombie morto");
-		nMosseRispondi(10, "x(Senti un debole lamento provenire da qualche parte indefinita...|Dietro le pareti crepitii si spostano intervallati da lunghi silenzi...|Un solo colpo, forte e deciso, proviene da sotto il pavimento.|Passi le mani sul volto perché senti qualche filo di ragnatela addosso.|Un'improvvisa folata di vento agita le foglie fuori dalla casa. Poi, tutto tace.|Hai la strana sensazione che gli oggetti ti guardino, come se avessero volti.|Spaventato, chini le spalle e guardi sopra di te. Forti scricchiolii, come se qualcosa fosse sul punto di rompersi, ma nulla vedi a cui attribuirli.|Sbadigli. Un sonno innaturale ti appesantisce, ma dopo pochi minuti ti lascia e torni vigile.)");
+		nMosseRispondi(10, "x(Senti un debole lamento provenire da qualche parte indefinita...|Dietro le pareti crepitii si spostano intervallati da lunghi silenzi...|Un solo colpo, forte e deciso, proviene da sotto il pavimento.|Passi le mani sul volto perché senti qualche filo di ragnatela addosso.|Un'improvvisa folata di vento agita le foglie fuori dalla casa. Poi, tutto tace.|Hai la strana sensazione che gli oggetti ti guardino, come se avessero volti.|Spaventato, chini le spalle e guardi sopra di te. Senti alcuni forti scricchiolii, come se qualcosa fosse sul punto di rompersi, ma non vedi nulla a cui attribuirli.|Sbadigli. Un sonno innaturale ti appesantisce, ma dopo pochi minuti ti lascia e torni vigile.)");
 }
 // Istruzioni specifiche per ciascuna scena
 function istruzioniScena(n) {
@@ -59,14 +59,16 @@ function istruzioniScena(n) {
 	case 2:
 		nomeLuogo("soggiorno");
 		immagine("soggiorno.png");
-		testo("Ti trovi nel soggiorno. Il soffitto è sorretto da grosse travi, mentre le pareti recano evidenti tracce di umidità.<br />Puoi vedere: un divano, un tappeto, un tavolo, un mobile, un caminetto, dei quadri ed un pendolo.");
+		testo("Ti trovi nel soggiorno. Il soffitto è sorretto da grosse travi, mentre le pareti recano evidenti tracce di umidità. Di fronte a te un divano con tavolo. Sulla parete, un mobile, dei quadri ed un pendolo. Aggiunge un tocco di eleganza un tappeto sul pavimento. Alle tue spalle un caminetto.");
 		condizioni("botola aperta");
 			testo("Una botola è stata aperta.");
 		uscita("ovest", 6);
 		uscita("est", 5);
 		uscita("sud", 4);
+		rispondi("osserva il soggiorno", "Se fosse ben ripulito sarebbe molto accogliente.");
 		rispondi("esamino il divano", "Si tratta di un divano con disegni a fiori. Il tessuto è logoro e strappato in piú punti.");
 		rispondi("esamino il tappeto", "Il tappeto è ricoperto di polvere; in un angolo vi è una macchia scura.");
+		rispondi("esamino la macchia [|scura]|esamino [quell|l]'angolo [|del tappeto]", "La macchia ha un colore rosso molto scuro, quasi certamente si tratta di sangue ormai seccatosi da tempo.");
 		rispondi("[sollevo|sposto] il tappeto", "Sotto il tappeto c'è una botola.");
 		rispondi("esamino il tavolo", "Vedi una bottiglia e dei giornali.");
 		rispondi("esamino la bottiglia", "La bottiglia è scura e contiene una sostanza oleosa.");
@@ -75,10 +77,13 @@ function istruzioniScena(n) {
 		rispondi("esamino il mobile", "Si tratta di un mobile bar con uno sportello.");
 		rispondi("apro lo sportello", "All'interno c'è solo un fiaschetto di whisky vuoto.");
 		rispondi("esamino il [fiaschetto|fiasco|fiaschetto di whisky|whisky]", "Il fiaschetto è proprio vuoto e non ti serve.");
-		rispondi("esamino il caminetto", "Sul caminetto è appeso un fucile. Tra la cenere noti qualcosa di strano...");
-		rispondi("prendo il fucile", "Meglio di no. È pericoloso... Potresti farti male!");
-		rispondiVai("esamino la cenere", "Sulla cenere vi sono impronte non umane. All'improvviso dalla canna fumaria esce un mostro...", 3);
+		rispondi("esamino il caminetto", "Sul caminetto è appeso un fucile. Tra la cenere noti delle impronte non umane.");
+		rispondi("esamino il fucile", "È un fucile molto vecchio e sporco di fuliggine.");
+		rispondi("prendo il fucile", "È molto vecchio, annerito dalla fuliggine, potrebbe quasi essere un oggetto d'antiquariato. Preferisci lasciarlo lì.");
+		rispondiVai("esamino la [cenere|impronte] [|non umane]", "Osservi queste orme spaventose che non riesci a ricondurre nemmeno a un animale... Alcuni respiri sopra la tua testa e dalla canna fumaria scende una creatura...", 3);
 		rispondi("esamino i quadri", "Sono strani ritratti di famiglia.");
+		rispondi("[sollevo|sposto] i quadri", "Dietro i quadri ci sono pentacoli rossi ed altri simboli esoterici.");
+		rispondi("esamino i [pentacoli|simboli] [|esoterici]", "Non riesci ad intendere l'esatto significato di ciò che vedi, ma ti sembra chiaro che si tratti di un tentativo di lanciare una maledizione.");
 		rispondi("sollevo i quadri", "Dietro i quadri non scopri nulla di rilevante.");
 		rispondi("esamino il pendolo", "L'orologio, pieno di polvere e ragnatele, è fermo con le lancette sulle 12. Mezzanotte è l'ora delle streghe.");
 		condizioni("il cacciavite@i");
@@ -106,7 +111,7 @@ function istruzioniScena(n) {
 	case 4:
 		nomeLuogo("camera da letto|camera");
 		immagine("camera.png");
-		testo("Sei nella camera da letto. La stanza è piena di polvere. Puoi vedere: un armadio, una sedia, ed un letto con comodino.");
+		testo("Sei nella camera da letto. La stanza è piena di polvere. I mobili sono ben lavorati, come il letto con comodino e la sedia al suo fianco. Sulla parete un ampio armadio e dei quadri.");
 		uscita("nord", 2);
 		rispondi("aiuto", "A volte sotto i mobili si può trovare qualcosa di interessante.");
 		rispondi("esamino l'armadio", "All'interno del mobile vedi dei vecchi vestiti a brandelli ed ammuffiti.");
@@ -116,13 +121,13 @@ function istruzioniScena(n) {
 			rispondi("guardo sotto l'armadio", "Vedi un vecchio libro rilegato in pelle.");
 		condizioni("il libro@sotto armadio");
 			rispondi("prendo il libro", "Hai preso il libro.");
-			__oggetti("il libro@i+no!il libro@sotto armadio");
+			__oggetti("il libro@i  no!il libro@sotto armadio");
 		rispondiVai("[esamino|guardo sotto] il letto", "Ti chini per guardare sotto il letto; là sotto qualcosa si muove...", 3);
 		contenitore("comodino", "una|la candela");
 		condizioni("la candela@comodino", per => {
 			rispondi("esamino il comodino", "All'interno del comodino trovi una candela.");
 			rispondi("prendo la candela", "Hai preso la candela.");
-			__oggetti("la candela@i+no!la candela@comodino");
+			__oggetti("la candela@i  no!la candela@comodino");
 		});
 		condizioni("no!la candela@comodino");
 			rispondi("esamino il comodino", "L'interno del comodino è vuoto.");
@@ -166,32 +171,32 @@ function istruzioniScena(n) {
 			rispondi("esamino il cucinino", "Sul cucinino non c'è niente di appoggiato.");
 		condizioni("i fiammiferi@cucinino");
 			rispondi("prendo i fiammiferi", "Hai preso i fiammiferi.");
-			__oggetti("i fiammiferi@i+no!i fiammiferi@cucinino");
+			__oggetti("i fiammiferi@i  no!i fiammiferi@cucinino");
 		rispondi("esamino il forno [|a legna]", "Il forno a legna contiene resti umani carbonizzati.");
 		rispondi("esamino il tavolo", "Sul tavolo ci sono coltelli da cucina insanguinati ed un paio di forbici. Preferisci non toccare nulla. Se ti servirà qualcosa, meglio arnesi non coinvolti in qualche crimine.");
 		rispondi("esamino il contatore [|generale]", "Il contatore gira all'impazzata nonostante le luci delle stanze siano spente.");
-		condizioni("la chiave@i+incendio");
+		condizioni("la chiave@i  incendio");
 			rispondiVai("apro la porta con la chiave", "Hai aperto la porta ed esci...", 12);
-		condizioni("la chiave@i+no!incendio");
+		condizioni("la chiave@i  no!incendio");
 			rispondiVai("apro la porta con la chiave", "Hai aperto la porta ed esci...", 13);
 		break;
 	case 6:
 		nomeLuogo("bagno");
 		immagine("bagno.png");
-		testo("Ti trovi nel bagno. Si tratta di un ambiente angusto dalle pareti rivestite in legno di abete e con il pavimento piastrellato.<br />Puoi vedere: le assi di legno, un armadietto, un lavandino, la vasca da bagno, uno specchio, il wc ed un armadio.");
+		testo("Ti trovi nel bagno. Si tratta di un ambiente angusto dalle pareti rivestite in legno di abete e con il pavimento piastrellato.<br />Puoi vedere: un armadietto, un lavandino, la vasca da bagno, uno specchio, il wc ed un armadio.");
 		uscita("est", 2);
 		rispondi("aiuto", "Noti niente di strano qua dentro?");
 		rispondi("[esamino|apro] l'armadietto", "L'armadietto contiene: @armadietto bagno@.");
 		contenitore("armadietto bagno", "un|il cacciavite+dei|i medicinali+una|la bottiglietta d'alcol");
 		condizioni("il cacciavite@armadietto bagno");
 			rispondi("prendo il cacciavite", "Hai preso il cacciavite.");
-			__oggetti("il cacciavite@i+no!il cacciavite@armadietto bagno");
+			__oggetti("il cacciavite@i  no!il cacciavite@armadietto bagno");
 		condizioni("i medicinali@armadietto bagno");
 			rispondi("prendo i medicinali", "Hai preso i medicinali.");
-			__oggetti("i medicinali@i+no!i medicinali@armadietto bagno");
+			__oggetti("i medicinali@i  no!i medicinali@armadietto bagno");
 		condizioni("la bottiglietta d'alcol@armadietto bagno");
 			rispondi("prendo [l'alcol|la bottiglietta|la bottiglietta d'alcol]", "Hai preso la bottiglietta d'alcol.");
-			__oggetti("la bottiglietta d'alcol@i+no!la bottiglietta d'alcol@armadietto bagno");
+			__oggetti("la bottiglietta d'alcol@i  no!la bottiglietta d'alcol@armadietto bagno");
 		rispondi("esamino il lavandino", "Il lavandino è lordo di sangue fresco. Dentro c'è un coltello da cucina anch'esso insanguinato.");
 		rispondi("[esamino|prendo] il coltello", "Date le condizioni è meglio non toccarlo...");
 		rispondi("esamino la vasca [|da bagno]", "Dentro la vasca vi è il cadavere di un uomo con la trachea squarciata.");
@@ -207,10 +212,10 @@ function istruzioniScena(n) {
 			rispondi("mangio i medicinali", "Non ci sono pasticche tra i medicinali.");
 		condizioni("la bottiglietta d'alcol@armadietto bagno");
 			rispondi("esamino [l'alcol|la bottiglietta|la bottiglietta d'alcol]", "È alcol puro, facilmente infiammabile.");
-		rispondi("esamino le assi [|di legno]", "Le assi di legno che formano le pareti sono marce.");
+		rispondi("osservo le [pareti|legno|assi] [|di legno]", "Le assi di legno che formano le pareti sono marce.");
 		condizioni("no!assi sfondate");
 			rispondi("[sfondo|rompo] le assi", "Devi aiutarti con qualcosa per sfondarle.");
-		condizioni("la scure@i+no!assi sfondate");
+		condizioni("la scure@i  no!assi sfondate");
 			rispondi("[sfondo|rompo] le assi [|di legno|marce] con la scure", "Impugni l'ascia e colpisci le assi. Dietro le assi fracassate intravvedi una buia cavità.");
 			__variabili("assi sfondate");
 		condizioni("assi sfondate");
@@ -239,10 +244,10 @@ function istruzioniScena(n) {
 		contenitore("penombra cantina", "una|la scure");
 		condizioni("la scure@penombra cantina");
 			rispondi("prendo la scure", "Hai preso la scure.");
-			__oggetti("la scure@i+no!la scure@penombra cantina");
+			__oggetti("la scure@i  no!la scure@penombra cantina");
 		condizioni("la candela accesa@i");
 			rispondiVai("spengo la candela [|accesa]", "Soffiando sulla candela, la fiamma trema un'ultima volta e ti ritrovi al buio...", 8);
-			__oggetti("la candela@i+no!la candela accesa@i");
+			__oggetti("la candela@i  no!la candela accesa@i");
 		break;
 	case 8:
 		intermezzo("Senti l'ombra densa e pesante qua sotto. Senza una causa ragionevole, la botola si chiude con un tonfo...");
@@ -298,7 +303,8 @@ function istruzioniScena(n) {
 		break;
 	case 14:
 		immagine("casa.png");
-		testo("\"Casa in vendita\", una vecchia abitazione, menzionata con timore dalla gente del posto, luogo di omicidi e strane presenze. In cerca di un alloggio a basso prezzo, con coraggio decidi di visitare anche questo antro dell'orrore. L'agente immobiliare ti avrebbe preceduto per controllare che tutto fosse in ordine.");
+		testo("\"Casa in vendita\", una vecchia abitazione, menzionata con timore dalla gente del posto, luogo di omicidi e strane presenze.");
+		testo("In cerca di un alloggio a basso prezzo, con coraggio decidi di visitare anche questo antro dell'orrore. L'agente immobiliare ti avrebbe preceduto per controllare che tutto fosse in ordine.");
 		scegliVai("Visita la casa", 5, "centrato");
 		break;
 	}
