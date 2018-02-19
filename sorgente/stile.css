@@ -8,7 +8,7 @@
 .testoGrandezza { font-size: 20px; line-height: 1.2em; }
 .testoAllineamento { text-align: left; }
 .coloreScelta { color: #9C8159; }
-.coloreScelta:hover /*colore scelta selezionata*/ { color: #cc0; }
+.coloreScelta:hover, .tabLink /*colore scelta selezionata*/ { color: #cc0; }
 .coloreRifiuto { color: #c60 !important; }
 a { /*colore link*/ color: #7E45B0; }
 a:hover { /*colore link selezionato*/ color: #9F57DE; }

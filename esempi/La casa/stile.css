@@ -11,7 +11,7 @@
 .testoGrandezza { font-size: 19.5px; letter-spacing: -2px; line-height: 22px; word-spacing: -4px; }
 .testoAllineamento { text-align: left; }
 .coloreScelta { color: #990; }
-.coloreScelta:hover /*colore scelta selezionata*/ { color: #cc0; }
+.coloreScelta:hover, .tabLink /*colore scelta selezionata*/ { color: #cc0; }
 .coloreRifiuto { color: #c60 !important; }
 a { /*colore link*/ color: #7E45B0; }
 a:hover { /*colore link selezionato*/ color: #9F57DE; }
@@ -23,15 +23,15 @@ html {
 	overflow-y: scroll;
 }
 ::-webkit-scrollbar {
-	background:#000;
-	width:10px;
+	background: #000;
+	width: 10px;
 }
 ::-webkit-scrollbar-thumb {
-	background:#666;
-	border-radius:10px;
+	background: #666;
+	border-radius: 10px;
 }
 ::-webkit-scrollbar-track {
-	background:#000;
+	background: #000;
 }
 body {
 	text-align: center;

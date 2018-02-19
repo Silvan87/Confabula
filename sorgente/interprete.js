@@ -1,3 +1,35 @@
+// Aggiunge meccanismo di selezione link da tastiera
+document.addEventListener('keydown', function(event) {
+
+	// Se viene premuto TAB seleziona ciclicamente tutti i link
+    if (event.keyCode === 9) {
+		event.preventDefault();
+		var list = document.getElementsByClassName('scelta');
+        for (var i = 0; i < list.length; i++) {
+			if (list[i].classList.contains('tabLink')) {
+				list[i].classList.remove('tabLink');
+				if (i + 1 < list.length) {
+					list[i + 1].classList.add('tabLink');
+					document.getElementById('input').blur();
+				} else {
+					G.pronto();
+				}
+				return;
+			}
+		}
+		list[0].classList.add('tabLink');
+		document.getElementById('input').blur();
+
+	// Se viene premuto invio o spazio, clicca sul link
+    } else if (event.keyCode === 13 || event.keyCode === 32) {
+		var list = document.getElementsByClassName('tabLink');
+		if (list.length !== 0) {
+			event.preventDefault();
+			list[0].click();
+		}
+	}
+});
+
 var Lingua = {
 
 	equivalenzeOrd: {}, // equivalenze ordinate
@@ -1387,11 +1419,11 @@ var I = {
 					iR['input'] = istro.nome;
 					iR['output'] = istro.output.replace(/'/g, '"');
 					if (istro.al2 !== undefined) istro['allineamento'] = istro.al2;
-					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.eseguiIstruzione('+JSON.stringify(iR).replace(/"/g, '\'')+'); Vista.fondoPagina();">'+ istro.nome +'</p>';
+					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.remove(); I.eseguiIstruzione('+JSON.stringify(iR).replace(/"/g, '\'')+'); Vista.fondoPagina();">'+ istro.nome +'</p>';
 				} else {
 					if (istro.al2 !== undefined) { istro.al2 = ', {\'outAli\':\''+istro.al2+'\'}'; } else { istro.al2 = ''; }
 					istro.nome = istro.nome.replace(/'/g, '"').replace(/"/g, '\'');
-					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.style.display = \'none\'; I.scriviInput(\''+istro.nome+'\''+istro.al2+');">'+ istro.nome +'</p>';
+					Vista.scelte += '<p class="scelta coloreScelta" '+ istro.al1 +' onclick="this.remove(); I.scriviInput(\''+istro.nome+'\''+istro.al2+');">'+ istro.nome +'</p>';
 				}
 			break;
 			case 'scegliVai':

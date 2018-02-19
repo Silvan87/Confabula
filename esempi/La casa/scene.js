@@ -2,7 +2,7 @@
 function istruzioniGenerali() {
 	nomeStoria("La casa");
 	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
-	istruzioni("Per interagire inizia sempre con un predicato. Puoi usare la prima persona o l'imperativo. Puoi omettere gli articoli ed i predicati 'esamino' ed 'osservo'. Tutti gli oggetti e i luoghi possono essere esaminati od osservati. Se non si specifica il predicato, prima di 'osservo' viene provato 'esamino'. Scrivi 'guardo' o 'g' per ripresentare una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' per rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali. È possibile salvare una partita con 'save' o caricarla con 'load'. I comandi speciali: istruzioni, save (salva), load (carica), restart (riavvia), quit (exit), non sono contati come mosse del giocatore, dunque non fanno scorrere il tempo e ciò è segnalato dal diverso colore della risposta.");
+	istruzioni("Per interagire inizia sempre con un predicato. Puoi usare la prima persona o l'imperativo. Puoi omettere gli articoli ed i predicati 'esamino' ed 'osservo'. Tutti gli oggetti e i luoghi possono essere esaminati od osservati. Se non si specifica il predicato, prima viene provato 'esamino' poi 'osservo'. Scrivi 'guardo' o 'g' per ripresentare una scena; 'inventario' o 'i' per consultarlo; 'istruzioni' per rileggerle. Raggiungi un luogo già visitato scrivendo 'direzione' o 'd' e 'nome luogo'. I luoghi raggiungibili sono consultabili scrivendo 'direzioni' o 'd'. I luoghi possono avere comportamenti speciali. È possibile salvare una partita con 'save' o caricarla con 'load'. I comandi speciali: istruzioni, save (salva), load (carica), restart (riavvia), quit (exit), non sono contati come mosse del giocatore, dunque non fanno scorrere il tempo e ciò è segnalato dal diverso colore della risposta. Le scelte selezionabili si possono cliccare con il mouse oppure raggiungere con TAB e poi premere invio o spazio.");
 	uscita("guardo", 0, "invisibile");
 	rispondi("vocabolario|v", "accendo, aiuto, apro, aspetto, bevo, entro, esamino, esco, forzo, guardo, inventario, leggo, mangio, osservo, prendo, rompo, scendo, sfondo, sollevo, spengo, uccido, verso");
 	contenitore("i", "");
@@ -230,7 +230,7 @@ function istruzioniScena(n) {
 	case 7:
 		nomeLuogo("cantina");
 		immagine("cantina.png");
-		testo("Ti trovi nella cantina. L'ambiente umido e buio è pervaso da un pungente odore di muffa e roba marcia.<br />Puoi vedere: alcuni scaffali, delle bottiglie, un baule e delle scatole. La debole candela lascia alcune zone in ombra.");
+		testo("Ti trovi nella cantina. L'ambiente umido e buio è pervaso da un pungente odore di muffa e roba marcia. Attorno a te, alcuni scaffali, delle bottiglie, un baule e delle scatole. La debole candela lascia alcune zone in ombra.");
 		rispondiVai("su|esco [|dalla botola]", "Sali su una scaletta che ti riporta fuori dalla botola...", 2);
 		uscita("su", 2);
 		rispondi("esamino gli scaffali", "Sono robusti scaffali in legno di quercia ricoperti di polvere.");
@@ -256,7 +256,7 @@ function istruzioniScena(n) {
 		break;
 	case 9:
 		immagine("cavita.png");
-		testo("Sei nella cavità dietro le assi che rivestivano il bagno. Nell'aria c'è una puzza insopportabile.<br />Puoi vedere: un cadavere in avanzato stato di decomposizione, una nicchia.");
+		testo("Sei nella cavità dietro le assi che rivestivano il bagno. Nell'aria c'è una puzza insopportabile. Un cadavere è in avanzato stato di decomposizione. Lateralmente, una nicchia.");
 		nomeLuogo("cavità segreta|cavità|buia cavità");
 		condizioni("no!zombie morto");
 			rispondi("est|bagno", "Il cadavere ti afferra per una caviglia e non ti lascia andare.");
