@@ -78,6 +78,9 @@ img {
 	margin: 0;
 	cursor: pointer;
 }
+.tabLink {
+	text-decoration: underline;
+}
 .ribaltato {
 	transform: rotate(180deg);
 }

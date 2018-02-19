@@ -1,8 +1,14 @@
-// Aggiunge meccanismo di selezione link da tastiera
+// Aggiunge meccanismo di selezione link con Tab da tastiera
 document.addEventListener('keydown', function(event) {
 
-	// Se viene premuto TAB seleziona ciclicamente tutti i link
-    if (event.keyCode === 9) {
+	// Se viene premuto Shift + Tab torna alla casella input del giocatore
+	if (event.shiftKey && event.keyCode === 9) {
+		event.preventDefault();
+		Vista.annullaTabLink();
+		G.pronto();
+
+	// Se viene premuto Tab seleziona ciclicamente tutti i link
+    } else if (event.keyCode === 9) {
 		event.preventDefault();
 		var list = document.getElementsByClassName('scelta');
         for (var i = 0; i < list.length; i++) {
@@ -20,7 +26,7 @@ document.addEventListener('keydown', function(event) {
 		list[0].classList.add('tabLink');
 		document.getElementById('input').blur();
 
-	// Se viene premuto invio o spazio, clicca sul link
+	// Se viene premuto Invio o Spazio, clicca sul link
     } else if (event.keyCode === 13 || event.keyCode === 32) {
 		var list = document.getElementsByClassName('tabLink');
 		if (list.length !== 0) {
@@ -637,6 +643,10 @@ var Vista = {
 				window.scroll(0, Vista.hTestoP);
 			}
 		}
+	},
+	annullaTabLink: function() {
+		var list = document.getElementsByClassName('tabLink');
+		if (list.length !== 0) list[0].classList.remove('tabLink');
 	},
 
 	eseguiAudio: function(aud) {
