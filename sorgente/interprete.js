@@ -651,7 +651,7 @@ var Vista = {
 
 	eseguiAudio: function(aud) {
 		var e_aud = document.getElementById('audio');
-		e_aud.innerHTML = '<audio src="' + aud + '" autoplay="autoplay"></audio>';
+		e_aud.innerHTML = '<audio src="' + Risorse[aud] + '" autoplay="autoplay"></audio>';
 	},
 	scorriCronoInput: function(n) {
 		// L'evento keydown disabilita input box per non vedere il cursore del testo (spiacevole perché andando all'indietro con la cronologia input, il cursore si colloca prima all'inizio e poi alla fine). L'unica soluzione valida è disabilitare input box e farlo tornare pronto dopo pochissimo tempo
@@ -1288,10 +1288,10 @@ var I = {
 			if (istro.h === undefined) { istro.h = ''; } else { istro.h = ' height="'+istro.h+'"'; }
 			if (istro.sostituisci === 1) {
 				var ee_img = document.getElementsByTagName('img');
-				ee_img[ee_img.length - 1].outerHTML = '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.immagine +'" />';
+				ee_img[ee_img.length - 1].outerHTML = '<img style="display:block;" '+ istro.w + istro.h +' src="'+ Risorse[istro.immagine] +'" />';
 				Vista.testo = e_txt.innerHTML;
 			} else {
-				Vista.testo += '<img style="display:block;" '+ istro.w + istro.h +' src="'+ istro.immagine +'" />';
+				Vista.testo += '<img style="display:block;" '+ istro.w + istro.h +' src="'+ Risorse[istro.immagine] +'" />';
 			}
 		}
 
@@ -1300,7 +1300,7 @@ var I = {
 		if (istro.variabili) I.impostaOggVar(istro.variabili);
 
 		// Gestisci funzione agganciata __audio
-		if (istro.audio) eseguiAudio(istro.audio);
+		if (istro.audio) Vista.eseguiAudio(istro.audio);
 
 		// Prepara alcuni aspetti dello stile
 		var all = ''; if (istro.allineamento) all = Vista.cssAll(istro.allineamento);

@@ -1,7 +1,7 @@
 
 /** Stile personalizzabile **/
 
-@font-face { font-family: "commodore"; src: url("commodore.ttf"); }
+@font-face { font-family: "commodore"; src: url("risorse/commodore.ttf"); }
 /* Commodore64 Pixelized Free Font - http://all-free-download.com/font/download/commodore_64_pixelized_13026.html */
 
 .coloreSfondo { background-color: #000; }
