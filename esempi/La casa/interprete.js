@@ -1,1 +1,0 @@
-/home/silvano/Scrivania/Confabula/sorgente/interprete.js
