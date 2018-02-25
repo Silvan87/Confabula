@@ -7,16 +7,17 @@
 <style>
 body { margin:8px auto; max-width:550px; line-height:125%; text-align:left; font-family:sans-serif; font-size:14px; background:#eee; }
 h1 { margin:16px 0; font-size:24px; color:#444; }
-p, input, button { margin:0 0 8px 0; }
+div, p, input, button { margin:0 0 8px 0; }
 input, button { display:block; font-family:sans-serif; font-size:14px; }
+div.spazio { display:block; height:2px; background:#ccc; }
 </style>
 <script>
-var i = 0; var out = '';
+var i = 0, out = '';
 
-function avviaDownload(f, str) {
+function avviaDownload(nome) {
   var a = document.createElement('a');
-  a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(str));
-  a.setAttribute('download', f);
+  a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(out));
+  a.setAttribute('download', nome);
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
@@ -27,7 +28,7 @@ function aggiungiRisorsa() {
 	var inp = document.getElementById('file');
 	if (i === inp.files.length) {
 		out += "\n}";
-		avviaDownload('risorse.js', out);
+		avviaDownload('risorse.js');
 	} else {
 		var file = inp.files[i];
 		var reader = new FileReader();
@@ -56,6 +57,8 @@ function generaFileRisorse() {
 <h1>Aggregatore risorse</h1>
 <p>Selezionare tutti i file risorsa (immagini, audio, font, ecc.), precedentemente collocati nella cartella 'risorse', poi generare un unico file risorse.js premendo sul pulsante:</p>
 <input type="file" id="file" multiple />
+<div class="spazio"></div>
+
 <button onclick="generaFileRisorse()">Genera file risorse.js</button>
 <p>Il file risorse.js andrà collocato nella cartella della storia interattiva, dove si trova, per esempio, il file scene.js</p>
 </body>

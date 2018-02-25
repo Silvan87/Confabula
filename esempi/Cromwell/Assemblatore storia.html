@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Assemblatore storia</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1.0, minimum-scale=1.0, maximum-scale=3.0">
+<style>
+body { margin:8px auto; max-width:550px; line-height:125%; text-align:left; font-family:sans-serif; font-size:14px; background:#eee; }
+h1 { margin:16px 0; font-size:24px; color:#444; }
+div, p, input, button { margin:0 0 8px 0; }
+input, button { display:block; font-family:sans-serif; font-size:14px; }
+#risorseCss { display:inline-block; vertical-align:top; }
+div.spazio { display:block; height:2px; background:#ccc; }
+</style>
+<script>
+var out = []; // Array di stringhe che costituisce il file finale generato
+var risorsePronte = 0;
+
+function avviaDownload(nome) {
+  var a = document.createElement('a');
+  a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(out.join('\n')));
+  a.setAttribute('download', nome);
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+function indFile(nome) {
+	// Trova l'indice del file
+	var inp = document.getElementById('file');
+	for (var i = 0; i < inp.files.length; i++) { // i: indice file
+		if (inp.files[i].name === nome) return i;
+	}
+}
+function aggiungiFile(nome) {
+	var inp = document.getElementById('file');
+	var file = inp.files[indFile(nome)];
+	if (file === undefined) {
+		alert('Il file '+nome+' non è stato selezionato.\nImpossibile procedere.');
+		return;
+	}
+	var reader = new FileReader();
+
+	switch (nome) {
+		case 'risorse.js': // Riga 9
+			reader.onloadend = function() {
+				out[8] = '\<script\>\n' + reader.result + '\n\</script\>';
+				// Carica le risorse per recuperare eventuali file font o immagini usate nel css
+				if (risorsePronte === 0) {
+					var s = document.createElement('script');
+					s.innerHTML = reader.result;
+					document.head.appendChild(s);
+					setTimeout(function() { aggiungiFile('stile.css'); }, 200);
+					risorsePronte = 1;
+				} else {
+					aggiungiFile('stile.css');
+				}
+			}
+		break;
+		case 'stile.css': // Riga 7
+			reader.onloadend = function() {
+				out[6] = '\<style\>\n' + reader.result + '\n\</style\>';
+				// Ricerca i file risorsa usati e li sostituisce con stringhe in base64
+				var arrayURL = [], nomeRisorsa = '';
+				var p = 0, pp = 0; // p: posizione url , pp: posizione url precedente
+				arrayURL = out[6].match(/url\(["']?risorse\/[\S ]+?\.[\S ]+?["']?\)/mg);
+				for (var u = 0; u < arrayURL.length; u++) { // u: indice url
+					p = out[6].indexOf(arrayURL[u], pp);
+					if (p !== -1) {
+						// Prova a recuperare il nome senza virgolette
+						nomeRisorsa = arrayURL[u].substr(12, arrayURL[u].length - 13);
+						// Se il risultato è anomalo, prova a recuperare il nome con le virgolette
+						if (nomeRisorsa.substr(0, 1) === '/') {
+							nomeRisorsa = arrayURL[u].substr(13, arrayURL[u].length - 15);
+						}
+						if (nomeRisorsa in Risorse) {
+							out[6] = out[6].substr(0, p) + 'url("' + Risorse[nomeRisorsa] + '")' + out[6].substr(p + arrayURL[u].length);
+							pp = p + 7 + Risorse[nomeRisorsa].length;
+							if (!document.getElementById('risorseCss').checked) {
+								// La risorsa inserita nel CSS va rimossa dalle risorse JS
+								out[8] = out[8].split('\n');
+								for (var r = 0; r < out[8].length; r++) {
+									if (out[8][r].startsWith(nomeRisorsa, 1)) {
+										out[8].splice(r, 1);
+										break;
+									}
+								}
+								out[8] = out[8].join('\n');
+							}
+						} else {
+							pp = p;
+						}
+					}
+				}
+				aggiungiFile('interprete-min.js');
+			}
+		break;
+		case 'interprete-min.js': // Riga 8
+			reader.onloadend = function() { out[7] = '\<script\>\n' + reader.result + '\n\</script\>'; aggiungiFile('vocabolario.js'); }
+		break;
+		case 'vocabolario.js': // Riga 10
+			reader.onloadend = function() { out[9] = '\<script\>\n' + reader.result + '\n\</script\>'; aggiungiFile('scene.js'); }
+		break;
+		case 'scene.js': // Riga 11
+			reader.onloadend = function() {
+				out[10] = '\<script\>\n' + reader.result + '\n\</script\>';
+				var txt = document.getElementById('nome').value;
+				if (txt.substr(-5) !== '.html' && txt.substr(-4) !== '.htm') txt += '.html';
+				avviaDownload(txt);
+			}
+		break;
+	}
+	reader.readAsText(file);
+}
+function generaFileStoria() {
+	out = [];
+	var inp = document.getElementById('file');
+	var file = inp.files[indFile('INIZIA.html')];
+	if (file === undefined) {
+		alert('Il file INIZIA.html non è stato selezionato.\nImpossibile procedere.');
+		return;
+	}
+	var reader = new FileReader();
+	reader.onloadend = function() {
+		out = reader.result.split('\n');
+		aggiungiFile('risorse.js');
+	}
+	reader.readAsText(file);
+}
+</script>
+</head>
+<body>
+<h1>Assemblatore storia</h1>
+<p>Selezionare esattamente i file: INIZIA.html, interprete-min.js, scene.js, stile.css, risorse.js, vocabolario.js. Essendo questa un'applicazione JavaScript, per ragioni di sicurezza, si è obbligati a selezionare manualmente i file.</p>
+<input type="file" id="file" multiple />
+<div class="spazio"></div>
+
+<p>Selezionare la casella sottostante se le risorse inserite nel file stile.css sono state usate anche nel file scene.js. Se non si comprende questa indicazione, l'uso altamente frequente è lasciare la casella non selezionata.</p>
+<input type="checkbox" id="risorseCss">
+<label for="risorseCss">Conserva le risorse inserite nel file CSS, anche nel file JS</label>
+<div class="spazio"></div>
+
+<p>Inserire il nome desiderato per il file da distribuire:</p>
+<input type="text" id="nome" />
+<div class="spazio"></div>
+
+<button onclick="generaFileStoria()">Genera file unico html</button>
+<p>Il file html generato può essere condiviso da solo (senza altri file) ed è collocabile in qualsiasi cartella. Il file funzionerà su qualsiasi browser moderno ed aggiornato avviandosi con un doppio click.</p>
+</body>
+</html>
