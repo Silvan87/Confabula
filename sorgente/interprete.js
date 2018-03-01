@@ -1049,8 +1049,13 @@ var I = {
 			if (A.length === 0) break;
 			for (var a = 0; a < A.length; a++) { // a: indice azione
 
-				// Se c'è stato un cambio di scena e l'azione corrente è di scena, allora la ignora
-				if (cambioScena === 1 && A[a][0] === 'scena') continue;
+				// Se c'è stato un cambio di scena e...
+				if (cambioScena === 1) {
+					// ...l'azione corrente è di scena, allora la ignora
+					if (A[a][0] === 'scena') continue;
+					// ...l'azione corrente è generale, ma non prevede un cambio di scena e non scatta dopo nMosse, allora la ignora
+					if (A[a][0] === 'generali' && S.Istruzioni.generali[A[a][1]].azione !== 'vaiA' && S.Istruzioni.generali[A[a][1]].azione !== 'rispondiVai' && S.Istruzioni[A[a][0]][A[a][1]].mosse === undefined) continue;
+				}
 
 				// Le azioni vengono ciclate per ciascun criterio di esecuzione, secondo il seguente ordine
 				switch (o) {

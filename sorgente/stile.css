@@ -70,6 +70,9 @@ img {
 	margin: 0;
 	cursor: pointer;
 }
+.tabLink {
+	text-decoration: underline;
+}
 .ascii {
 	display:block;
 	white-space:pre;

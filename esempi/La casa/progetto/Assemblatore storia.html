@@ -174,8 +174,8 @@ function aggiungiFile(nome) {
 
 				// Elimina i commenti dalle scene (sono permessi solo /**/)
 				out[10] = out[10].replace(/\/\*[\s\S]*?\*\//mg, '');
-				// Elimina tabulazioni, spazi ed invii ripetuti o non necessari
-				out[10] = out[10].replace(/[ \t\n]+/mg, ' ');
+				// Elimina tabulazioni ed invii ripetuti o non necessari (preserva doppio spazio '  ')
+				out[10] = out[10].replace(/[\t\n]+/mg, ' ');
 				// Aggiunge i tag script
 				out[10] = '\<script\>\n' + out[10].trim() + '\n\</script\>';
 
