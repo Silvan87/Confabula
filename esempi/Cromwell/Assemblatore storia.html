@@ -9,13 +9,27 @@ body { margin:8px auto; max-width:550px; line-height:125%; text-align:left; font
 h1 { margin:16px 0; font-size:24px; color:#444; }
 div, p, input, button { margin:0 0 8px 0; }
 input, button { display:block; font-family:sans-serif; font-size:14px; }
-#risorseCss { display:inline-block; vertical-align:top; }
+#risorseCss, #vigenere { display:inline-block; vertical-align:top; }
 div.spazio { display:block; height:2px; background:#ccc; }
 </style>
 <script>
 var out = []; // Array di stringhe che costituisce il file finale generato
+var sV = ''; // sV: script Vigenère (formato stringa)
 var risorsePronte = 0;
 
+function creaScriptVigenere() {
+	sV = 'V = {\n';
+	sV += "ab:' !\"#$%&\\\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\\\]^_`abcdefghijklmnopqrstuvwxyz{|}~¡¢£¤¥¦§©ª«¬®¯°±²³´µ·¹º»¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿĈĉČčĐđħŒœŜŝŠšŨũŮůŽž˂˃˄˅ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩαβγδεζηθικλμνξοπρστυφχψω€†‡•‣…‰√∝∞',\n";
+	sV += "c1:'',\n" + "c2:'',\n";
+	sV += "ab_c1:{},\nab_c2:{},\nc1_ab:{},\nc2_ab:{},\n";
+	sV += "creaCifrario: function() { var arrayAB = V.ab.split(''); var cfr = '', r = 0; var m = arrayAB.length; for (var n = 0; n < m; n++) { r = Math.floor((Math.random() * (arrayAB.length))); cfr += arrayAB[r]; arrayAB.splice(r, 1); } return cfr; },\n";
+	sV += "creaMappa: function(m1, m2) { var verso = m1+'_'+m2; switch (m1) { case 'ab': m1 = V.ab.split(''); break; case 'c1': m1 = V.c1.split(''); break; case 'c2': m1 = V.c2.split(''); break; } switch (m2) { case 'ab': m2 = V.ab.split(''); break; case 'c1': m2 = V.c1.split(''); break; case 'c2': m2 = V.c2.split(''); break; } for (var n = 0; n < m1.length; n++) { V[verso][m1[n]] = m2[n]; }},\n";
+	sV += "inizializza: function() { V.c1 = V.creaCifrario(); V.c2 = V.creaCifrario(); V.creaMappa('ab','c1'); V.creaMappa('ab','c2'); },\n";
+	sV += "cifra: function(str) { var c = 0; str = String(str); return str.replace(/[\\s\\S]/g, function(m) { c++; if (V.ab.indexOf(m) === -1) return m; if (c % 2 === 0) {return V.ab_c1[m];} else {return V.ab_c2[m];}});}\n}";
+	eval(sV);
+	// Inizializza cifrario Vigenère
+	V.inizializza();
+}
 function avviaDownload(nome) {
   var a = document.createElement('a');
   a.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(out.join('\n')));
@@ -59,7 +73,8 @@ function aggiungiFile(nome) {
 		break;
 		case 'stile.css': // Riga 7
 			reader.onloadend = function() {
-				out[6] = '\<style\>\n' + reader.result + '\n\</style\>';
+				out[6] = reader.result;
+
 				// Ricerca i file risorsa usati e li sostituisce con stringhe in base64
 				var arrayURL = [], nomeRisorsa = '';
 				var p = 0, pp = 0; // p: posizione url , pp: posizione url precedente
@@ -92,6 +107,37 @@ function aggiungiFile(nome) {
 						}
 					}
 				}
+
+				// Elimina i commenti dal foglio di stile (sono permessi solo /**/)
+				out[6] = out[6].replace(/\/\*[\s\S]*?\*\//mg, '');
+				// Elimina tabulazioni, spazi ed invii ripetuti o non necessari
+				out[6] = out[6].replace(/[\s]+/mg, ' ').trim();
+				out[6] = out[6].replace(/{ /mg, '{').replace(/ }/mg, '}');
+				out[6] = out[6].replace(/, /mg, ',').replace(/: /mg, ':').replace(/; /mg, ';');
+				// Aggiunge i tag script
+				out[6] = '\<style\>\n' + out[6].trim() + '\n\</style\>';
+
+				// Siccome il file risorse.js è stato ormai usato, si può eventualmente cifrare
+				if (document.getElementById('vigenere').checked) {
+					// Prepara funzione per cifrare i nomi delle risorse
+					var cifraRisorse = function() {
+						out[8] = out[8].split('\n');
+						var l = 0; // l: lunghezza nome risorsa
+						var s = ''; // s: stringa nome risorsa
+						for (var r = 2; r < out[8].length - 2; r++) {
+							l = out[8][r].indexOf("'", 1);
+							s = out[8][r].substr(1, l - 1);
+							out[8][r] = "'" + V.cifra(s).replace(/\\/g, '\\\\').replace(/'/g, '\\\'') + out[8][r].substr(l);
+						}
+						out[8] = out[8].join('\n');
+					}
+					// Crea ed usa lo script per il cifrario di Vigenère
+					if (typeof(V) === 'undefined') {
+						creaScriptVigenere();
+						setTimeout(function() { cifraRisorse(); aggiungiFile('interprete-min.js'); }, 400);
+						return;
+					}
+				}
 				aggiungiFile('interprete-min.js');
 			}
 		break;
@@ -99,11 +145,71 @@ function aggiungiFile(nome) {
 			reader.onloadend = function() { out[7] = '\<script\>\n' + reader.result + '\n\</script\>'; aggiungiFile('vocabolario.js'); }
 		break;
 		case 'vocabolario.js': // Riga 10
-			reader.onloadend = function() { out[9] = '\<script\>\n' + reader.result + '\n\</script\>'; aggiungiFile('scene.js'); }
+			reader.onloadend = function() {
+				out[9] = reader.result;
+
+				// Elimina i commenti dal vocabolario (sono permessi solo /**/)
+				out[9] = out[9].replace(/\/\*[\s\S]*?\*\//mg, '');
+				// Elimina tabulazioni, spazi ed invii ripetuti o non necessari
+				out[9] = out[9].replace(/[\s]+/mg, ' ').trim();
+				out[9] = out[9].replace(/, /mg, ',').replace(/; /mg, ';');
+				// Aggiunge i tag script
+				out[9] = '\<script\>\n' + out[9].trim() + '\n\</script\>';
+
+				// Cifra eventualmente le espressioni nel vocabolario
+				if (document.getElementById('vigenere').checked) {
+					// Cerca tutte le stringhe, le cifra e le sostituisce
+					var s = ''; // s: stringa espressione
+					out[9] = out[9].replace(/["']{1}[\S ]+?["']{1}/mg, function (e) {
+						s = e.substr(1, e.length - 2);
+						return '"'+V.cifra(s).replace(/\\/g, '\\\\').replace(/"/g, '\\\"')+'"';
+					}); 
+				}
+				aggiungiFile('scene.js');
+			}
 		break;
 		case 'scene.js': // Riga 11
 			reader.onloadend = function() {
-				out[10] = '\<script\>\n' + reader.result + '\n\</script\>';
+				out[10] = reader.result;
+
+				// Elimina i commenti dalle scene (sono permessi solo /**/)
+				out[10] = out[10].replace(/\/\*[\s\S]*?\*\//mg, '');
+				// Elimina tabulazioni, spazi ed invii ripetuti o non necessari
+				out[10] = out[10].replace(/[ \t\n]+/mg, ' ');
+				// Aggiunge i tag script
+				out[10] = '\<script\>\n' + out[10].trim() + '\n\</script\>';
+
+				// Cifra eventualmente il testo narrativo
+				if (document.getElementById('vigenere').checked) {
+					// Cerca tutte le stringhe, le cifra e le sostituisce
+					var s = ''; // s: stringa
+					out[10] = out[10].replace(/"[^\\"]?"|'[^\\']?'|"[\S ]+?[^\\]{1}"|'[\S ]+?[^\\]{1}'/mg, function (t) {
+						s = t.substr(1, t.length - 2).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+						return '"'+V.cifra(s).replace(/\\/g, '\\\\').replace(/"/g, '\\\"')+'"';
+					}); 
+				}
+
+				// Se il testo è stato cifrato aggiunge lo script per decifrare
+				if (document.getElementById('vigenere').checked) {
+					sV = sV.split('\n');
+					sV[0] = "\<script\>" + sV[0];
+					// Eliminare le righe non necessarie dallo script
+					sV.splice(12, 1); // Graffa finale non serve, viene richiusa nell'ultima riga
+					sV.splice(8, 1); // Funzione creaCifrario
+					sV.splice(5, 1); // Mappa ab_c1
+					sV.splice(4, 1); // Mappa ab_c2
+					// Inserire i cifrari per la decifrazione
+					sV[2] = "c1:'"+ V.c1.replace(/\\/g, '\\\\').replace(/'/g, '\\\'') +"',";
+					sV[3] = "c2:'"+ V.c2.replace(/\\/g, '\\\\').replace(/'/g, '\\\'') +"',";
+					// Adattare la funzione inizializza()
+					sV[7] = "inizializza: function() { V.creaMappa('c1','ab'); V.creaMappa('c2','ab'); },"
+					// Sostituire la funzione cifra() con decifra()
+					sV[8] = "decifra: function(str) { var c = 0; str = String(str); return str.replace(/[\\s\\S]/g, function(m) { c++; if (V.ab.indexOf(m) === -1) return m; if (c % 2 === 0) {return V.c1_ab[m];} else {return V.c2_ab[m];}});}}\</script\>";
+					sV = sV.join('\n').replace(/[\n]+/mg, ' ');
+					out.splice(11, 0, sV);
+				}
+
+				// Il file è pronto ed avvia il download
 				var txt = document.getElementById('nome').value;
 				if (txt.substr(-5) !== '.html' && txt.substr(-4) !== '.htm') txt += '.html';
 				avviaDownload(txt);
@@ -140,7 +246,12 @@ function generaFileStoria() {
 <label for="risorseCss">Conserva le risorse inserite nel file CSS, anche nel file JS</label>
 <div class="spazio"></div>
 
-<p>Inserire il nome desiderato per il file da distribuire:</p>
+<p>Selezionare la casella sottostante per mascherare il testo narrativo. Esso verrà cifrato in modo semplice (Vigenère), ma aprendo il codice sorgente non si potranno riconoscere né il nome delle immagini o altra risorsa, né il testo narrativo. Se stiamo distribuendo una guida interattiva, non serve mascherare il testo, ma quest'ultimo caso è raro.</p>
+<input type="checkbox" id="vigenere" checked="true">
+<label for="vigenere">Maschera il testo narrativo</label>
+<div class="spazio"></div>
+
+<p>Inserire il nome desiderato per il file unico da distribuire:</p>
 <input type="text" id="nome" />
 <div class="spazio"></div>
 

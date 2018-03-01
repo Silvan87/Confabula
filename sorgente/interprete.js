@@ -51,6 +51,13 @@ var Lingua = {
 	equivalenze: function(espressioniEq) { // argomento: espressioni equivalenti
 		// Per velocizzare l'elaborazione nel ridurre un input alla forma normalizzata, occorre usare la struttura del dizionario (basata sulla veloce hashtable). Il risultato è che a ciascuna parola dovrà essere associata la parola normalizzata. Dato un insieme di parole tra loro equivalenti (sinonime), nell'ordine posto dallo scrittore, si prende la prima che sarà quella normalizzata. La parola può far parte di più insiemi di parole sinonime ed un insieme di sinonimi mira ad un significato abbastanza preciso. Non si devono unificare questi insiemi, quindi avremo più parole normalizzate associate ad una parola da normalizzare.
 
+		// Se è presente il cifrario Vigenère, decifra le espressioni
+		if (typeof(V) !== 'undefined') {
+			for (var e = 0; e < espressioniEq.length; e++) {
+				espressioniEq[e] = [V.decifra(espressioniEq[e])];
+			}
+		}
+
 		// Recupera tutte le parole che avranno almeno un sinonimo e prepara le chiavi dell'array equivalenzeOrd
 		for (var g = 0; g < espressioniEq.length; g++) { // g: indice gruppo
 			// Le parole sinonime sono definite con la barra '|' che va rimossa mentre si recuperano le parole
@@ -903,7 +910,7 @@ var I = {
 			istro.azione = 'rispondi';
 			istro.input = I.inputGrezzo;
 			// Salva tutte le variabili della partita nell'HTML5 storage
-			if (typeof(Storage) !== "undefined") {
+			if (typeof(Storage) !== 'undefined') {
 				try {
 					// Archivia tutte le info sulla partita in corso in un'unica stringa da infilare nell'HTML5 storage
 					localStorage.setItem(document.title+' '+I.inputNorm[1][0], [G.nScena, G.nScenaP, G.nScenaPP, JSON.stringify(G.passaggiScena), JSON.stringify(G.luoghiRagg), JSON.stringify(S.oggetti), JSON.stringify(S.variabili), JSON.stringify(S.Istruzioni.generali), JSON.stringify(S.Istruzioni.scena)].join('§§'));
@@ -911,7 +918,7 @@ var I = {
 				} catch (err) {
 					// Chrome o Chromium possono avere i permessi di scrittura nell'HTML5 storage disabilitati
 					// Firefox ed Opera sono stati testati e risultano funzionanti (anche Chrome normalmente funziona)
-					istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> <span class="coloreTestoInviato">Questo navitagore Web nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.</span>';
+					istro.output = '<span class="coloreRifiuto">Impossibile salvare la partita.</span> <span class="coloreTestoInviato">Questo navigatore Web nega l\'accesso all\'HTML5 storage da parte dei file locali. Se state usando Chrome o Chromium la soluzione è probabilmente questa: spostarsi in alto a destra e cliccare sul menu generale con l\'icona <strong>፧</strong> ; cliccare su Impostazioni (Settings); scorrere le sezioni fino in fondo e cliccare su Avanzate (Advanced); nella sezione Privacy e sicurezza (Privacy and Security), cliccare su Impostazioni contenuti (Content Settings); poi cliccare sulla prima voce Cookie; "Blocca cookie di terze parti" probabilmente è attivo, ma può rimanere così; aggiungere un\'eccezione per i file locali cliccando su Aggiungi (Add) alla voce Consenti (Allow); inserire nella casella di testo quanto segue: file:///* e cliccare sul pulsante Aggiungi (Add). D\'ora in avanti Chrome o Chromium permetteranno ai file html sul vostro PC di salvare qualche dato nell\'HTML5 storage. Ricaricate questa pagina html ed i salvataggi dovrebbero funzionare.</span>';
 				}
 			} else {
 				// HTML5 storage non supportato dal navigatore Web
@@ -1560,7 +1567,11 @@ var S = {
 
 		// I predicati sono facoltativi, ma le equivalenze ordinate devono esserci sempre
 		// Chiamare vocabolario crea sia i predicati ordinati che le equivalenze ordinate
-		if (Lingua.equivalenzeOrd.length !== 0) vocabolario();
+		if (Lingua.equivalenzeOrd.length !== 0) {
+			// Se è stato usato Vigenère, allora inizializzalo
+			if (typeof(V) !== 'undefined') V.inizializza();
+			vocabolario();
+		}
 
 		G.nuovaPartita();
 		S.oggetti = {}; // Cancella tutti i contenitori con gli oggetti
@@ -1661,6 +1672,9 @@ var Condizioni = {
 
 function nomeStoria(str) {
 	// str: titolo della storia che comparirà sulla scheda della pagina Web
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') str = V.decifra(str);
 	document.title = str;
 }
 function nomeLuogo(nome) {
@@ -1668,6 +1682,8 @@ function nomeLuogo(nome) {
 	// Arbitrariamente un gruppo di scene può far parte di uno stesso luogo, però affinché il comando 'direzioni' possa essere usato per raggiungere rapidamente un luogo, occorre ricorrere ad un nome di luogo univoco. Di un insieme di scene, che possono far parte di uno stesso luogo, una deve essere scelta come preferita o idonea per "teletrasportarsi" (raggiungere subito) quel luogo e dunque solo quella riceverà un "nome luogo".
 	if (G.nScena === 0) { alert('L\'istruzione "nomeLuogo()" nelle istruzioni generali non ha senso. Eliminarla.'); return; }
 
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') nome = V.decifra(nome);
 	nome = nome.split('|');
 	// Se la scena corrente non è stata già mappata, allora esegui questa istruzione
 	if (!G.luoghiRagg.coppie[G.nScena] || !G.luoghiRagg.coppie[nome[0]]) {
@@ -1687,6 +1703,8 @@ function nomeLuogo(nome) {
 	}
 }
 function istruzioni(txt) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') txt = V.decifra(txt);
 	G.istruzioni = txt;
 }
 
@@ -1698,6 +1716,9 @@ function condizioni(cond, istro) {
 	// formato stringa condizioni: [no!]l'oggetto@contenitore+[no!]nome variabile
 	// istro(): è la funzione per eseguire tutte le istruzioni condizionate
 	// Devo tener traccia di ciascun blocco di condizioni, alla fine del blocco vanno svuotate, senza svuotare blocchi ancora non terminati
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') cond = V.decifra(cond);
 
 	var UB = Condizioni.blocchi.length; // Ultimo blocco
 	Condizioni.blocchi.push({'seOggetti': [], 'seVariabili': []});
@@ -1743,6 +1764,11 @@ function condizioni(cond, istro) {
 // (condizionabili ed estendibili)
 
 function carattereTesto(fnt, siz, all) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		fnt = V.decifra(fnt);
+		if (all !== undefined) all = V.decifra(all);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'carattereTesto');
 	if (fnt) S.Istruzioni.valore('font', fnt);
@@ -1751,6 +1777,9 @@ function carattereTesto(fnt, siz, all) {
 	S.Istruzioni.aggiungiCondizioni();
 }
 function coloreSfondo(col) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') col = V.decifra(col);
+
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'coloreSfondo');
 	S.Istruzioni.valore('colore', col);
@@ -1759,6 +1788,12 @@ function coloreSfondo(col) {
 function coloreTesto(col1, col2) {
 	// col1: colore testo
 	// col2: colore testo inviato
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		col1 = V.decifra(col1);
+		if (col2 !== undefined) col2 = V.decifra(col2);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'coloreTesto');
 	if (col1) S.Istruzioni.valore('colore1', col1);
@@ -1768,6 +1803,12 @@ function coloreTesto(col1, col2) {
 function coloreScelte(col1, col2) {
 	// col1: colore scelta
 	// col2: colore scelta selezionata
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		col1 = V.decifra(col1);
+		if (col2 !== undefined) col2 = V.decifra(col2);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'coloreScelte');
 	if (col1) S.Istruzioni.valore('colore1', col1);
@@ -1775,6 +1816,8 @@ function coloreScelte(col1, col2) {
 	S.Istruzioni.aggiungiCondizioni();
 }
 function coloreRifiuto(col) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') col = V.decifra(col);
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'coloreRifiuto');
 	S.Istruzioni.valore('colore', col);
@@ -1782,6 +1825,9 @@ function coloreRifiuto(col) {
 }
 function messaggiRifiuto(msg) {
 	// msg: messaggi di rifiuto separati da una barra |
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') msg = V.decifra(msg);
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'impostaMsgRifiuto');
 	S.Istruzioni.valore('messaggi', msg);
@@ -1789,6 +1835,9 @@ function messaggiRifiuto(msg) {
 }
 function intermezzo(txt) {
 	// txt: testo da visualizzare, anche html
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') txt = V.decifra(txt);
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'intermezzo');
 	S.Istruzioni.valore('testo', txt);
@@ -1798,6 +1847,12 @@ function testo(txt, all) {
 	// txt: testo da visualizzare, anche html
 	// all: allineamento del testo (valori: "giustificato", "centrato", "destra", "sinistra")
 	// all: può avere valore 'no!p' che annulla l'allineamento ed anche l'elemento <p></p>
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt = V.decifra(txt);
+		if (all !== undefined) all = V.decifra(all);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'testo');
 	S.Istruzioni.valore('testo', txt);
@@ -1824,6 +1879,13 @@ function uscita(txt_in, nS, vis, nomeDest) {
 	//  esplorabile: invisibile, ma se viene esplorata allora diventa visibile (comportamento nome come sopra)
 	//  esplorato/a: visibile e già con il nome della destinazione se specificato, altrimenti comparirà '(esplorato)'
 	// nomeDest: il nome della destinazione, serve se diamo un nome ai luoghi
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt_in = V.decifra(txt_in);
+		if (vis !== undefined) vis = V.decifra(vis);
+		if (nomeDest !== undefined) nomeDest = V.decifra(nomeDest);
+	}
 
 	// Definisce l'azione da eseguire se soddisfatta l'istruzione
 	S.Istruzioni.crea();
@@ -1869,6 +1931,11 @@ function contenitore(cont, ogg) {
 	//   è possibile indicare l'articolo indeterminativo prima dell'etichetta oggetto servendosi di una barra '|'
 	//   Es. "un|l'amuleto+dello|lo zucchero+il Martello di Tor+un'|l'albicocca" - Notare che può non venir usata la barra, in tal caso viene sempre presentata l'etichetta con articolo determinativo (o comunque l'etichetta così come la scriviamo), utile per oggetti unici (es. "il Martello di Tor"). L'articolo viene considerato comprensivo di apostrofo quindi con l' (l apostrofo) viene tolto anche l'apostrofo. Se l'oggetto è maschile o femminile, è lo scrittore che deve specificare o meno l'apostrofo nell'articolo indeterminativo, si veda il confronto degli esempi "amuleto" e "albicocca". L'eventuale spazio dopo l'articolo è automaticamente gestito (quindi non va mai messo).
 	
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		cont = V.decifra(cont);
+		ogg = V.decifra(ogg);
+	}
 	// Il contenitore va creato solo la prima volta che si incontra tale istruzione
 	if (S.oggetti[cont] !== undefined) { S.Istruzioni.annullaCondizioni(); return; }
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
@@ -1883,6 +1950,14 @@ function scegliRispondi(txt, txt_out, al1, al2) {
 	// txt_out: testo stampato dopo aver cliccato sulla scelta
 	// al1: allineamento scelta selezionabile (valori: "giustificato", "centrato", "destra", "sinistra")
 	// al2: allineamento risposta stampata
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt = V.decifra(txt);
+		if (txt_out !== '') txt_out = V.decifra(txt_out);
+		if (al1 !== undefined) al1 = V.decifra(al1);
+		if (al2 !== undefined) al2 = V.decifra(al2);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'scegliRispondi');
 	S.Istruzioni.valore('nome', txt);
@@ -1895,6 +1970,12 @@ function scegliVai(txt, nS, all) {
 	// txt: testo della scelta selezionabile
 	// nS: numero della scena verso cui andare
 	// all: allineamento del testo della scelta selezionabile (valori: "giustificato", "centrato", "destra", "sinistra")
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt = V.decifra(txt);
+		if (all !== undefined) all = V.decifra(all);
+	}
 	S.Istruzioni.crea(); S.Istruzioni.valore('soloInizioScena', 1);
 	S.Istruzioni.valore('azione', 'scegliVai');
 	S.Istruzioni.valore('nome', txt);
@@ -1914,6 +1995,9 @@ function bloccaDirezioni() {
 }
 function cancellaDirezione(nome) {
 	// nome: del luogo raggiungibile da cancellare
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') nome = V.decifra(nome);
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('azione', 'cancellaDirezione');
 	S.Istruzioni.valore('nome', nome);
@@ -1923,6 +2007,11 @@ function rispondi(txt_in, txt_out) {
 	// txt_in: input dell'utente
 	// txt_out: risposta da ricevere
 
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt_in = V.decifra(txt_in);
+		txt_out = V.decifra(txt_out);
+	}
 	// Trasforma le frasi articolate scritte dallo scrittore in frasi semantiche
 	txt_in = Lingua.normalizzaInput(txt_in, 2);
 
@@ -1939,6 +2028,11 @@ function rispondiVai(txt_in, txt_out, nS) {
 	// nS: numero della scena verso cui andare
 	// rit: ritardo in millisecondi prima di andare ad una scena
 
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		txt_in = V.decifra(txt_in);
+		txt_out = V.decifra(txt_out);
+	}
 	// Trasforma le frasi articolate scritte dallo scrittore in frasi semantiche
 	txt_in = Lingua.normalizzaInput(txt_in, 2);
 
@@ -1954,6 +2048,8 @@ function nMosseRispondi(mosse, txt_out) {
 	// mosse: numero mosse del giocatore per far scattare l'evento
 	// txt_out: testo che deve comparire dopo n mosse
 
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') txt_out = V.decifra(txt_out);
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
 	S.Istruzioni.valore('mossa', 0);
@@ -1967,6 +2063,8 @@ function nMosseVai(mosse, nS, txt_out) {
 	// nS: numero della scena verso cui andare
 	// txt_out: testo facoltativo da mostrare prima di cambiare scena
 
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined' && txt_out !== undefined) txt_out = V.decifra(txt_out);
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('mosse', mosse - 1); // Conta anche lo zero
 	S.Istruzioni.valore('mossa', 0);
@@ -1982,6 +2080,17 @@ function nMosseVai(mosse, nS, txt_out) {
 }
 function effetto(tipo, op0, op1, op2, op3, op4, op5) {
 	// Effetto è una funzione molto versatile, il primo argomento "tipo" determina come verranno interpretati gli altri argomenti. Se alcuni argomenti restano non compilati verranno semplicemente ignorati.
+
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') {
+		tipo = V.decifra(tipo);
+		if (op0 !== undefined && typeof(op0) === 'string') op0 = V.decifra(op0);
+		if (op1 !== undefined && typeof(op1) === 'string') op1 = V.decifra(op1);
+		if (op2 !== undefined && typeof(op2) === 'string') op2 = V.decifra(op2);
+		if (op3 !== undefined && typeof(op3) === 'string') op3 = V.decifra(op3);
+		if (op4 !== undefined && typeof(op4) === 'string') op4 = V.decifra(op4);
+		if (op5 !== undefined && typeof(op5) === 'string') op5 = V.decifra(op5);
+	}
 	var opz = [op0, op1, op2, op3, op4, op5];
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('azione', 'effetto');
@@ -2018,12 +2127,18 @@ function nMosseEffetto(mosse, tipo, op0, op1, op2, op3, op4, op5) {
 // (condizionabili sono indirettamente; estensioni multiple ammesse) //
 
 function __oggetti(oo) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') oo = V.decifra(oo);
 	S.Istruzioni.valore('oggetti', Lingua.normalizzaDiacritici(oo.toLowerCase()));
 }
 function __variabili(vv) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') vv = V.decifra(vv);
 	S.Istruzioni.valore('variabili', Lingua.normalizzaDiacritici(vv.toLowerCase()));
 }
 function __audio(aud) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') aud = V.decifra(aud);
 	S.Istruzioni.valore('audio', aud);
 }
 function __immagine(img, w, h, opz) {
@@ -2031,6 +2146,8 @@ function __immagine(img, w, h, opz) {
 	if (w !== undefined) S.Istruzioni.valore('w', w);
 	if (h !== undefined) S.Istruzioni.valore('h', h);
 	// Se c'è una sostituzione è doveroso specificare w ed h per evitare salti fastidiosi del testo
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined' && opz !== undefined) opz = V.decifra(opz);
 	if (opz === 'sostituisci') S.Istruzioni.valore('sostituisci', 1);
 }
 function __inizioScena(v) {
@@ -2050,6 +2167,8 @@ function __autoElimina(v) {
 	}
 }
 function x(str) {
+	// Decifra con Vigenère se abilitato
+	if (typeof(V) !== 'undefined') str = V.decifra(str);
 	var ee = str.split('|');
 	var n = Math.floor((Math.random() * ee.length));
 	if (isNaN(ee[n])) { return ee[n]; } else { return Number(ee[n]); }

@@ -1,4 +1,4 @@
-// Istruzioni che valgono in tutte le scene
+/* Istruzioni che valgono in tutte le scene */
 function istruzioniGenerali() {
 	nomeStoria("La mia storia");
 	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
@@ -19,7 +19,7 @@ function istruzioniGenerali() {
 	rispondi("entro", "Dove vorresti entrare?");
 	rispondi("esco", "Da dove vorresti uscire?");
 }
-// Istruzioni specifiche per ciascuna scena
+/* Istruzioni specifiche per ciascuna scena */
 function istruzioniScena(n) {
 	Vista.preparaScena(n);
 	switch (n) {

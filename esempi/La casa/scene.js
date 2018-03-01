@@ -1,4 +1,4 @@
-// Istruzioni che valgono in tutte le scene
+/* Istruzioni che valgono in tutte le scene */
 function istruzioniGenerali() {
 	nomeStoria("La casa");
 	messaggiRifiuto("Prova qualcos'altro...|Un tentativo vano...|Ricerca infruttuosa...");
@@ -42,7 +42,7 @@ function istruzioniGenerali() {
 	condizioni("no!zombie morto");
 		nMosseRispondi(10, "x(Senti un debole lamento provenire da qualche parte indefinita...|Dietro le pareti crepitii si spostano intervallati da lunghi silenzi...|Un solo colpo, forte e deciso, proviene da sotto il pavimento.|Passi le mani sul volto perché senti qualche filo di ragnatela addosso.|Un'improvvisa folata di vento agita le foglie fuori dalla casa. Poi, tutto tace.|Hai la strana sensazione che gli oggetti ti guardino, come se avessero volti.|Spaventato, chini le spalle e guardi sopra di te. Senti alcuni forti scricchiolii, come se qualcosa fosse sul punto di rompersi, ma non vedi nulla a cui attribuirli.|Sbadigli. Un sonno innaturale ti appesantisce, ma dopo pochi minuti ti lascia e torni vigile.)");
 }
-// Istruzioni specifiche per ciascuna scena
+/* Istruzioni specifiche per ciascuna scena */
 function istruzioniScena(n) {
 	Vista.preparaScena(n);
 	switch (n) {
