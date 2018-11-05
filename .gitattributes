@@ -1,0 +1,51 @@
+################################################################################
+# https://github.com/Silvan87/Confabula                                        #
+################################################################################
+
+# Imposta il comportamento predefinito di Git su auto-riconoscimento dei file di
+# testo, in caso l'utente finale non abbia configurato 'core.autocrlf':
+* text=auto
+
+# ==============================================================================
+#                 Configurazione Estensioni File: Testo/Binario                 
+# ==============================================================================
+# Dichiara esplicitamente tutte le estensioni utilizzate nel progetto come file
+# di testo o file binari, e istruisci Git su come gestire la normalizzazione dei
+# caratteri di fine-riga (EOL) a seconda del sistema operativo.
+
+## ===================
+## Codice Sorgente JS
+## ===================
+*.js            text
+
+## ===================
+## File World Wide Web
+## ===================
+*.htm           text
+*.html          text
+*.css           text
+
+## ===================
+## File Documentazione
+## ===================
+*.md            text
+LICENSE         text
+
+## ===================
+## Immagini & Font
+## ===================
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ttf           binary
+*.ico           binary
+
+## ===================
+## File Configurazione
+## ===================
+.editorconfig   text
+.gitattributes  text
+.gitconfig      text
+.gitignore      text
+.gitmodules     text
