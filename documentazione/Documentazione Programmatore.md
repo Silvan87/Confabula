@@ -55,7 +55,7 @@ Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più
 **N.B.**
 Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazione e non oggetti che possono esistere all'interno delle storie interattive.
 
-#### ⚫ Oggetto: Vista
+#### &#x26AB; Oggetto: Vista
 
 **Scopo**: visualizzare la scena corrente.
 
@@ -63,7 +63,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Funzioni**: principalmente mostra e nascondi Vista, ma saranno più articolate.
 
-#### ⚫ Oggetto: Scene
+#### &#x26AB; Oggetto: Scene
 
 **Scopo**: è un insieme di scene che memorizza tutte le informazioni relative a ciascuna scena o relative a tutte le scene insieme. Questo oggetto è definito dal file 'scene.js'.
 
@@ -71,7 +71,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Funzioni**: ogni scena corrisponde ad un caso (1, 2, 3, ecc.), più le istruzioni generali (all'inizio) che valgono in tutte le scene. Ogni caso presenta una serie di funzioni, possiamo chiamare queste istruzioni, dato che ciascuna di queste descrive qualcosa che può accadere nella relativa scena, in particolare, tramite gli argomenti della funzione si definiscono le condizioni e gli effetti dell'istruzione.
 
-#### ⚫ Oggetto: Input
+#### &#x26AB; Oggetto: Input
 
 **Scopo**: passare il testo dell'utente all'Interprete tramite invio.
 
@@ -81,7 +81,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Note**: Input è una casella di testo che può essere visibile o meno nella Vista.
 
-#### ⚫ Oggetto: Interprete
+#### &#x26AB; Oggetto: Interprete
 
 **Scopo**: decide in base all'Input del Giocatore quali azioni eseguire sulla Vista, sulle Scene, sul Giocatore ed in generale su ogni aspetto del gioco.
 
@@ -89,7 +89,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Funzioni**: conterrà molte sofisticate funzioni per eseguire le azioni che nelle Scene sono solo descritte e mancano dell'effettivo codice che realizza gli effetti desiderati.
 
-#### ⚫ Oggetto: Giocatore
+#### &#x26AB; Oggetto: Giocatore
 
 **Scopo**: tener traccia delle informazioni relative al Giocatore ed eventualmente eseguire poche pertinenti azioni.
 
@@ -97,7 +97,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Funzioni**: dovrebbero essere poche, in particolare "nuova partita".
 
-#### ⚫ Oggetto: Storia
+#### &#x26AB; Oggetto: Storia
 
 **Scopo**: tener traccia delle informazioni relative allo sviluppo della storia nella sua totalità.
 
@@ -105,7 +105,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Funzioni**: dovrebbero essere poche, in particolare "nuova partita" e "spostati alla scena n...".
 
-#### ⚫ Oggetto: Lingua
+#### &#x26AB; Oggetto: Lingua
 
 **Scopo**: conservare informazioni ed eseguire funzioni generali per l'elaborazione della lingua.
 
@@ -116,7 +116,7 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 ### Livello 1 - Proprietà e funzioni in dettaglio
 
-#### ⚫ Oggetto: Vista
+#### &#x26AB; Oggetto: Vista
 
 **Proprietà**
 
@@ -142,7 +142,7 @@ _larghezzaMax_: larghezza massima della Vista specificata in pixel
 _nascondi_: nasconde l'intera vista
 _mostra_: mostra la vista secondo tutte le proprietà impostate
 
-#### ⚫ Oggetto: Scene
+#### &#x26AB; Oggetto: Scene
 
 **Funzioni**
 
@@ -152,7 +152,7 @@ A questo livello lo Sviluppatore non deve implementare le funzioni, ma può faci
 
 La completa lista delle funzioni utilizzabili nelle scene è raccolta nella Documentazione per lo Scrittore e lì si rimanda.
 
-#### ⚫ Oggetto: Input
+#### &#x26AB; Oggetto: Input
 
 **Proprietà**
 
@@ -164,13 +164,13 @@ _display_: servirà poter visualizzare o far sparire la casella di testo
 _onblur_: quando la casella perde il focus dopo pochi secondi lo deve riprendere
 _onkeypress_: quando si preme invio il testo va passato all'interprete
 
-#### ⚫ Oggetto: Interprete
+#### &#x26AB; Oggetto: Interprete
 
 **Funzioni**
 
 Occorre sviluppare la documentazione mano a mano che si procede con la programmazione. Questa parte sarà la più difficile ed estesa di Confabula.
 
-#### ⚫ Oggetto: Giocatore
+#### &#x26AB; Oggetto: Giocatore
 
 _nMosse_: n. delle mosse o azioni svolte nel gioco (è il modo più opportuno di contare il tempo in un'avventura testuale)
 _nPassaggiScena_: n. dei passaggi da scena a scena (una scena è solo un testo o una situazione di fronte al giocatore)
@@ -192,7 +192,7 @@ _nomeLuogoP_: nome del luogo precedente
 _luoghiRaggiungibili_: array dei nomi dei luoghi raggiungibili
 _usciteEsplorate_: elenco delle uscite (salvate come coppia di ID da nScena a nScena) che sono state attraversate
 
-#### ⚫ Oggetto: Storia
+#### &#x26AB; Oggetto: Storia
 
 **Proprietà**
 
@@ -204,7 +204,7 @@ _contenitori_: un array di array, che elenca i contenitori creati dallo scrittor
 _variabili_: tutte le variabili di cui lo scrittore ha bisogno nella storia (es. drago morto, libro letto, ecc.)
 _vocabolario_: (facoltativo) è l'elenco dei predicati che il giocatore può usare nella storia
 
-#### ⚫ Oggetto: Lingua
+#### &#x26AB; Oggetto: Lingua
 
 **Proprietà**
 
