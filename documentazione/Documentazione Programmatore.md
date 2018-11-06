@@ -3,12 +3,15 @@
 ## Introduzione
 
 #### Come si presenta Confabula al Giocatore
+
 Confabula produce dei file HTML eseguibili su browser Web. All'avvio si presenta all'utente una descrizione principalmente testuale (Scena) con una casella di testo sottostante (Input) dove l'utente (Giocatore) può scrivere in prima persona o con l'imperativo le sue azioni. In base a ciò che l'utente scrive possono comparire risposte e può aggiornarsi la Scena.
 
 #### Come si presenta Confabula allo Scrittore
+
 Lo scrittore ed autore di un'avventura testuale potrà copiare la cartella 'sorgente', rinominarla con il nome della sua storia e dovrà principalmente editare un file dedicato alle scene dove scriverà la sua storia. Potrà personalizzare anche altri file ed aggiungere immagini o suoni.
 
 #### Come si presenta Confabula al Programmatore
+
 Confabula è programmato in JavaScript 5 (più l'uso delle arrow function di JavaScript 6), i contenuti e la grafica sono realizzati con HTML5 e CSS3. Questa documentazione entrerà nei dettagli per spiegare tutto il codice di Confabula ed eventualmente continuare a svilupparlo.
 
 ## Albero delle cartelle e dei file
@@ -16,15 +19,19 @@ Confabula è programmato in JavaScript 5 (più l'uso delle arrow function di Jav
 Confabula ha una struttura gerarchica molto semplice. I file essenziali sono tutti presenti in un'unica cartella. Eventuali sotto cartelle sono utili per raccogliere immagini, suoni, font, ecc., se ci sono. Di seguito l'elenco dei file essenziali.
 
 #### INIZIA.html
+
 'INIZIA.html' è un file statico e non verrà mai modificato dallo scrittore, solo eventuali cambi strutturali profondi (quindi rari) possono portare lo sviluppatore (programmatore) a rivedere alcuni punti.
 
 #### interprete.js
+
 'interprete.js' è il cervello di Confabula, lo sviluppatore dovrà arricchire di nuove funzioni questo file per mettere a disposizione nuove funzioni per lo scrittore. Inoltre, qui è possibile migliorare la gestione della lingua naturale.
 
 #### stile.css
+
 'stile.css' è un file internamente diviso in due sezioni. Lo *stile personalizzabile* che consiste in una serie di classi css auto-descrittive o con brevi commenti di supporto e le *impostazioni raccomandate* che non dovrebbero essere mai modificate, salvo personalizzazioni speciali o revisioni di alcuni aspetti predefiniti di Confabula.
 
 #### scene.js
+
 'scene.js' è il file su cui maggiormente lavorerà lo scrittore e deve rimanere più semplice ed intuitivo possibile.
 
 Inizia con una funzione "istruzioniGenerali" che contiene una serie di istruzioni che avranno valore in tutte le scene del gioco. Le istruzioni sono definite tramite una funzione, ma ciascuna funzione serve solo a preparare le condizioni che saranno valutate ad ogni azione del giocatore per decidere se eseguire effettivamente l'istruzione oppure no.
@@ -38,6 +45,7 @@ Le funzioni che descrivono le istruzioni nelle scene seguono indicativamente que
 Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più intuitivo per lo Scrittore, egli deve pensare ad un Scena come da un insieme di righe, in cui per ciascuna riga si descrive qualcosa che può accadere in quella scena.
 
 #### vocabolario.js
+
 'vocabolario.js' è il file che raccoglie le espressioni sinonime, attualmente si può creare il sinonimo di una parola con un'altra parola, ma è in previsione la possibilità di rendere un'espressione di 2 o 3 parole sinonimo di un'altra di una sola parola. Inoltre, potrebbe arricchirsi di nuove potenzialità in futuro.
 
 ## Struttura logica di Confabula
