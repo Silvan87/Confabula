@@ -4,10 +4,10 @@
 
 # Imposta il comportamento predefinito di Git su auto-riconoscimento dei file di
 # testo, in caso l'utente finale non abbia configurato 'core.autocrlf':
-* text=auto
+* text=auto eol=lf
 
 # ==============================================================================
-#                 Configurazione Estensioni File: Testo/Binario                 
+#                 Configurazione Estensioni File: Testo/Binario
 # ==============================================================================
 # Dichiara esplicitamente tutte le estensioni utilizzate nel progetto come file
 # di testo o file binari, e istruisci Git su come gestire la normalizzazione dei
@@ -17,6 +17,7 @@
 ## Codice Sorgente JS
 ## ===================
 *.js            text
+*-min.js        binary
 
 ## ===================
 ## File World Wide Web
@@ -24,6 +25,12 @@
 *.htm           text
 *.html          text
 *.css           text
+
+## ===================
+## File distribuibili
+## ===================
+"esempi/Cromwell/Cromwell.html"  binary
+"esempi/La casa/La casa.html"    binary
 
 ## ===================
 ## File Documentazione
