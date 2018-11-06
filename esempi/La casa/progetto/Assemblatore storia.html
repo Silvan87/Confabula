@@ -79,31 +79,33 @@ function aggiungiFile(nome) {
 				var arrayURL = [], nomeRisorsa = '';
 				var p = 0, pp = 0; // p: posizione url , pp: posizione url precedente
 				arrayURL = out[6].match(/url\(["']?risorse\/[\S ]+?\.[\S ]+?["']?\)/mg);
-				for (var u = 0; u < arrayURL.length; u++) { // u: indice url
-					p = out[6].indexOf(arrayURL[u], pp);
-					if (p !== -1) {
-						// Prova a recuperare il nome senza virgolette
-						nomeRisorsa = arrayURL[u].substr(12, arrayURL[u].length - 13);
-						// Se il risultato è anomalo, prova a recuperare il nome con le virgolette
-						if (nomeRisorsa.substr(0, 1) === '/') {
-							nomeRisorsa = arrayURL[u].substr(13, arrayURL[u].length - 15);
-						}
-						if (nomeRisorsa in Risorse) {
-							out[6] = out[6].substr(0, p) + 'url("' + Risorse[nomeRisorsa] + '")' + out[6].substr(p + arrayURL[u].length);
-							pp = p + 7 + Risorse[nomeRisorsa].length;
-							if (!document.getElementById('risorseCss').checked) {
-								// La risorsa inserita nel CSS va rimossa dalle risorse JS
-								out[8] = out[8].split('\n');
-								for (var r = 0; r < out[8].length; r++) {
-									if (out[8][r].startsWith(nomeRisorsa, 1)) {
-										out[8].splice(r, 1);
-										break;
-									}
-								}
-								out[8] = out[8].join('\n');
+				if (arrayURL !== null) {
+					for (var u = 0; u < arrayURL.length; u++) { // u: indice url
+						p = out[6].indexOf(arrayURL[u], pp);
+						if (p !== -1) {
+							// Prova a recuperare il nome senza virgolette
+							nomeRisorsa = arrayURL[u].substr(12, arrayURL[u].length - 13);
+							// Se il risultato è anomalo, prova a recuperare il nome con le virgolette
+							if (nomeRisorsa.substr(0, 1) === '/') {
+								nomeRisorsa = arrayURL[u].substr(13, arrayURL[u].length - 15);
 							}
-						} else {
-							pp = p;
+							if (nomeRisorsa in Risorse) {
+								out[6] = out[6].substr(0, p) + 'url("' + Risorse[nomeRisorsa] + '")' + out[6].substr(p + arrayURL[u].length);
+								pp = p + 7 + Risorse[nomeRisorsa].length;
+								if (!document.getElementById('risorseCss').checked) {
+									// La risorsa inserita nel CSS va rimossa dalle risorse JS
+									out[8] = out[8].split('\n');
+									for (var r = 0; r < out[8].length; r++) {
+										if (out[8][r].startsWith(nomeRisorsa, 1)) {
+											out[8].splice(r, 1);
+											break;
+										}
+									}
+									out[8] = out[8].join('\n');
+								}
+							} else {
+								pp = p;
+							}
 						}
 					}
 				}

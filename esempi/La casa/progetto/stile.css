@@ -20,67 +20,67 @@ a:hover { /*colore link selezionato*/ color: #9F57DE; }
 /** Impostazioni raccomandate **/
 
 html {
-	overflow-y: scroll;
+	overflow-y:scroll;
 }
 ::-webkit-scrollbar {
-	background: #000;
-	width: 10px;
+	background:#000;
+	width:10px;
 }
 ::-webkit-scrollbar-thumb {
-	background: #666;
-	border-radius: 10px;
+	background:#666;
+	border-radius:10px;
 }
 ::-webkit-scrollbar-track {
-	background: #000;
+	background:#000;
 }
 body {
-	text-align: center;
-	margin: 8px 0 8px 0;
-	padding: 0;
+	text-align:center;
+	margin:8px 0 8px 0;
+	padding:0;
 }
 p, input {
-	margin: 0 0 8px 0;
+	margin:0 0 8px 0;
 }
 p.br {
-	margin-top: -8px;
+	margin-top:-8px;
 }
 b {
-	font-weight: normal;
+	font-weight:normal;
 	color:#dc7e7e;
 }
 a {
-	text-decoration: none;
+	text-decoration:none;
 }
 img {
-	max-width: 100%;
-	margin: 8px auto 8px auto;
-	image-rendering: pixelated;
+	max-width:100%;
+	margin:8px auto 8px auto;
+	image-rendering:pixelated;
 }
 #testo, #input, #scelte {
-	margin: 0 auto 0 auto;
-	padding: 0 8px 0 8px;
+	margin:0 auto 0 auto;
+	padding:0 8px 0 8px;
 }
 #input {
-	width: 100%;
-	display: none;
-	border: none;
-	outline: none;
-	text-align: left;
+	width:100%;
+	display:none;
+	border:none;
+	outline:none;
+	text-align:left;
 }
 .inviato {
-	margin: 0;
+	margin:0;
 }
 #scelte {
-	margin-top: 8px;
-	text-align: left;
+	margin-top:8px;
+	text-align:left;
 }
 .scelta {
-	margin: 0;
-	cursor: pointer;
+	margin:0;
+	cursor:pointer;
 }
 .tabLink {
-	text-decoration: underline;
+	text-decoration:underline;
 }
 .ribaltato {
-	transform: rotate(180deg);
+	transform:rotate(180deg);
 }

@@ -32,7 +32,7 @@ function istruzioniScena(n) {
 		break;
 	case 2:
 		testo("Introduzione alla storia o inizio diretto...<br />Puoi vedere: una storia vuota.");
-		rispondi("esamino la storia", "È tutta da scrivere...");
+		esamina("la storia", "È tutta da scrivere...");
 		break;
 	}
 	Vista.mostra();

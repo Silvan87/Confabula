@@ -10,7 +10,7 @@ document.addEventListener('keydown', function(event) {
 	// Se viene premuto Tab seleziona ciclicamente tutti i link
     } else if (event.keyCode === 9) {
 		event.preventDefault();
-		var list = document.getElementsByClassName('scelta');
+		var list = document.querySelectorAll('a, .scelta');
         for (var i = 0; i < list.length; i++) {
 			if (list[i].classList.contains('tabLink')) {
 				list[i].classList.remove('tabLink');
@@ -39,6 +39,7 @@ document.addEventListener('keydown', function(event) {
 var Lingua = {
 
 	equivalenzeOrd: {}, // equivalenze ordinate
+	imperativiIrregolari: /* Elenco di tutti gli imperativi che si trasformano in indicativo 1a persona in modo irregolare */ {'abbi':'ho','accogli':'accolgo','addivieni':'addivengo','adempi':'adempio','anteponi':'antepongo','appari':'appaio','appartieni':'appartengo','apponi':'appongo','assali':'assalgo','astieni':'astengo','astrai':'astraggo','attieni':'attengo','attrai':'attraggo','avvali':'avvalgo','avvieni':'avvengo','circonvieni':'circonvengo','cogli':'colgo','compari':'compaio','compi':'compio','compiaci':'compiaccio','componi':'compongo','conduoli':'condolgo','confa':'confaccio','confai':'confaccio','contieni':'contengo','contraffai':'contraffaccio','contrai':'contraggo','contrapponi':'contrappongo','contravvieni':'contravvengo','convieni':'convengo','cuci':'cucio','cuoci':'cuocio','da':'do','dai':'do','decomponi':'decompongo','deponi':'depongo','detieni':'detengo','detrai':'detraggo','di':'dico','disassuefai':'disassuefaccio','disciogli':'disciolgo','discomponi':'discompongo','disconvieni':'disconvengo','disfa':'disfaccio','disfà':'disfaccio','dispari':'dispaio','dispiaci':'dispiaccio','disponi':'dispongo','distogli':'distolgo','distrai':'distraggo','disvogli':'disvoglio','divieni':'divengo','duoli':'dolgo','empi':'empio','equivali':'equivalgo','esponi':'espongo','estrai':'estraggo','fa':'faccio','fai':'faccio','frapponi':'frappongo','giaci':'giaccio','giustapponi':'giustappongo','imponi':'impongo','incogli':'incolgo','indi':'indico','indisponi':'indispongo','interdi':'interdico','interponi':'interpongo','intervieni':'intervengo','intrattieni':'intrattengo','invali':'invalgo','liquefa':'liquefaccio','liquefai':'liquefaccio','malfa':'malfaccio','malfai':'malfaccio','mantieni':'mantengo','molci':'molcio','muori':'muoio','nuoci':'nuoccio','opponi':'oppongo','ottieni':'ottengo','pari':'paio','permani':'permango','pervieni':'pervengo','piaci':'piaccio','poni':'pongo','posponi':'pospongo','predi':'predico','predisponi':'predispongo','premuori':'premuoio','preponi':'prepongo','prescegli':'prescelgo','presupponi':'presuppongo','prevali':'prevalgo','previeni':'prevengo','proponi':'propongo','prosciogli':'prosciolgo','protrai':'protraggo','provieni':'provengo','puoi':'posso','putrefai':'putrefaccio','raccogli':'raccolgo','rarefai':'rarefaccio','rattieni':'rattengo','reci':'recio','redi':'redico','retrai':'retraggo','riabbi':'riò','riabbia':'riò','riai':'riò','riappari':'riappaio','riassali':'riassalgo','ricogli':'ricolgo','ricompari':'ricompaio','ricomponi':'ricompongo','riconvieni':'riconvengo','ricuci':'ricucio','ricuoci':'ricuocio','rida':'ridò','ridà':'ridò','ridai':'ridò','ridi':'ridico','ridisponi':'ridispongo','riempi':'riempio','rifa':'rifaccio','rifai':'rifaccio','rimani':'rimango','rinvieni':'rinvengo','riponi':'ripongo','riproponi':'ripropongo','risali':'risalgo','risappi':'riso','riscegli':'riscelgo','risciogli':'risciolgo','risii':'risono','risostieni':'risostengo','risovvieni':'risovvengo','rista':'ristò','ristà':'ristò','ristai':'ristò','ritieni':'ritengo','ritogli':'ritolgo','ritrai':'ritraggo','riva':'rivado','rivai':'rivado','rivali':'rivalgo','rivuoi':'rivoglio','sali':'salgo','sappi':'so','scegli':'scelgo','sciogli':'sciolgo','scompari':'scompaio','scompiaci':'scompiaccio','scomponi':'scompongo','sconvieni':'sconvengo','scuci':'scucio','scuoci':'scuocio','sfa':'sfaccio','sfai':'sfaccio','sii':'sono','soggiaci':'soggiaccio','sopraffa':'sopraffaccio','sopraffai':'sopraffaccio','sopravvieni':'sopravvengo','sostieni':'sostengo','sottaci':'sottaccio','sottoesponi':'sottoespongo','sottoponi':'sottopongo','sottosta':'sottostò','sottostà':'sottostò','sottostai':'sottostò','sottrai':'sottraggo','sovraesponi':'sovraespongo','sovrapponi':'sovrappongo','sovresponi':'sovrespongo','sovvieni':'sovvengo','spegni':'spengo','spiaci':'spiaccio','sta':'sto','stai':'sto','stracuoci':'stracuocio','strafa':'strafaccio','strafai':'strafaccio','stupefa':'stupefaccio','stupefai':'stupefaccio','suoli':'soglio','supponi':'suppongo','svieni':'svengo','taci':'taccio','tieni':'tengo','togli':'tolgo','torrefa':'torrefaccio','torrefai':'torrefaccio','trai':'traggo','trascegli':'trascelgo','traspari':'traspaio','trasponi':'traspongo','trattieni':'trattengo','tumefa':'tumefaccio','tumefai':'tumefaccio','va':'vado','vai':'vado','vali':'valgo','vieni':'vengo','vogli':'voglio','vuoi':'voglio'},
 	mappaDiacritici: [ // Mappa diacritici per le vocali italiane minuscole
 		{'base':'à', 'letters':/[\u00e0\u00e1]/g},
 		{'base':'è', 'letters':/[\u00e8\u00e9]/g},
@@ -110,11 +111,8 @@ var Lingua = {
 		// Rifiuta anche le parole costituite da una sola lettera
 		if (str.length === 1 || (str.substr(-1, 1) !== 'a' && str.substr(-1, 1) !== 'i')) return str;
 
-		// Elenco di tutti gli imperativi che si trasformano in indicativo 1a persona in modo irregolare
-		var imperativiIrregolari = {'abbi':'ho','accogli':'accolgo','addivieni':'addivengo','adempi':'adempio','anteponi':'antepongo','appari':'appaio','appartieni':'appartengo','apponi':'appongo','assali':'assalgo','astieni':'astengo','astrai':'astraggo','attieni':'attengo','attrai':'attraggo','avvali':'avvalgo','avvieni':'avvengo','circonvieni':'circonvengo','cogli':'colgo','compari':'compaio','compi':'compio','compiaci':'compiaccio','componi':'compongo','conduoli':'condolgo','confa':'confaccio','confai':'confaccio','contieni':'contengo','contraffai':'contraffaccio','contrai':'contraggo','contrapponi':'contrappongo','contravvieni':'contravvengo','convieni':'convengo','cuci':'cucio','cuoci':'cuocio','da':'do','dai':'do','decomponi':'decompongo','deponi':'depongo','detieni':'detengo','detrai':'detraggo','di':'dico','disassuefai':'disassuefaccio','disciogli':'disciolgo','discomponi':'discompongo','disconvieni':'disconvengo','disfa':'disfaccio','disfà':'disfaccio','dispari':'dispaio','dispiaci':'dispiaccio','disponi':'dispongo','distogli':'distolgo','distrai':'distraggo','disvogli':'disvoglio','divieni':'divengo','duoli':'dolgo','empi':'empio','equivali':'equivalgo','esponi':'espongo','estrai':'estraggo','fa':'faccio','fai':'faccio','frapponi':'frappongo','giaci':'giaccio','giustapponi':'giustappongo','imponi':'impongo','incogli':'incolgo','indi':'indico','indisponi':'indispongo','interdi':'interdico','interponi':'interpongo','intervieni':'intervengo','intrattieni':'intrattengo','invali':'invalgo','liquefa':'liquefaccio','liquefai':'liquefaccio','malfa':'malfaccio','malfai':'malfaccio','mantieni':'mantengo','molci':'molcio','muori':'muoio','nuoci':'nuoccio','opponi':'oppongo','ottieni':'ottengo','pari':'paio','permani':'permango','pervieni':'pervengo','piaci':'piaccio','poni':'pongo','posponi':'pospongo','predi':'predico','predisponi':'predispongo','premuori':'premuoio','preponi':'prepongo','prescegli':'prescelgo','presupponi':'presuppongo','prevali':'prevalgo','previeni':'prevengo','proponi':'propongo','prosciogli':'prosciolgo','protrai':'protraggo','provieni':'provengo','puoi':'posso','putrefai':'putrefaccio','raccogli':'raccolgo','rarefai':'rarefaccio','rattieni':'rattengo','reci':'recio','redi':'redico','retrai':'retraggo','riabbi':'riò','riabbia':'riò','riai':'riò','riappari':'riappaio','riassali':'riassalgo','ricogli':'ricolgo','ricompari':'ricompaio','ricomponi':'ricompongo','riconvieni':'riconvengo','ricuci':'ricucio','ricuoci':'ricuocio','rida':'ridò','ridà':'ridò','ridai':'ridò','ridi':'ridico','ridisponi':'ridispongo','riempi':'riempio','rifa':'rifaccio','rifai':'rifaccio','rimani':'rimango','rinvieni':'rinvengo','riponi':'ripongo','riproponi':'ripropongo','risali':'risalgo','risappi':'riso','riscegli':'riscelgo','risciogli':'risciolgo','risii':'risono','risostieni':'risostengo','risovvieni':'risovvengo','rista':'ristò','ristà':'ristò','ristai':'ristò','ritieni':'ritengo','ritogli':'ritolgo','ritrai':'ritraggo','riva':'rivado','rivai':'rivado','rivali':'rivalgo','rivuoi':'rivoglio','sali':'salgo','sappi':'so','scegli':'scelgo','sciogli':'sciolgo','scompari':'scompaio','scompiaci':'scompiaccio','scomponi':'scompongo','sconvieni':'sconvengo','scuci':'scucio','scuoci':'scuocio','sfa':'sfaccio','sfai':'sfaccio','sii':'sono','soggiaci':'soggiaccio','sopraffa':'sopraffaccio','sopraffai':'sopraffaccio','sopravvieni':'sopravvengo','sostieni':'sostengo','sottaci':'sottaccio','sottoesponi':'sottoespongo','sottoponi':'sottopongo','sottosta':'sottostò','sottostà':'sottostò','sottostai':'sottostò','sottrai':'sottraggo','sovraesponi':'sovraespongo','sovrapponi':'sovrappongo','sovresponi':'sovrespongo','sovvieni':'sovvengo','spegni':'spengo','spiaci':'spiaccio','sta':'sto','stai':'sto','stracuoci':'stracuocio','strafa':'strafaccio','strafai':'strafaccio','stupefa':'stupefaccio','stupefai':'stupefaccio','suoli':'soglio','supponi':'suppongo','svieni':'svengo','taci':'taccio','tieni':'tengo','togli':'tolgo','torrefa':'torrefaccio','torrefai':'torrefaccio','trai':'traggo','trascegli':'trascelgo','traspari':'traspaio','trasponi':'traspongo','trattieni':'trattengo','tumefa':'tumefaccio','tumefai':'tumefaccio','va':'vado','vai':'vado','vali':'valgo','vieni':'vengo','vogli':'voglio','vuoi':'voglio'};
-
-		if (imperativiIrregolari[str] !== undefined) {
-			return imperativiIrregolari[str];
+		if (Lingua.imperativiIrregolari[str] !== undefined) {
+			return Lingua.imperativiIrregolari[str];
 		} else {
 			return str.substr(0, str.length - 1)+'o';
 		}
@@ -644,7 +642,7 @@ var Vista = {
 		// Scorre fino ad arrivare a fondo pagina, ma fermandosi prima per non saltare mai del contenuto non letto
 		var ay = hContenuto - window.innerHeight; // ay: avanzo y assoluto
 		if (ay > 0) {
-			if (ay - window.pageYOffset < window.innerHeight) {
+			if (ay < window.innerHeight) {
 				window.scroll(0, ay + 8);
 			} else {
 				window.scroll(0, Vista.hTestoP);
@@ -663,13 +661,13 @@ var Vista = {
 	scorriCronoInput: function(n) {
 		// L'evento keydown disabilita input box per non vedere il cursore del testo (spiacevole perché andando all'indietro con la cronologia input, il cursore si colloca prima all'inizio e poi alla fine). L'unica soluzione valida è disabilitare input box e farlo tornare pronto dopo pochissimo tempo
 		setTimeout(G.pronto, 100);
-		
+
 		// Se la cronologia è vuota annulla il comando
 		if (Vista.cronoInput.length === 0) return;
 
 		// Scorre di n (-1 o +1) la cronologia degli input
 		var e_inp = document.getElementById('input');
-		Vista.nCronoInput = Vista.nCronoInput + n;		
+		Vista.nCronoInput = Vista.nCronoInput + n;
 		if (Vista.nCronoInput < 0) Vista.nCronoInput = 0;
 		if (Vista.nCronoInput > Vista.cronoInput.length - 1) {
 			Vista.nCronoInput = Vista.cronoInput.length;
@@ -691,22 +689,62 @@ var Vista = {
 	},
 	testoSpeciale: function(str) {
 		// str: stringa con testo speciale da riconoscere e risolvere
-		var out = [];
+		var out = []; var p1 = 0, p2 = 0;
 
 		// Verifica la randomizzazione di parti del testo
-		var x1 = str.indexOf('x(');
-		if (x1 !== -1) {
-			out.push(Vista.contenitori(str.substr(0, x1)));
-			var x2 = str.indexOf(')', x1 + 2);
-			var str_x = str.substr(x1 + 2, x2 - x1 - 2).split('|');
+		p1 = str.indexOf('x(');
+		if (p1 !== -1) {
+			out.push(Vista.contenitori(str.substr(0, p1)));
+			p2 = str.indexOf(')', p1 + 2);
+			var str_x = str.substr(p1 + 2, p2 - p1 - 2).split('|');
 			var n = Math.floor((Math.random() * str_x.length));
 			out.push(Vista.contenitori(str_x[n]));
-			out.push(Vista.contenitori(str.substr(x2 + 1, str.length - x2)));
+			out.push(Vista.contenitori(str.substr(p2 + 1, str.length - p2)));
 		} else {
 			out.push(Vista.contenitori(str));
 		}
+
+		// Compone il possibile risultato finale
+		str = out.join('');
+		out = [];
+
+		// Verifica presenza di link rapidi nel testo
+		p1 = 0, p2 = 0;
+		do {
+			p1 = str.indexOf('__', p2);
+			if (p1 !== -1) {
+				out.push(str.substr(p2, p1 - p2));
+				p2 = str.indexOf('__', p1 + 2);
+				if (p2 !== -1) {
+					var str_lnk = str.substr(p1 + 2, p2 - p1 - 2).split('|');
+					if (str_lnk.length < 3) {
+						out.push('<a onclick=\"Vista.noTag(this);I.scriviInput(\'');
+						out.push(str_lnk[str_lnk.length - 1]); // L'ultima stringa va usata come input del giocatore
+						out.push('\');\">' + str_lnk[0] + '</a>');
+					} else { p1 = null; }
+				} else { p1 = null; }
+				p2 = p2 + 2;
+			} else {
+				// se p1 è -1 e non è stato trovato alcun __ , allora ignora ricerca link rapidi
+				// altrimenti, se precedenti __ sono stati trovati, deve inserire in out la parte finale della stringa
+				if (out.length === 0) {
+					p1 = undefined;
+				} else {
+					out.push(str.substr(p2, str.length - p2));
+				}
+			}
+		} while (p1 !== undefined && p1 !== -1 && p1 !== null);
+
+		if (p1 === -1) {
+			// Se p1 risulta -1, allora i link rapidi sono stati trovati e processati
+			str = out.join('');
+		} else if (p1 === null) {
+			// Se p1 risulta null, allora c'è stata un'anomalia e va comunicata
+			alert('Nella scena '+G.nScena+' c\'è un uso anomalo della sintassi __link__. Controllare!');
+		}
+
 		// Restituisce il risultato finale
-		return out.join('');
+		return str;
 	},
 	contenitori: function(str) {
 		// str: stringa di cui verificare la presenza di contenitori: @nome contenitore@
@@ -735,10 +773,13 @@ var Vista = {
 			}
 		}
 	},
+	noTag: function(o) {
+		// o: oggetto solitamente passato con 'this'
+		o.outerHTML = o.innerHTML;
+	},
 
 	fineRifiuto: function(event) {
 		document.removeEventListener('keydown', Vista.fineRifiuto);
-		document.removeEventListener('click', Vista.fineRifiuto);
 		clearTimeout(Vista.timerFineRifiuto);
 		if (Vista.timerFineRifiuto === undefined) return;
 		Vista.timerFineRifiuto = undefined;
@@ -812,7 +853,7 @@ var Vista = {
 }
 
 // Interprete (I)
-var I = { 
+var I = {
 
 	inputGrezzo: '',
 	inputNorm: [],
@@ -1145,14 +1186,15 @@ var I = {
 			if (e_inp.style.color) Vista.coloreTestoP = e_inp.style.color;
 			if (Vista.stile.coloreRifiuto) { e_inp.style.color = Vista.stile.coloreRifiuto; } else { e_inp.className += ' coloreRifiuto'; }
 			e_inp.value = Vista.messaggiRifiuto[Math.floor((Math.random() * Vista.messaggiRifiuto.length))];
-			// Dopo 1 sec scompare il msg di rifiuto e torna l'ordinaria casella di inserimento degli input del giocatore
-			Vista.timerFineRifiuto = setTimeout(Vista.fineRifiuto, 1000);
-			// Dopo 100 ms qualsiasi tasto risulta premuto conclude il msg di rifiuto e la lettera premuta inizia a scrivere un nuovo input
+			// Dopo 5 sec scompare il msg di rifiuto e torna l'ordinaria casella di inserimento degli input del giocatore
+			clearTimeout(Vista.timerFineRifiuto);
+			Vista.timerFineRifiuto = setTimeout(Vista.fineRifiuto, 5000);
+			// Dopo 100 ms qualsiasi tasto risulta premuto conclude il msg di rifiuto e la lettera premuta farà parte del nuovo input
 			setTimeout(function() {
 				document.addEventListener('keydown', Vista.fineRifiuto);
-				document.addEventListener('click', Vista.fineRifiuto);
 				}, 100);
 		} else {
+			Vista.fineRifiuto();
 			e_inp.value = '? ';
 		}
 		Vista.fondoPagina();
@@ -1161,6 +1203,7 @@ var I = {
 	scriviInput: function(inp) {
 		document.getElementById('input').value = '? ' + inp;
 		I.leggiInput();
+		G.pronto();
 	},
 
 	controllaCondizioni: function(L, iI, opz) {
@@ -1176,7 +1219,7 @@ var I = {
 		// All'inizio del controllo si lasciano le condizioni indefinite: valore scelto 2 (vero o falso)
 		// Se diventa 0 significa "non soddisfatte", se diventa 1 "soddisfatte"
 		var condSoddisfatte = 2;
-		
+
 		// Controlla le condizioni sulle variabili
 		if (istro.seVariabili !== undefined) {
 			for (var i = 0; i < istro.seVariabili.length; i++) {
@@ -1390,7 +1433,7 @@ var I = {
 				} else {
 					var ogg_il = []; // Etichette-ID con art. det.
 					var ogg_un = []; // Etichette con art. indet.
-					istro.ogg = istro.ogg.split('+');
+					istro.ogg = istro.ogg.split('  ');
 					for (var o = 0; o < istro.ogg.length; o++) { // o: indice oggetto
 						// Separa l'eventuale articolo indeterminativo dall'etichetta con art. det. (es. "un|l'amuleto")
 						istro.ogg[o] = istro.ogg[o].split('|');
@@ -1932,10 +1975,10 @@ function uscita(txt_in, nS, vis, nomeDest) {
 }
 function contenitore(cont, ogg) {
 	// cont: nome del contenitore che fa da chiave nell'array dei contenitori di oggetti: S.oggetti
-	// ogg: oggetti contenuti separati con +, scrivere sempre l'articolo determinativo, faranno da etichette e da ID
+	// ogg: oggetti contenuti separati dal doppio spazio '  ', scrivere sempre l'articolo determinativo, faranno da etichette e da ID
 	//   è possibile indicare l'articolo indeterminativo prima dell'etichetta oggetto servendosi di una barra '|'
-	//   Es. "un|l'amuleto+dello|lo zucchero+il Martello di Tor+un'|l'albicocca" - Notare che può non venir usata la barra, in tal caso viene sempre presentata l'etichetta con articolo determinativo (o comunque l'etichetta così come la scriviamo), utile per oggetti unici (es. "il Martello di Tor"). L'articolo viene considerato comprensivo di apostrofo quindi con l' (l apostrofo) viene tolto anche l'apostrofo. Se l'oggetto è maschile o femminile, è lo scrittore che deve specificare o meno l'apostrofo nell'articolo indeterminativo, si veda il confronto degli esempi "amuleto" e "albicocca". L'eventuale spazio dopo l'articolo è automaticamente gestito (quindi non va mai messo).
-	
+	//   Es. "un|l'amuleto  dello|lo zucchero  il Martello di Tor  un'|l'albicocca" - Notare che può non venir usata la barra, in tal caso viene sempre presentata l'etichetta con articolo determinativo (o comunque l'etichetta così come la scriviamo), utile per oggetti unici (es. "il Martello di Tor"). L'articolo viene considerato comprensivo di apostrofo quindi con l' (l apostrofo) viene tolto anche l'apostrofo. Se l'oggetto è maschile o femminile, è lo scrittore che deve specificare o meno l'apostrofo nell'articolo indeterminativo, si veda il confronto degli esempi "amuleto" e "albicocca". L'eventuale spazio dopo l'articolo è automaticamente gestito (quindi non va mai messo).
+
 	// Decifra con Vigenère se abilitato
 	if (typeof(V) !== 'undefined') {
 		cont = V.decifra(cont);
@@ -1996,7 +2039,7 @@ function bloccaDirezioni() {
 	// Indica che per questa scena le direzioni veloci sono bloccate
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('azione', 'bloccaDirezioni');
-	S.Istruzioni.aggiungiCondizioni();	
+	S.Istruzioni.aggiungiCondizioni();
 }
 function cancellaDirezione(nome) {
 	// nome: del luogo raggiungibile da cancellare
@@ -2006,7 +2049,7 @@ function cancellaDirezione(nome) {
 	S.Istruzioni.crea();
 	S.Istruzioni.valore('azione', 'cancellaDirezione');
 	S.Istruzioni.valore('nome', nome);
-	S.Istruzioni.aggiungiCondizioni();	
+	S.Istruzioni.aggiungiCondizioni();
 }
 function rispondi(txt_in, txt_out) {
 	// txt_in: input dell'utente
@@ -2014,8 +2057,17 @@ function rispondi(txt_in, txt_out) {
 
 	// Decifra con Vigenère se abilitato
 	if (typeof(V) !== 'undefined') {
+		// Se txt_in proviene dal comando rapido 'esamina', allora la parte iniziale non viene cifrata
+		// Se la cifratura è attiva, va rimossa la stringa aggiunta, decriptato, e poi rimessa
+		if (txt_in.startsWith('x ')) {
+			var x = 1;
+			txt_in = txt_in.substr(2, txt_in.length - 2);
+		}
 		txt_in = V.decifra(txt_in);
 		txt_out = V.decifra(txt_out);
+		if (x === 1) {
+			txt_in = 'x ' + txt_in;
+		}
 	}
 	// Trasforma le frasi articolate scritte dallo scrittore in frasi semantiche
 	txt_in = Lingua.normalizzaInput(txt_in, 2);
@@ -2026,6 +2078,11 @@ function rispondi(txt_in, txt_out) {
 	S.Istruzioni.valore('output', txt_out);
 	S.Istruzioni.aggiungiCondizioni();
 	Vista.stile.inputBox = 1;
+}
+function esamina(txt_in, txt_out) {
+	// txt_in: input dell'utente con l'aggiunta iniziale di "esamino "
+	// txt_out: risposta da ricevere
+	rispondi('x '+txt_in, txt_out);
 }
 function rispondiVai(txt_in, txt_out, nS) {
 	// txt_in: input dell'utente

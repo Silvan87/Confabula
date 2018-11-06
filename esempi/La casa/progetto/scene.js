@@ -187,7 +187,7 @@ function istruzioniScena(n) {
 		uscita("est", 2);
 		rispondi("aiuto", "Noti niente di strano qua dentro?");
 		rispondi("[esamino|apro] l'armadietto", "L'armadietto contiene: @armadietto bagno@.");
-		contenitore("armadietto bagno", "un|il cacciavite+dei|i medicinali+una|la bottiglietta d'alcol");
+		contenitore("armadietto bagno", "un|il cacciavite  dei|i medicinali  una|la bottiglietta d'alcol");
 		condizioni("il cacciavite@armadietto bagno");
 			rispondi("prendo il cacciavite", "Hai preso il cacciavite.");
 			__oggetti("il cacciavite@i  no!il cacciavite@armadietto bagno");
