@@ -120,27 +120,27 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 **Proprietà**
 
-_testo_: è una stringa di testo semplice o html che descrive la scena
-_intermezzo_: è un array di testi di intermezzo prima del testo effettivo
-_uscite_: è una stringa che contiene dei link html visibili che permettono di passare ad altre scene
-_scelte_: è un elenco di link html che possono essere visualizzati sotto la descrizione
-_coloreSfondo_: colore della pagina html
-_coloreTesto_: colore testo della scena
-_coloreTestoInviato_: colore dell'Input inviato dal Giocatore
-_testoCarattere_: carattere (font) di tutti i testi
-_testoGrandezza_: grandezza dei testi
-_testoAllineamento_: allineamento del testo della descrizione
-_coloreScelta_: colore di una scelta predefinita
-_coloreSceltaSelezionata_: colore di una scelta predefinita quando il puntatore ci passa sopra
-_coloreErrore_: colore degli eventuali messaggi di errore
-_coloreLink_: colore dei link all'interno della descrizione
-_coloreLinkSelezionato_: colore dei link all'interno della descrizione quando il puntatore ci passa sopra
-_larghezzaMax_: larghezza massima della Vista specificata in pixel
+- _testo_: è una stringa di testo semplice o html che descrive la scena
+- _intermezzo_: è un array di testi di intermezzo prima del testo effettivo
+- _uscite_: è una stringa che contiene dei link html visibili che permettono di passare ad altre scene
+- _scelte_: è un elenco di link html che possono essere visualizzati sotto la descrizione
+- _coloreSfondo_: colore della pagina html
+- _coloreTesto_: colore testo della scena
+- _coloreTestoInviato_: colore dell'Input inviato dal Giocatore
+- _testoCarattere_: carattere (font) di tutti i testi
+- _testoGrandezza_: grandezza dei testi
+- _testoAllineamento_: allineamento del testo della descrizione
+- _coloreScelta_: colore di una scelta predefinita
+- _coloreSceltaSelezionata_: colore di una scelta predefinita quando il puntatore ci passa sopra
+- _coloreErrore_: colore degli eventuali messaggi di errore
+- _coloreLink_: colore dei link all'interno della descrizione
+- _coloreLinkSelezionato_: colore dei link all'interno della descrizione quando il puntatore ci passa sopra
+- _larghezzaMax_: larghezza massima della Vista specificata in pixel
 
 **Funzioni**
 
-_nascondi_: nasconde l'intera vista
-_mostra_: mostra la vista secondo tutte le proprietà impostate
+- _nascondi_: nasconde l'intera vista
+- _mostra_: mostra la vista secondo tutte le proprietà impostate
 
 #### &#x26AB; Oggetto: Scene
 
@@ -156,13 +156,13 @@ La completa lista delle funzioni utilizzabili nelle scene è raccolta nella Docu
 
 **Proprietà**
 
-_value_: contiene il testo inserito nella casella di testo (input html)
-_display_: servirà poter visualizzare o far sparire la casella di testo
+- _value_: contiene il testo inserito nella casella di testo (input html)
+- _display_: servirà poter visualizzare o far sparire la casella di testo
 
 **Funzioni**
 
-_onblur_: quando la casella perde il focus dopo pochi secondi lo deve riprendere
-_onkeypress_: quando si preme invio il testo va passato all'interprete
+- _onblur_: quando la casella perde il focus dopo pochi secondi lo deve riprendere
+- _onkeypress_: quando si preme invio il testo va passato all'interprete
 
 #### &#x26AB; Oggetto: Interprete
 
@@ -172,11 +172,11 @@ Occorre sviluppare la documentazione mano a mano che si procede con la programma
 
 #### &#x26AB; Oggetto: Giocatore
 
-_nMosse_: n. delle mosse o azioni svolte nel gioco (è il modo più opportuno di contare il tempo in un'avventura testuale)
-_nPassaggiScena_: n. dei passaggi da scena a scena (una scena è solo un testo o una situazione di fronte al giocatore)
-_nPassaggiLuoghi_: n. dei passaggi da luogo a luogo (un luogo può essere rappresentato da più  scene)
-_tempoInizio_: la data comprensiva di orario di inizio della partita
-_oggetti_: è un array di array, o meglio un array di contenitori (es. inventario, tasche, zaino, bocca) che possono contenere liste di oggetti
+- _nMosse_: n. delle mosse o azioni svolte nel gioco (è il modo più opportuno di contare il tempo in un'avventura testuale)
+- _nPassaggiScena_: n. dei passaggi da scena a scena (una scena è solo un testo o una situazione di fronte al giocatore)
+- _nPassaggiLuoghi_: n. dei passaggi da luogo a luogo (un luogo può essere rappresentato da più  scene)
+- _tempoInizio_: la data comprensiva di orario di inizio della partita
+- _oggetti_: è un array di array, o meglio un array di contenitori (es. inventario, tasche, zaino, bocca) che possono contenere liste di oggetti
 
 N.B. un Oggetto nel gioco può passare da un contenitore ad un altro ed è un array con varie proprietà:
 
@@ -184,38 +184,38 @@ N.B. un Oggetto nel gioco può passare da un contenitore ad un altro ed è un ar
 	_etichettaUn_: il nome che deve comparire con articolo indeterminativo (es. un martello)
 	_quantita_: il numero di entità (copie dell'oggetto o frecce o munizioni, ecc.) che può tornare utile contare
 
-_nScena_: n. scena corrente
-_nScenaP_: n. scena precedente
-_nScenaPP_: n. scena precedente alla precedente
-_nomeLuogoA_: nome del luogo attuale
-_nomeLuogoP_: nome del luogo precedente
-_luoghiRaggiungibili_: array dei nomi dei luoghi raggiungibili
-_usciteEsplorate_: elenco delle uscite (salvate come coppia di ID da nScena a nScena) che sono state attraversate
+- _nScena_: n. scena corrente
+- _nScenaP_: n. scena precedente
+- _nScenaPP_: n. scena precedente alla precedente
+- _nomeLuogoA_: nome del luogo attuale
+- _nomeLuogoP_: nome del luogo precedente
+- _luoghiRaggiungibili_: array dei nomi dei luoghi raggiungibili
+- _usciteEsplorate_: elenco delle uscite (salvate come coppia di ID da nScena a nScena) che sono state attraversate
 
 #### &#x26AB; Oggetto: Storia
 
 **Proprietà**
 
-_oggetti_: un array di array, deve elencare per ogni luogo gli oggetti che sono stati lì lasciati
+- _oggetti_: un array di array, deve elencare per ogni luogo gli oggetti che sono stati lì lasciati
 
 N.B. Se si vuol legare un oggetto ad una scena specifica, anziché ad un luogo, allora si deve lavorare con specifici contenitori
 
-_contenitori_: un array di array, che elenca i contenitori creati dallo scrittore ed il loro contenuto (ovvero oggetti)
-_variabili_: tutte le variabili di cui lo scrittore ha bisogno nella storia (es. drago morto, libro letto, ecc.)
-_vocabolario_: (facoltativo) è l'elenco dei predicati che il giocatore può usare nella storia
+- _contenitori_: un array di array, che elenca i contenitori creati dallo scrittore ed il loro contenuto (ovvero oggetti)
+- _variabili_: tutte le variabili di cui lo scrittore ha bisogno nella storia (es. drago morto, libro letto, ecc.)
+- _vocabolario_: (facoltativo) è l'elenco dei predicati che il giocatore può usare nella storia
 
 #### &#x26AB; Oggetto: Lingua
 
 **Proprietà**
 
-_predicati_: array facoltativo dei predicati permessi ed usati dallo scrittore nella storia
-_equivalenze_: array di array che specifica quali espressioni sono equivalenti: es. `[['albero','pianta'], ['si','ya'], ... ]`
-_mappaDiacritici_: i caratteri diacritici devono essere rimossi e serve una mappa che riporti ogni lettera accentata ad una lettera base
+- _predicati_: array facoltativo dei predicati permessi ed usati dallo scrittore nella storia
+- _equivalenze_: array di array che specifica quali espressioni sono equivalenti: es. `[['albero','pianta'], ['si','ya'], ... ]`
+- _mappaDiacritici_: i caratteri diacritici devono essere rimossi e serve una mappa che riporti ogni lettera accentata ad una lettera base
 
 **Funzioni**
 
-_normalizzaInput_: sia l'input del giocatore che il testo previsto dallo scrittore devono essere portati ad una forma normale per il confronto
-_confrontaInput_: dati due input normalizzati risponde vero se sono equivalenti e falso se sono differenti (di fatto si realizza un confronto semantico)
+- _normalizzaInput_: sia l'input del giocatore che il testo previsto dallo scrittore devono essere portati ad una forma normale per il confronto
+- _confrontaInput_: dati due input normalizzati risponde vero se sono equivalenti e falso se sono differenti (di fatto si realizza un confronto semantico)
 
 
 ## Come implementare la struttura logica
