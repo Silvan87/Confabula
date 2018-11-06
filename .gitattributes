@@ -49,3 +49,21 @@ LICENSE         text
 .gitconfig      text
 .gitignore      text
 .gitmodules     text
+
+# ==============================================================================
+#                                GitHub Linguist                                
+# ==============================================================================
+#  -- https://github.com/github/linguist
+#
+# Definizioni manuali per alcune estensioni, di modo che la libreria Linguist di
+# GitHub possa:
+# 1) Raccogliere statistiche corrette sui file di progetto,
+# 2) Colorare la sintassi dei sorgenti in maniera corretta nella WebUI.
+
+## ==============
+## DOCUMENTAZIONE
+## ==============
+## Escludi dalle statistiche del progetto i file della documentazione:
+documentazione/*    linguist-documentation
+
+# EOF #
