@@ -40,7 +40,9 @@ Infine, c'è un grande blocco internamente suddiviso nel caso 1, 2, 3, ecc., i c
 
 Le funzioni che descrivono le istruzioni nelle scene seguono indicativamente questo stile:
 
-	preparatiAFareQuesto(condizione1, condizione2, effetto1, effetto2);
+``` javascript
+preparatiAFareQuesto(condizione1, condizione2, effetto1, effetto2);
+```
 
 Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più intuitivo per lo Scrittore, egli deve pensare ad un Scena come da un insieme di righe, in cui per ciascuna riga si descrive qualcosa che può accadere in quella scena.
 
