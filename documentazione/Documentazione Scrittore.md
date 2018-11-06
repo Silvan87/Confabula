@@ -11,7 +11,7 @@ Benvenuti *scrittori*! Scrivere un'avventura testuale non potrà mai essere bana
 
 I browser Web sono lettori ormai onnipresenti sui nostri dispositivi ed il formato HTML5 e CSS3 è così ben standardizzato da risolvere il problema di formati speciali che richiedono l'installazione di programmi speciali per essere letti. Inoltre, un browser risolve gli aspetti grafici in modo brillante e semplice, basteranno pochi tocchi per avere risultati graficamente migliori rispetto a vari programmi di avventure testuali.
 
-La programmazione è svolta tramite JavaScript, un linguaggio che permette di rendere interattive le pagine HTML. Non servirà una conoscenza avanzata di JavaScript, poiché gli aspetti più complessi sono stati separati e risolti nel file 'interprete.js', che non servirà mai modificare. Gli unici file JavaScript su cui lavorerete sono 'scene.js' e 'vocabolario.js', che richiedono conoscenze elementari del linguaggio.
+La programmazione è svolta tramite JavaScript, un linguaggio che permette di rendere interattive le pagine HTML. Non servirà una conoscenza avanzata di JavaScript, poiché gli aspetti più complessi sono stati separati e risolti nel file `interprete.js`, che non servirà mai modificare. Gli unici file JavaScript su cui lavorerete sono `scene.js` e `vocabolario.js`, che richiedono conoscenze elementari del linguaggio.
 
 
 ## Iniziare con una nuova storia
@@ -37,7 +37,7 @@ Non dovrete mai modificarlo, è il cervello di Confabula, deve solo essere prese
 
 Questo file dovrete aprirlo per decidere alcuni aspetti grafici della vostra storia. Una volta aperto potete vedere che è diviso in due parti "Stile personalizzabile" ed "Impostazioni raccomandate". La seconda parte è raccomandabile lasciarla così come è. La prima parte presenta nomi intuitivi e qualche commento, così vi risulterà facile capire a quali aspetti ci si riferisce.
 
-I colori, che sono uno dei principali aspetti che vorrete personalizzare, sono definiti con caratteri esadecimali. Si trovano facilmente sul Web applicazioni che vi fanno scegliere un colore visivamente e vi comunicano il suo codice esadecimale. Il codice inizia con un cancelletto # e seguono 2 caratteri per il rosso, 2 per il verde e 2 per il blu. FF è il valore massimo, ovvero 255 in decimale e 00 quello minimo. Quando i caratteri sono 3, per esempio #b3c, è sottointeso che vengano raddoppiati, così: #bb33cc.
+I colori, che sono uno dei principali aspetti che vorrete personalizzare, sono definiti con caratteri esadecimali. Si trovano facilmente sul Web applicazioni che vi fanno scegliere un colore visivamente e vi comunicano il suo codice esadecimale. Il codice inizia con un cancelletto `#` e seguono 2 caratteri per il rosso, 2 per il verde e 2 per il blu. `FF` è il valore massimo, ovvero 255 in decimale e `00` quello minimo. Quando i caratteri sono 3, per esempio `#b3c`, è sottointeso che vengano raddoppiati, così: `#bb33cc`.
 
 Se avete conoscenze medie o avanzate di CSS3 potete prendervi la libertà di personalizzare tutto il file come meglio preferite.
 
@@ -58,6 +58,6 @@ Per quanto non siano necessarie le sotto cartelle, essendo possibile aggiungere 
 
 ## Scrivere una storia "passo passo"
 
-Partiamo dall'inizio: la cartella 'sorgente' di Confabula è stata copiata. Rinominiamo la cartella con il nome 'La casa'. Questa nuova storia contiene i file 'INIZIA.html' e 'interprete.js' che non modificheremo mai ed il file 'vocabolario.js', 'scene.js' e 'stile.css', su cui occorre lavorare.
+Partiamo dall'inizio: la cartella 'sorgente' di Confabula è stata copiata. Rinominiamo la cartella con il nome 'La casa'. Questa nuova storia contiene i file `INIZIA.html` e `interprete.js` che non modificheremo mai ed il file `vocabolario.js`, `scene.js` e `stile.css`, su cui occorre lavorare.
 
 [LAVORI IN CORSO]

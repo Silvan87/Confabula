@@ -20,19 +20,19 @@ Confabula ha una struttura gerarchica molto semplice. I file essenziali sono tut
 
 #### INIZIA.html
 
-'INIZIA.html' è un file statico e non verrà mai modificato dallo scrittore, solo eventuali cambi strutturali profondi (quindi rari) possono portare lo sviluppatore (programmatore) a rivedere alcuni punti.
+`INIZIA.html` è un file statico e non verrà mai modificato dallo scrittore, solo eventuali cambi strutturali profondi (quindi rari) possono portare lo sviluppatore (programmatore) a rivedere alcuni punti.
 
 #### interprete.js
 
-'interprete.js' è il cervello di Confabula, lo sviluppatore dovrà arricchire di nuove funzioni questo file per mettere a disposizione nuove funzioni per lo scrittore. Inoltre, qui è possibile migliorare la gestione della lingua naturale.
+`interprete.js` è il cervello di Confabula, lo sviluppatore dovrà arricchire di nuove funzioni questo file per mettere a disposizione nuove funzioni per lo scrittore. Inoltre, qui è possibile migliorare la gestione della lingua naturale.
 
 #### stile.css
 
-'stile.css' è un file internamente diviso in due sezioni. Lo *stile personalizzabile* che consiste in una serie di classi css auto-descrittive o con brevi commenti di supporto e le *impostazioni raccomandate* che non dovrebbero essere mai modificate, salvo personalizzazioni speciali o revisioni di alcuni aspetti predefiniti di Confabula.
+`stile.css` è un file internamente diviso in due sezioni. Lo *stile personalizzabile* che consiste in una serie di classi css auto-descrittive o con brevi commenti di supporto e le *impostazioni raccomandate* che non dovrebbero essere mai modificate, salvo personalizzazioni speciali o revisioni di alcuni aspetti predefiniti di Confabula.
 
 #### scene.js
 
-'scene.js' è il file su cui maggiormente lavorerà lo scrittore e deve rimanere più semplice ed intuitivo possibile.
+`scene.js` è il file su cui maggiormente lavorerà lo scrittore e deve rimanere più semplice ed intuitivo possibile.
 
 Inizia con una funzione "istruzioniGenerali" che contiene una serie di istruzioni che avranno valore in tutte le scene del gioco. Le istruzioni sono definite tramite una funzione, ma ciascuna funzione serve solo a preparare le condizioni che saranno valutate ad ogni azione del giocatore per decidere se eseguire effettivamente l'istruzione oppure no.
 
@@ -46,7 +46,7 @@ Anche se il nome di ciascuna istruzione deve essere più sintetico ed anche più
 
 #### vocabolario.js
 
-'vocabolario.js' è il file che raccoglie le espressioni sinonime, attualmente si può creare il sinonimo di una parola con un'altra parola, ma è in previsione la possibilità di rendere un'espressione di 2 o 3 parole sinonimo di un'altra di una sola parola. Inoltre, potrebbe arricchirsi di nuove potenzialità in futuro.
+`vocabolario.js` è il file che raccoglie le espressioni sinonime, attualmente si può creare il sinonimo di una parola con un'altra parola, ma è in previsione la possibilità di rendere un'espressione di 2 o 3 parole sinonimo di un'altra di una sola parola. Inoltre, potrebbe arricchirsi di nuove potenzialità in futuro.
 
 ## Struttura logica di Confabula
 
@@ -65,9 +65,9 @@ Gli oggetti a cui ora ci si riferisce sono oggetti astratti per la programmazion
 
 #### &#x26AB; Oggetto: Scene
 
-**Scopo**: è un insieme di scene che memorizza tutte le informazioni relative a ciascuna scena o relative a tutte le scene insieme. Questo oggetto è definito dal file 'scene.js'.
+**Scopo**: è un insieme di scene che memorizza tutte le informazioni relative a ciascuna scena o relative a tutte le scene insieme. Questo oggetto è definito dal file `scene.js`.
 
-**Proprietà**: tecnicamente nessuna, ma di fatto il file 'scene.js' definisce le istruzioni generali, ovvero cose che possono accadere in tutte le scene, e le istruzioni specifiche per ciascuna scena, ovvero cose che possono accadere in specifiche scene. Inoltre, ciascuna scena, come fosse in un array, riceve un numero. Le scene non sono in un classico array, ma sono gestite da un selettori di casi. Ciascuna funzione presente nelle scene definisce un'istruzione per quella scena e ciascuna istruzione può essere logicamente concepita come una proprietà della scena.
+**Proprietà**: tecnicamente nessuna, ma di fatto il file `scene.js` definisce le istruzioni generali, ovvero cose che possono accadere in tutte le scene, e le istruzioni specifiche per ciascuna scena, ovvero cose che possono accadere in specifiche scene. Inoltre, ciascuna scena, come fosse in un array, riceve un numero. Le scene non sono in un classico array, ma sono gestite da un selettori di casi. Ciascuna funzione presente nelle scene definisce un'istruzione per quella scena e ciascuna istruzione può essere logicamente concepita come una proprietà della scena.
 
 **Funzioni**: ogni scena corrisponde ad un caso (1, 2, 3, ecc.), più le istruzioni generali (all'inizio) che valgono in tutte le scene. Ogni caso presenta una serie di funzioni, possiamo chiamare queste istruzioni, dato che ciascuna di queste descrive qualcosa che può accadere nella relativa scena, in particolare, tramite gli argomenti della funzione si definiscono le condizioni e gli effetti dell'istruzione.
 
@@ -209,7 +209,7 @@ _vocabolario_: (facoltativo) è l'elenco dei predicati che il giocatore può usa
 **Proprietà**
 
 _predicati_: array facoltativo dei predicati permessi ed usati dallo scrittore nella storia
-_equivalenze_: array di array che specifica quali espressioni sono equivalenti: es. [['albero','pianta'], ['si','ya'], ... ]
+_equivalenze_: array di array che specifica quali espressioni sono equivalenti: es. `[['albero','pianta'], ['si','ya'], ... ]`
 _mappaDiacritici_: i caratteri diacritici devono essere rimossi e serve una mappa che riporti ogni lettera accentata ad una lettera base
 
 **Funzioni**
@@ -220,36 +220,36 @@ _confrontaInput_: dati due input normalizzati risponde vero se sono equivalenti 
 
 ## Come implementare la struttura logica
 
-Il file 'interprete.js' sarà un unico file che include non solo l'oggetto Interprete, ma anche quasi tutti gli altri oggetti logici: Lingua, Vista, Interprete (abbreviato con I), Giocatore (abbreviato con G), Storia (abbreviato con S), Condizioni.
+Il file `interprete.js` sarà un unico file che include non solo l'oggetto Interprete, ma anche quasi tutti gli altri oggetti logici: Lingua, Vista, Interprete (abbreviato con I), Giocatore (abbreviato con G), Storia (abbreviato con S), Condizioni.
 
 #### Oggetto: Vista
 
-Si tratta di un oggetto js dentro il file 'interprete.js'.
+Si tratta di un oggetto js dentro il file `interprete.js`.
 
 #### Oggetto: Scene
 
-L'unico oggetto che fa eccezione. Non è propriamente un oggetto js, ma è un file 'scene.js' che contiene tre funzioni fondamentali: vocabolario, istruzioniGenerali e istruzioniScena.
+L'unico oggetto che fa eccezione. Non è propriamente un oggetto js, ma è un file `scene.js` che contiene tre funzioni fondamentali: vocabolario, istruzioniGenerali e istruzioniScena.
 
-Le istruzioni permesse nelle scene sono definite sul primo livello del file 'interprete.js' sotto il commento "Istruzioni per definire le scene". Infatti, se fossero poste dentro un oggetto, che fa da namespace, si appesantirebbe il lavoro dello scrittore che, anziché usare direttamente la funzione con il relativo nome, dovrebbe ogni volta scrivere il namespace.
+Le istruzioni permesse nelle scene sono definite sul primo livello del file `interprete.js` sotto il commento "Istruzioni per definire le scene". Infatti, se fossero poste dentro un oggetto, che fa da namespace, si appesantirebbe il lavoro dello scrittore che, anziché usare direttamente la funzione con il relativo nome, dovrebbe ogni volta scrivere il namespace.
 
 #### Oggetto: Input
 
-È un oggetto html, si tratta di una casella di testo dentro il file 'INIZIO.html'.
+È un oggetto html, si tratta di una casella di testo dentro il file `INIZIO.html`.
 
 #### Oggetto: Interprete
 
-È un complesso ed articolato oggetto js dentro 'interprete.js', in linea di massima è funzionalmente centrale rispetto ai vari oggetti che compongono Confabula.
+È un complesso ed articolato oggetto js dentro `interprete.js`, in linea di massima è funzionalmente centrale rispetto ai vari oggetti che compongono Confabula.
 
 #### Oggetto: Giocatore
 
-È un oggetto js dentro 'interprete.js'.
+È un oggetto js dentro `interprete.js`.
 
 #### Oggetto: Storia
 
-È un oggetto js dentro 'interprete.js'.
+È un oggetto js dentro `interprete.js`.
 
 #### Oggetto: Lingua
 
-È un oggetto js dentro 'interprete.js'.
+È un oggetto js dentro `interprete.js`.
 
 
