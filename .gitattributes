@@ -4,7 +4,7 @@
 
 # Imposta il comportamento predefinito di Git su auto-riconoscimento dei file di
 # testo, in caso l'utente finale non abbia configurato 'core.autocrlf':
-* text=auto eol=lf
+* text=auto
 
 # ==============================================================================
 #                 Configurazione Estensioni File: Testo/Binario
