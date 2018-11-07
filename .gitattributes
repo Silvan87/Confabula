@@ -27,10 +27,9 @@
 *.css           text
 
 ## ===================
-## File distribuibili
+## Html autogenerati o copiati
 ## ===================
-"esempi/Cromwell/Cromwell.html"  binary
-"esempi/La casa/La casa.html"    binary
+esempi/*.html   binary
 
 ## ===================
 ## File Documentazione
@@ -58,7 +57,7 @@ LICENSE         text
 .gitmodules     text
 
 # ==============================================================================
-#                                GitHub Linguist                                
+#                                GitHub Linguist
 # ==============================================================================
 #  -- https://github.com/github/linguist
 #
